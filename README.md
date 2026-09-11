@@ -138,8 +138,11 @@ V0-IMPLEMENTATION-PLAN.md ......... PROVISIONALLY ADOPTED (UD-012/UD-013): fsp-c
                                     §9 SC-1..SC-5 CONFIRMED by the user (2026-09-11);
                                     portability boundary §12; READY FOR V0 IMPLEMENTATION
 experiments/v0-preflight/ ......... PREFLIGHT-V0-FEDORA.md: environment probe + portability
-                                    classification (evidence; Rust toolchain absent = the
-                                    one setup step before implementation)
+                                    classification (evidence; toolchain installed 2026-09-11,
+                                    rustup user-level, stable 1.98)
+fsp-check/ ........................ V0 prototype crate (UD-012): increment 1 SCAN done —
+                                    deterministic read-only scanner + observation-record
+                                    seam; tests 8/8 (see fsp-check/README.md)
 research/briefs/ .................. seven narrow briefs for external reasoning models
                                     (A shared reality, B coexistence, C handoff, D authority,
                                     E environment intelligence, F minimum self-description,
