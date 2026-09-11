@@ -98,6 +98,7 @@ READ ORDER
 -------------------------------------------------------------------------------
 ORIENT    README -> PROJECT-DIRECTION -> VISION -> DECISIONS
 DECIDE    DECISIONS -> OPEN-QUESTIONS -> ARCHITECTURE-HYPOTHESES -> RESEARCH-AGENDA
+COEXIST   COEXISTENCE-STRATEGIES -> research/COEXISTENCE-RESEARCH -> research/briefs/
 EVIDENCE  research/RESEARCH-INDEX -> research/ -> DECISIONS
 WORK      the question -> the ID namespaces it touches -> those files only
 
@@ -117,7 +118,12 @@ ARCHITECTURE-HYPOTHESES.md ........ H1-H13 candidates (none chosen) + T1-T5 tens
 OPEN-QUESTIONS.md ................. Q1-Q15 that block architecture
 RESEARCH-AGENDA.md ................ research phases, comparison criteria K1-K9, named gaps
 DOCUMENTATION-ARCHITECTURE.md ..... PROPOSED structure of this repository (not a product doc)
+COEXISTENCE-STRATEGIES.md ......... PROPOSED candidate strategies for the current central
+                                    research direction (UD-011); nothing selected
 research/RESEARCH-INDEX.md ........ source inventory, authority status, gaps
+research/COEXISTENCE-RESEARCH.md .. evidence base for the coexistence strategies (CO-n)
+research/briefs/ .................. four narrow briefs for external reasoning models
+                                    (A shared reality, B coexistence, C handoff, D authority)
 research/DOC-ARCHITECTURE-RESEARCH.md  evidence base for the documentation architecture
 research/history/INGEST-NOTES.md .......... historical: the initial ingestion record
 research/history/AUDIT-2026-09-10.md ...... historical: first project-intelligence audit

@@ -236,11 +236,54 @@ would have silently resolved a question this repository deliberately left to the
 so the gap is made visible instead.
 
 ================================================================================
-SUMMARY (as of 2026-09-10, after EXP-1 and all EXP-DOC-1 runs — 4 readers)
+DOC-FRICTION-014 — a research stage's outputs had no declared home
 ================================================================================
-Incidents: 13 recorded: 10 fixed, 1 partially fixed, 2 open (one HIGH — DOC-FRICTION-004,
+Question: "Where does coexistence research belong?" (asked while doing the work)
+Path taken: the routing rule (DOCUMENTATION-ARCHITECTURE §10), then OPEN-QUESTIONS,
+RESEARCH-AGENDA, DECISIONS.
+Expected: the routing rule to name a home for "a new central research direction with
+candidate strategies, invented mechanisms and external briefs".
+Actual: the rule's rows cover decisions, research artifacts, experiments, canonical
+knowledge, hypotheses and process — but a research DIRECTION that is not yet a product
+decision and whose outputs are strategies (not findings) fit none of them cleanly. The
+output had to be split across four files and one new directory, by judgement.
+Failure: ROUTING failure (the rule was incomplete), same class as DOC-FRICTION-001.
+Potential cause: the rule was written when the project had only ingestion and one
+experiment; a strategy document is a new kind of artifact.
+Disposition: PARTIALLY FIXED — the new files are mapped in README and the routing rule now
+has a row for "a proposed research direction's outputs". Not resolved: whether a strategy
+document is a durable document TYPE (a tenth type) or a research artifact variant is left
+open deliberately, because one instance is not evidence. Severity: low.
+
+================================================================================
+DOC-FRICTION-015 — the corpus's own vocabulary had to be checked for re-invention
+================================================================================
+Question: "Is the coexistence problem new, or already covered by S3/S6/S10?"
+Path taken: ARCHITECTURE-HYPOTHESES (H7, H12, H13), research/RESEARCH-INDEX.
+Expected: to be able to tell quickly which parts of a new research direction are already
+covered by the ingested corpus.
+Actual: possible, but only by reading three hypothesis entries and the source inventory's
+per-report contribution lines and reconciling them by hand. The inventory lists what each
+source CONTRIBUTES (A5, H4, ...) but not what each source COVERS, so "has this been
+researched already?" is a reconstruction.
+Failure: NAVIGATION/PROVENANCE friction, mild — no wrong conclusion, but real cost, and it
+recurred while writing both the research file and the strategies file.
+Potential cause: RESEARCH-INDEX was built for provenance (who said what) rather than for
+coverage (what is known).
+Disposition: NOT FIXED. A coverage index would be a new derived artifact, and this
+experiment's rule forbids adding one on a single observation. Recorded with its trigger: if
+a third research stage repeats this reconstruction, build a coverage line per source in
+RESEARCH-INDEX (one line each, not a new file). Severity: low-medium.
+
+================================================================================
+SUMMARY (as of 2026-09-10, after EXP-1, all EXP-DOC-1 runs, and the coexistence stage)
+================================================================================
+Incidents: 15 recorded: 11 fixed, 2 partially fixed, 2 open (one HIGH — DOC-FRICTION-004,
 unarchived sources, awaiting user authorization; one watch — MR-2 update blocks).
-Classes: currency 5, authority-clarity 4, structural 3, provenance/gap 1.
+Classes: currency 5, authority-clarity 4, structural 3, routing 2, provenance/gap 1.
+Dogfooding during the coexistence stage added two incidents (014 routing, 015 coverage) and
+no currency failures — the first stage in which the currency class did not recur, which is
+weak evidence that the earlier fixes held.
 No incident was a failure of the topic-per-file organization. Every failure was currency,
 status, provenance or placement discipline — the layer the documentation audit identified
 as missing. Four independent readers now confirm it.

@@ -134,6 +134,24 @@ PHASE 5 — VERSIONING AND HISTORY (Q4, R8)
       alternatives, on the criteria below.
 
 -------------------------------------------------------------------------------
+PHASE 7 — AI-NATIVE COEXISTENCE (added 2026-09-10; the current central direction, UD-011)
+-------------------------------------------------------------------------------
+Not one of the charter's five tracks (MC §44); it cuts across C (agent layer), B (context)
+and D (versioning). Reference problem statement and candidate strategies:
+COEXISTENCE-STRATEGIES.md. Evidence: research/COEXISTENCE-RESEARCH.md.
+
+  7.1 Establish whether the problem is material (E-CO-1). Do this FIRST: if staleness and
+      concurrent-writer harm are not real for the intended user, the rest is optional.
+  7.2 Test whether plain-file conventions can carry coordination with the engine off
+      (E-CO-2) — this decides strategy S1 vs S4 and tests the no-single-point-of-failure
+      requirement.
+  7.3 Measure concurrent-writer harm and whether advisory claims reduce it (E-CO-3).
+  7.4 Test cross-provider handoff (E-CO-4) against the weak evidence already recorded (S3 §8).
+  7.5 Test honest attribution, including UNKNOWN (E-CO-5).
+  7.6 Only then compare strategies S1-S7 against K1-K9, with coexistence as the reference
+      problem. External model briefs (research/briefs/) may inform 7.6 but never decide it.
+
+-------------------------------------------------------------------------------
 PHASE 6 — COMPARISON CRITERIA (how any architecture will be judged)
 -------------------------------------------------------------------------------
 No architecture may be selected before the criteria are stated. Candidate criteria,
