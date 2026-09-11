@@ -40,7 +40,7 @@ The coexistence work produced a candidate broader concept — SHARED ENVIRONMENT
 (reality / standing / currency), with Shared Validity as its currency dimension — and a
 separate self-description hypothesis for the instrument itself. Eight hypotheses (H15-H23),
 two proposed mechanisms (M9 calibration precondition, M10 read/write recording split) and
-the objections C1-C13 are recorded in ENVIRONMENT-INTELLIGENCE.md. All unratified. The two
+the objections C1-C13 (OBJ-1..13 in that file) are recorded in ENVIRONMENT-INTELLIGENCE.md. All unratified. The two
 kill-tests are independent: E-CO-1 (currency) and E-CO-6a (safety floor).
 
 CURRENT CENTRAL DIRECTION (UD-011, 2026-09-10)

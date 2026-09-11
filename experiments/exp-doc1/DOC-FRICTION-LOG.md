@@ -304,13 +304,37 @@ Disposition: NOT FIXED — one more convergent instance before promoting the con
 the routing rule (same trigger discipline as 015). Severity: low.
 
 ================================================================================
+DOC-FRICTION-018 — three ID-namespace collisions appeared once the repo had two research
+stages and two namespaces without a registry
+================================================================================
+Question: none (found by the mechanical verifier, not by a reader).
+Actual: (1) the mandate's objection labels C1-C13 collided with CONSTRAINTS.md C1-C12;
+(2) the proposed-mechanism namespace M1-M10 collided with the documentation migration steps
+M0-M3; (3) H15-H23 were product hypotheses entering a namespace that had been implicitly
+architectural. A fourth, milder case: experiment-local labels (EXP-1's mutation classes
+M1-M10, the EXP-DOC-1 readers' M1-M5 findings) look like project IDs but are file-local.
+Failure: PROVENANCE/ID integrity — the class of defect the project has now hit three times
+(phantom H14/Q29 earlier, now collisions). It is invisible to a reader and only a
+mechanical check finds it.
+Disposition: FIXED for the collisions (objections renamed OBJ-n; migration steps renamed
+DM-n with a note that the frozen audit keeps its original names; H15-H23 given index entries
+with a routing row 5a2). NOT FIXED, and now RECOMMENDED: a single namespace registry listing
+every ID prefix, its owner file, its scope (project-wide vs file-local), and whether it is
+frozen. This is the second consecutive stage in which namespace discipline cost real work;
+the trigger condition set for DOC-FRICTION-015 (a third observation) is now satisfied for
+the ID-registry question specifically.
+Severity: MEDIUM (no wrong conclusion reached; real cost, and it recurs).
+
+================================================================================
 SUMMARY (as of 2026-09-10, after EXP-1, all EXP-DOC-1 runs, and two research stages)
 ================================================================================
-Incidents: 17 recorded: 12 fixed, 2 partially fixed, 2 open (one HIGH — DOC-FRICTION-004,
-unarchived sources, awaiting user authorization; one watch — MR-2 update blocks).
-Classes: currency 5, authority-clarity 4, routing 3, structural 3, provenance/gap 1,
+Incidents: 18 recorded: 13 fixed, 2 partially fixed, 3 open (one HIGH — DOC-FRICTION-004,
+unarchived sources, awaiting user authorization; one watch — MR-2 update blocks; one MEDIUM —
+DOC-FRICTION-018, no ID-namespace registry, trigger now satisfied).
+Classes: currency 5, authority-clarity 4, routing 3, structural 3, provenance/ID 2,
 convention-drift 1 (positive). The currency class has now been silent for two consecutive
-research stages.
+research stages — and the failures that did appear are all PROVENANCE-class, which is where
+the project's remaining risk has concentrated.
 No incident was a failure of the topic-per-file organization. Every failure was currency,
 status, provenance or placement discipline — the layer the documentation audit identified
 as missing. Four independent readers now confirm it.

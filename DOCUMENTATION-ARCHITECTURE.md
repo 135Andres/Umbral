@@ -265,7 +265,7 @@ Three mechanisms, no more:
       they are never updated, only superseded by later dated files.
   H-3 Version control. The repository is a git repository, so every change has a diff, an
       author and a time, without any of that appearing inside the documents.
-      Applied 2026-09-10 (see §12, M1). Reversible: removing .git loses history only.
+      Applied 2026-09-10 (see §12, DM1). Reversible: removing .git loses history only.
       EXPLICIT NON-INFERENCE: using git for this repository is not a decision about FSP's
       versioning architecture (MC §26 requires that to be researched independently).
       This is the single largest drift risk introduced by this document; it is recorded
@@ -404,11 +404,19 @@ contradiction: dates belong to frozen artifacts).
 ================================================================================
 12. MIGRATION PLAN
 ================================================================================
-M0 — ALREADY TRUE (before this audit): 13 flat canonical documents + research/. No
+NOTE ON THE STEP IDS (renamed 2026-09-10): these migration steps were M0-M3; they are
+DM0-DM3 here because M1-M10 is the PROPOSED-MECHANISM namespace (COEXISTENCE-STRATEGIES.md
+M1-M8, ENVIRONMENT-INTELLIGENCE.md M9-M10). The historical audit record
+(research/history/AUDIT-2026-09-10.md) refers to them by their original M0-M3 names and is
+frozen; do not "correct" it. Experiment-local namespaces are scoped and declared: EXP-1's
+mutation classes M1-M10 and the EXP-DOC-1 readers' finding labels M1-M5 are LOCAL to their
+experiment files and are not project IDs.
+
+DM0 — ALREADY TRUE (before this audit): 13 flat canonical documents + research/. No
      change needed to the folder structure; it was already minimal and it survives the
      audit. This is the single most important finding: the structure was not the problem.
 
-M1 — APPLIED 2026-09-10 (this change set):
+DM1 — APPLIED 2026-09-10 (this change set):
      - Created DOCUMENTATION-ARCHITECTURE.md (this file) and its research evidence file.
      - Created AGENTS.md (thin agent entry point).
      - README: fixed stale statements ("no DECISIONS.md", "no decision exists yet");
@@ -422,7 +430,7 @@ M1 — APPLIED 2026-09-10 (this change set):
      - RESEARCH-AGENDA: mapped to the research tracks the user already defined (MC §44/§47).
      - git initialised for the repository (H-3), one commit.
 
-M1b — APPLIED 2026-09-10 (second change set; triggered by observed failures, not taste):
+DM1b — APPLIED 2026-09-10 (second change set; triggered by observed failures, not taste):
      Two structural changes, both with their trigger recorded in the friction log:
      (1) `research/history/` created; INGEST-NOTES, AUDIT-2026-09-10 and the EXP-1 stage
          record moved into it. Trigger: two independent EXP-DOC-1 readers reported that
@@ -436,14 +444,14 @@ M1b — APPLIED 2026-09-10 (second change set; triggered by observed failures, n
      Also: the git non-inference moved to the front door (README) after two readers named
      the repository's own git usage as the strongest wrong signal in the whole repository.
 
-M2 — WHEN TRIGGERED (no action now):
+DM2 — WHEN TRIGGERED (no action now):
      - experiments/ + EXP-1 record: when the first experiment runs.
      - Split DECISIONS.md into per-decision files: at ~20 decisions or the first
        supersession, whichever comes first.
      - research/reports/: when S1-S11 are archived verbatim.
      - Split OPEN-QUESTIONS.md if it exceeds ~400 lines or its update blocks exceed two.
 
-M3 — DEFERRED, NEEDS THE USER (do not do without instruction):
+DM3 — DEFERRED, NEEDS THE USER (do not do without instruction):
      - Any metadata/frontmatter schema.
      - Any generated index, manifest, or context-map.
      - Any restructuring of the corpus (S0-S11) beyond verbatim archiving.
