@@ -132,6 +132,10 @@ research/PROJECT-REALITY-MINIMUM-MODEL.md
                                    .. RESEARCH ARTIFACT: reduction of the five-primitive
                                       hypothesis to the minimum record model v0 (H24);
                                       evidence RM-1..RM-18, falsifications, E-MIN-1 next
+V0-IMPLEMENTATION-PLAN.md ......... PROVISIONALLY ADOPTED (UD-012/UD-013): fsp-check
+                                    prototype — scope, stack (V0-only), model, invariants
+                                    INV-1..7, red-team classes A/B/C, success criteria
+                                    (PROPOSED, awaiting user confirmation)
 research/briefs/ .................. seven narrow briefs for external reasoning models
                                     (A shared reality, B coexistence, C handoff, D authority,
                                     E environment intelligence, F minimum self-description,
@@ -149,6 +153,9 @@ research/history/STAGE-2026-09-10c-environment-intelligence.md
 research/history/STAGE-2026-09-11-minimum-model.md
                                     historical: drift check, decisions required, next action
                                     for the minimum-model stage
+research/history/STAGE-2026-09-11b-v0-transition.md
+                                    historical: sync audit, provenance gap (V0 research
+                                    unarchived), transition to implementation
 research/sources/ ................. verbatim archives (PROJECT-MASTER-CONTEXT.md)
 experiments/exp1/ ................. EXP-1: EXP-1.md (spec + result), harness.py,
                                     results.json, FIXTURE-CORPUS.md, fixture-corpus-synthetic/

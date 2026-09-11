@@ -155,6 +155,37 @@ Consequences: coexistence becomes the reference problem for architecture compari
 Reversibility: high (a research direction).
 Status: DECIDED (research direction, not product).
 
+UD-012 — V0 prototype authorized (fsp-check); research phase provisionally concluded
+Authority: USER (2026-09-11 synchronization-and-transition mandate). The user states the
+initial conceptual-research phase has reached its provisional conclusion and authorizes
+the transition to implementation, starting with a minimal technical prototype provisionally
+named fsp-check (observe a real filesystem, catalog observable state, detect mutations,
+reconcile, persist, reconstruct, maintain verifiable invariants, recover from reasonable
+failures). Explicit limits in the same instruction: fsp-check is NOT FSP; it resolves none
+of the out-of-scope items (sync, P2P, multi-AI authority, semantic graph, UI, MCP, ...);
+no code was written at authorization time (documentation-preparation stage first).
+Consequences: PROJECT-DIRECTION enters an implementation-transition phase; pending
+experiments (E-CO-1, E-CO-6a, E-MIN-1) are NOT cancelled — they remain open evidence lines.
+Reversibility: high (a prototype, not a release).
+Status: DECIDED.
+
+UD-013 — V0 stack provisionally adopted, V0 scope only, explicitly non-irreversible
+Authority: USER (same mandate): Rust · SQLite (rusqlite) · walkdir · BLAKE3 · UUIDv7 ·
+tempfile · proptest, as "PROVISIONALMENTE ADOPTADAS PARA V0", with the explicit statement
+that these are NOT irreversible architectural decisions. The same mandate lists
+technologies OUT OF V0 SCOPE (Tokio, Rayon, notify, Iroh, MCP, HTTP, Tauri, React,
+cryptographic identity, P2P, plugins, mobile, Tree-sitter-in-core) — out of scope is NOT
+rejected for FSP.
+Provenance caveat (recorded, unresolved): the supporting research (technology-selection
+report, adversarial stack audit, prototype specification) exists in Gemini/Hermes research
+sessions and has NOT been archived in this corpus — same defect class as the S1-S11 gap
+(RESEARCH-INDEX GAPS item 4). The adoption rests on user authority, which suffices; the
+evidence base is missing until archived.
+Scope guard: this record does NOT settle any MC §52 item (final architecture, database,
+versioning, etc.). Home of the working plan: V0-IMPLEMENTATION-PLAN.md.
+Reversibility: high by design.
+Status: DECIDED (scoped adoption).
+
 ================================================================================
 NOT DECIDED (explicitly, by the user's own record — MC §52): final name, final
 architecture, database, indexing technology, AI protocol, versioning model, permission

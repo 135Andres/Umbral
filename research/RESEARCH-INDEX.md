@@ -148,6 +148,13 @@ GAPS IN THE CORPUS
      conversation history of the session that produced this repository (the ingestion
      session) and can be archived under research/sources/ on request. Until then,
      citations point to that transcript, not to documents. Recommended: archive them.
+  4  [OPENED 2026-09-11] The V0 supporting research is NOT archived: the technology-
+     selection report, the adversarial stack audit, the fsp-check prototype specification
+     and the multi-device sync investigation exist in Gemini Deep Research / Hermes
+     research sessions only. The 2026-09-11 stack adoption (UD-013) rests on USER
+     authority and is valid without them, but the corpus cannot show the evidence until
+     they are archived under research/sources/. Same defect class as item 2 (DQ-6:
+     PASS in-session, FAIL across sessions).
   3  No report covers governance, licence or contribution model beyond MC §36 (open
      source, paid hosting possible, no ads); no accessibility/localisation work; no
      cost-of-operation estimates. See RESEARCH-AGENDA gaps G1-G7.

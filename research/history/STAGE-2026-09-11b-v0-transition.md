@@ -1,0 +1,55 @@
+# STAGE RECORD — 2026-09-11b: Synchronization & Transition to V0 Implementation
+
+Status: HISTORICAL RECORD (frozen). Companion to the 2026-09-10/-10b/-10c/09-11 records.
+
+================================================================================
+WHAT THIS STAGE PRODUCED (pointers)
+================================================================================
+V0 implementation plan (fsp-check) ........ V0-IMPLEMENTATION-PLAN.md
+UD-012 (V0 authorized) / UD-013 (V0 stack, scoped) ... DECISIONS.md
+H25 (V0 store != Project Reality guard) ... ARCHITECTURE-HYPOTHESES.md
+Q25 (SQLite-only vs +JSONL log) ........... OPEN-QUESTIONS.md
+Implementation-phase document flow + information-location rules ... DOCUMENTATION-ARCHITECTURE.md §8b
+Corpus gap item 4 (V0 research unarchived) . research/RESEARCH-INDEX.md
+PROJECT-DIRECTION.md updated (transition phase; evidence lines preserved)
+
+================================================================================
+AUDIT FINDINGS (mandate step 4)
+================================================================================
+1. PROVENANCE GAP (defect class DQ-6, third occurrence): the mandate's "acumulated
+   context" cites research (technology selection, adversarial stack audit, fsp-check
+   specification, multi-device sync) that exists ONLY in Gemini Deep Research / Hermes
+   sessions, not in this corpus. Registered as RESEARCH-INDEX GAPS item 4. UD-013 is
+   valid on USER authority alone; the evidence base is missing until archived. No text
+   was invented to fill the gap.
+2. NO CONTRADICTION between the transition mandate and prior records: "no implementation
+   authorized" (MC §48) was a true statement until the user's 2026-09-11 instruction
+   superseded it; UD-012 records the change of state rather than rewriting history.
+   PROJECT-DIRECTION.md now carries both (transition primary; evidence lines open).
+3. IMPLICIT-DECISION CHECK: two items in the mandate could be misread as decisions they
+   are not: (a) "out of V0 scope" is NOT rejection of those technologies for FSP (the
+   mandate says so; recorded verbatim in the plan and UD-013); (b) the corrected hash
+   formulation is normative FOR V0 INVARIANTS, not a new project-wide invariant (A-n
+   untouched). H25 added as an explicit scope guard so the V0 store cannot silently
+   become the Project Reality representation.
+4. HYPOTHESES TREATED AS DECISIONS — none found in the corpus. The stack itself would
+   have become one if registered anywhere but DECISIONS.md; it was not.
+5. BROKEN REFERENCES — none introduced; mechanical verifier run after edits (IDs and
+   README map).
+6. SUPERSEDED, NOT DELETED: prior "CURRENT NEXT STEP" text in PROJECT-DIRECTION.md kept
+   in place below the new transition header.
+
+================================================================================
+DECISIONS THIS STAGE REQUIRES FROM THE USER
+================================================================================
+None new beyond the mandate itself. Awaiting confirmation (PROPOSED, plan §8-§9):
+benchmark targets and V0 success criteria. Still carried: D5, D6/D11, D7 (0.7/0.8,
+archive S1-S11 — now also the V0 research reports, GAPS item 4), D8, D9, D10.
+
+================================================================================
+NEXT ACTION (one)
+================================================================================
+Begin V0 implementation of fsp-check per V0-IMPLEMENTATION-PLAN.md — the plan's §5
+module order (scan -> identity -> hash -> store -> reconcile -> harness) with the harness
+and INV tests built alongside, not after. The user's confirmation of §8-§9 targets can
+arrive during implementation; nothing in §1-§7 depends on it.
