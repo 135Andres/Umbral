@@ -211,6 +211,12 @@ Linux-specific assumptions that must not leak into reconciliation:
   - atomic-rename-across-filesystems (impossible; cross-device is copy+delete).
 Tests that depend on Linux-specific behaviour are LABELLED as such (mandate §6):
 deterministic tests vs behaviour-dependent tests (fs-type, kernel).
+Identity evidence classification (increment 2): PhysicalId{dev,ino} = Unix-specific
+evidence (None on non-Unix by design, absence recorded not invented); rename-preserves-
+dev+ino = observed on Linux AND rename(2)-documented, filesystem-family-local, NOT a
+universal law; inode-reuse behaviour = filesystem-dependent; the Ambiguous verdicts and
+the path-is-not-identity rule = portable model properties (pure, tested without a
+filesystem).
 Environment of record: Fedora 44, kernel 7.1.13, btrfs workspace, tmpfs /tmp — recorded
 for reproducibility only, NOT a project requirement.
 

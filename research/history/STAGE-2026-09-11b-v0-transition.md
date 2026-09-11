@@ -87,3 +87,19 @@ suite, not the scanner: (1) Path::starts_with("dirlink/") matches the dirlink en
 itself (trailing slash ignored by component comparison); (2) missing PermissionsExt
 import. Toolchain note: user authorized rustup user-level install during this increment
 (stable 1.98.1); no crate code installs anything.
+
+--- AMENDMENT 4: increment 2 IDENTITY implemented (user mandate, same day) ---
+src/identity.rs: PhysicalId{dev,ino} evidence; compare_same_path / compare_cross_path /
+index_by_physical_id; IdentityMatch { SamePhysicalObjectUnchanged, SamePhysicalObject-
+Modified, RenamedOrMoved, SameObjectViaHardLink (documented; exercised via hard-link
+group test), Deleted (represented at pair level as absence), Ambiguous{IdentityChanged-
+AtSamePath|MissingEvidence}, NewObject }. Fields DISCARDED after evaluation: kind (not
+identity evidence; guards type-level errors elsewhere), path (context, never evidence).
+Fedora/btrfs evidence: rename preserves dev+ino (file + directory tree); hard links
+share dev+ino; symlink identity distinct from target; inode reuse NOT observed after
+delete+recreate with churn — recorded as observation, NOT assumed impossible; the model
+handles both branches. INV-8 exercised by dedicated tests: missing evidence → Ambiguous;
+path alone never positive; delete can never produce a positive match. 11 new tests
+(6 observed-fs, 5 pure-model), all green with scan's 8. No hashing, no SQLite, no new
+dependencies (proptest not yet needed — properties are deterministic here; adopting it
+is deferred to the harness increment where generation is the point). Q25 untouched.

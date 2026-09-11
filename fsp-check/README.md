@@ -7,8 +7,20 @@ NOT Project Reality (H25). Plan: ../V0-IMPLEMENTATION-PLAN.md.
 
 Increment 1 — SCAN: **implemented, tested** (2026-09-11).
 
-- `cargo check` clean · `cargo test` 8/8 pass · `cargo clippy --all-targets` clean ·
-  `cargo fmt` applied.
+Increment 2 — IDENTITY (physical evidence): **implemented, tested** (2026-09-11).
+
+- `cargo check` clean · `cargo test` 19/19 pass (11 identity + 8 scan) ·
+  `cargo clippy --all-targets` clean · `cargo fmt` applied.
+
+Identity module (`src/identity.rs`): `PhysicalId {dev, ino}` as physical evidence —
+NEVER semantic identity, never eternal (inode reuse). `compare_same_path` /
+`compare_cross_path` return verdicts with `Ambiguous` as a first-class outcome (INV-8):
+path alone never yields a positive identity; missing evidence is never identity; hard
+links share one PhysicalId (one object, several directory entries); symlink identity is
+the link itself, not the target. Observed on Fedora (btrfs + tmpfs): rename preserves
+dev+ino (observed AND rename(2)-documented, filesystem-family-local, not universal);
+inode reuse after delete+recreate was NOT observed in the probe but is designed for:
+same-path dev+ino change → Ambiguous(IdentityChangedAtSamePath), never a claim.
 
 ## What exists
 
