@@ -15,8 +15,28 @@ Increment 3 — HASH (content evidence + re-read guard): **implemented, tested**
 Increment 4 — STORE (SQLite history + projection, crash-tested): **implemented, tested**
 (2026-09-11).
 
-- `cargo check` clean · `cargo test` 43/43 pass (8 store + 1 crash-worker + 15 hash +
-  11 identity + 8 scan) · `cargo clippy --all-targets` clean · `cargo fmt` applied.
+Increment 5 — RECONCILE (mutation classification over observations): **implemented,
+tested** (2026-09-11).
+
+- `cargo check` clean · `cargo test` 60/60 pass (16 reconcile + 9 store + 15 hash +
+  11 identity + 8 scan + crash worker) · `cargo clippy --all-targets` clean ·
+  `cargo fmt` applied.
+
+Reconcile (`src/reconcile.rs`): pure function over two ObservationSets (entries +
+valid-hash evidence + completeness flag). Matching rule, in priority order:
+1. same-path + equal dev+ino -> Unchanged/Modified (size/mtime, refined by hash);
+2. leftovers matched globally by PhysicalId against "vacated" previous paths — exactly
+   one candidate -> RenamedOrMoved (this makes path SWAPS two renames, not two
+   modifications); several -> Ambiguous(ConflictingCandidates), never an arbitrary pick;
+3. same-path without shared identity: different valid content -> Recreated; identical
+   content or no content evidence -> Ambiguous (duplicate content is NOT identity);
+4. new paths -> Created; 5. vanished previous paths -> Deleted ONLY when the current
+scan is complete, else Unobserved ("not seen" is not "deleted"). Hard-link entry
+deletions carry object_survives evidence. Directory-rename children are flagged
+under_dir_rename. Deleted/Unobserved are the tombstone answer for V0: the
+reconciliation result IS the deletion record; the store needs no second mechanism
+(its projection keeps the last observation until a reconcile consumer applies it —
+H25 boundary kept: store records, reconcile interprets).
 
 Store (`src/store.rs`): rusqlite `bundled`, WAL + synchronous=FULL. TWO tables, each
 column justified: `observations` (append-only history — the only irreplaceable truth)

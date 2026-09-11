@@ -136,3 +136,22 @@ during development: rebuild SELECT had a different column order than row_to_reco
 fixed; the crash suite now pins it. 43/43 green, clippy 0, fmt ok. Q25: evidence
 recorded in plan §14; question stays OPEN (correct: SQLite-only sufficient so far;
 thin evidence acknowledged).
+
+--- AMENDMENT 7: increment 5 RECONCILE implemented (user mandate, same day) ---
+src/reconcile.rs: pure two-set comparison, phases 1-5 as documented in
+fsp-check/README.md. RED-TEAM results: path swap — caught a real design flaw during
+development (naive same-path-first classification produced two Recreated instead of
+two RenamedOrMoved); fixed by restructuring to same-path-then-global matching; pinned
+by test. rename+modify — one RenamedOrMoved with content_equal=Some(false). rename
+with hard-link churn (2+ vanished carriers) — Ambiguous(ConflictingCandidates), never
+an arbitrary pick. delete+recreate: same hash + new inode stays Ambiguous (duplicate
+content ≠ identity); different hash resolves to Recreated. Directory rename: dir +
+children each RenamedOrMoved by their own inodes, children flagged under_dir_rename
+(no suppression: the evidence is real). Incomplete scan: Unobserved, never Deleted.
+Tombstones question (mandate §19): answered WITHOUT a new store mechanism — the
+reconciliation result is the deletion record for V0; the projection keeps the last
+observation until a consumer applies mutations; store stays observation-recorder (H25).
+Two proptest properties (self-reconcile all-unchanged on generated sets; determinism
+on arbitrary pairs) plus same-hash-never-identity. One test expectation was corrected
+against the model, not the model against the test (Deleted of original in the
+duplicate-content case is a path fact). 60/60 green, clippy 0, fmt ok. Q25 untouched.

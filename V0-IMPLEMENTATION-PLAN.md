@@ -217,6 +217,12 @@ dev+ino = observed on Linux AND rename(2)-documented, filesystem-family-local, N
 universal law; inode-reuse behaviour = filesystem-dependent; the Ambiguous verdicts and
 the path-is-not-identity rule = portable model properties (pure, tested without a
 filesystem).
+Reconcile evidence rules (increment 5): same hash ≠ same identity (duplicate content
+is two objects); same path ≠ same object; Deleted requires scan completeness (per-path
+errors => Unobserved); Ambiguous is a first-class outcome for conflicting candidates,
+missing evidence, and unresolved delete+recreate; matching is global-by-identity, not
+per-path, so swaps classify as renames. All rules are pure-model properties tested
+without a filesystem.
 Hash evidence (increment 3): guard = size+ns-mtime+dev/ino before/after; retry policy
 MAX_GUARD_ATTEMPTS=2 is a V0 instrument policy, NOT an FSP architecture decision; a
 stat-guard cannot see a rewrite that restores size and exact mtime inside the read
