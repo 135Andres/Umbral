@@ -129,6 +129,17 @@ S11 Desconstrucción Crítica y Validación Adversarial (adversarial critique)
     framing of the differentiator as a projection engine.
 
 -------------------------------------------------------------------------------
+2026-09-11 CYCLE — MINIMUM MODEL OF PROJECT REALITY (pointer)
+-------------------------------------------------------------------------------
+  Evidence RM-1..RM-18 (four independent research passes: knowledge representation,
+  legal/archival/scientific records, distributed/temporal systems, red team; plus one
+  field-ablation experiment, experiments/min1/) is indexed with classes and limitations in
+  research/PROJECT-REALITY-MINIMUM-MODEL.md §3. Verdict: the user-supplied five-primitive
+  hypothesis reduced to a one-record-type model (H24); three collapses falsified. Pass
+  source claims carry URL-level provenance; only USLM was re-verified first-hand (stated
+  in the report as a limitation).
+
+-------------------------------------------------------------------------------
 GAPS IN THE CORPUS
 -------------------------------------------------------------------------------
   1  [RESOLVED 2026-09-10] The master context document was recovered from session

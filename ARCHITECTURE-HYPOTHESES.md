@@ -31,6 +31,19 @@ Listed here for index completeness only; these are PRODUCT hypotheses, not archi
   H22 — AI activity history; default recording CONTRADICTED for reads (M10 split) (SPECULATIVE)
   H23 — maintenance role: no desired state exists, so no objective function without the user;
       verifiable operations and proposals only (REASONED)
+
+-------------------------------------------------------------------------------
+H24 — MINIMUM RECORD MODEL v0 (2026-09-11 cycle)
+REPRESENTATIONAL hypothesis; full entry, evidence RM-1..RM-18, falsifications FAL-1-FAL-3 and
+the adversarial record live in research/PROJECT-REALITY-MINIMUM-MODEL.md (its home).
+  H24 — the smallest durable representation of project reality is one record type
+        (append-only, attributed, time-stamped, self-referential; carrying subject,
+        statement, source+role, recorded-at, and per-case valid-time/status/scope) plus
+        addressable terms, under two discipline rules: capture-at-event-time and
+        derived-only (no stored truth). Five-primitive predecessor M reduced: Entity,
+        Relation and Time are not peer primitives; provenance content is mandatory.
+        Three of M's seven collapses failed (supersession-as-relation, authority-as-
+        attribution-qualifier, freshness-as-derived-for-non-Git). (HYPOTHESIS)
 Related candidate mechanism M9 (calibration precondition) and M10 (read/write recording
 split) are recorded in ENVIRONMENT-INTELLIGENCE.md §2/§5, in the same namespace as the
 coexistence mechanisms M1-M8.

@@ -1,0 +1,97 @@
+{
+ "S2_windows": {
+  "pred": [
+   "may_add_windows_ci"
+  ],
+  "obj": [
+   "may_add_windows_ci"
+  ],
+  "kind": [
+   "may_add_windows_ci"
+  ]
+ },
+ "S3_superseded_guideline": {
+  "pred": [
+   "which_guideline_current"
+  ],
+  "obj": [
+   "which_guideline_current"
+  ],
+  "kind": [
+   "which_guideline_current"
+  ]
+ },
+ "S8_agent_disagreement": {
+  "kind": [
+   "is_there_unresolved_conflict"
+  ]
+ },
+ "S7_contract_deadcode": {
+  "pred": [
+   "may_delete_deadcode"
+  ],
+  "kind": [
+   "may_delete_deadcode"
+  ]
+ },
+ "S12_unknown_actor": {
+  "pred": [
+   "who_changed"
+  ],
+  "src": [
+   "who_changed"
+  ]
+ },
+ "S9_editor_decision": {
+  "pred": [
+   "may_expand_subplot"
+  ],
+  "kind": [
+   "may_expand_subplot"
+  ]
+ },
+ "S11_rename": {
+  "subj": [
+   "does_old_assertion_still_refer"
+  ],
+  "pred": [
+   "does_old_assertion_still_refer"
+  ]
+ },
+ "S3b_time": {
+  "pred": [
+   "current_as_of_2026"
+  ],
+  "kind": [
+   "current_as_of_2026"
+  ],
+  "t_valid": [
+   "current_as_of_2026"
+  ]
+ },
+ "S13_retroactive_correction": {
+  "pred": [
+   "believed_in_2025_05"
+  ],
+  "kind": [
+   "believed_in_2025_05"
+  ],
+  "t_record": [
+   "believed_in_2025_05"
+  ]
+ },
+ "S2b_scope": {
+  "obj": [
+   "windows_ci_in_fork"
+  ],
+  "kind": [
+   "windows_ci_in_fork"
+  ],
+  "scope": [
+   "windows_ci_in_fork"
+  ]
+ }
+}
+
+LOAD-BEARING (ablation breaks a required query): ['kind', 'obj', 'pred', 'scope', 'src', 'subj', 't_record', 't_valid']
+NOT load-bearing in these fixtures (no query needs it): []

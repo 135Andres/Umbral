@@ -128,6 +128,10 @@ research/COEXISTENCE-RESEARCH.md .. evidence base for the coexistence strategies
 research/ENVIRONMENT-INTELLIGENCE-RESEARCH.md
                                    .. evidence base EI-n + the 13-question prior-art matrix
                                       (which existing systems solve what, and what is left)
+research/PROJECT-REALITY-MINIMUM-MODEL.md
+                                   .. RESEARCH ARTIFACT: reduction of the five-primitive
+                                      hypothesis to the minimum record model v0 (H24);
+                                      evidence RM-1..RM-18, falsifications, E-MIN-1 next
 research/briefs/ .................. seven narrow briefs for external reasoning models
                                     (A shared reality, B coexistence, C handoff, D authority,
                                     E environment intelligence, F minimum self-description,
@@ -142,6 +146,9 @@ research/history/STAGE-2026-09-10b-coexistence.md  historical: drift check, deci
 research/history/STAGE-2026-09-10c-environment-intelligence.md
                                     historical: drift check, decisions required, next action
                                     for the environment-intelligence stage
+research/history/STAGE-2026-09-11-minimum-model.md
+                                    historical: drift check, decisions required, next action
+                                    for the minimum-model stage
 research/sources/ ................. verbatim archives (PROJECT-MASTER-CONTEXT.md)
 experiments/exp1/ ................. EXP-1: EXP-1.md (spec + result), harness.py,
                                     results.json, FIXTURE-CORPUS.md, fixture-corpus-synthetic/

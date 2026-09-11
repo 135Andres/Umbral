@@ -101,6 +101,21 @@ Q21 — DOES THE STANDING DIMENSION ("WHO HAD THE AUTHORITY TO DECIDE") HAVE OPE
    operational value, a large part of the standing dimension is decorative. Settles by:
    E-CO-6b-style probing of whether models/users change behaviour when standing is exposed.
    OPEN and explicitly unresolved; do not treat the standing dimension as established.
+Q22 — DOES THE RECORD MODEL SURVIVE AS PLAIN FILES READABLE WITHOUT FSP?
+   The minimum-model research (research/PROJECT-REALITY-MINIMUM-MODEL.md §9, UNKNOWN-1)
+   found no primary source verifying that self-contained plain-file records stay fully
+   interpretable after FSP's disappearance; nanopublications are the closest prior art.
+   Settles by: E-MIN-1 variant or a dedicated portability test.
+Q23 — DO MULTI-AI CONCURRENT WRITES NEED PER-RECORD VERSION VECTORS, OR DO SINGLE-WRITER
+      CAUSAL MARKERS SUFFICE?
+   Pass finding UNKNOWN-2: record topology already preserves concurrency as coexisting
+   records; the question affects derived merging only. Settles by: E-CO-3 (concurrent
+   writer collision test), not before it.
+Q24 — DOES FSP NEED A UNIVERSAL STATUS VOCABULARY, PER-SCOPE VOCABULARIES, OR NONE?
+   Surveyed status sets are domain-closed (USLM legal set, ADR set); FSP's own governance
+   of a recorded vocabulary is untested and has a known drift risk (DOC-FRICTION-018
+   precedent). Settles by: product research, only if the record model is ever carried
+   toward design.
 
 ================================================================================
 (original question list, as written 2026-09-10 before the recovery)
