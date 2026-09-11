@@ -1,0 +1,59 @@
+# PROJECT DIRECTION
+
+Status: CURRENT (living) — canonical knowledge (T2). Strategic compass, not an architecture spec.
+
+Strategic compass, not an architecture spec. Created 2026-09-10 after the
+project-intelligence audit recovered the Project Master Context (MC) from session
+history. Update this file when decisions land — it should stay under one screen per
+section.
+
+WHAT WE ARE BUILDING
+An open-source, local-first, AI-native workspace whose human mental model is "my files
+and folders" (MC §4), with projects, tasks, decisions, questions, knowledge, AI sessions
+and context as semantic overlays the user never has to maintain (MC §5, §50). The AI
+side gets structured, efficient context; the human side gets "your filesystem manager,
+but better" (MC §3).
+
+WHO IT IS FOR
+Ordinary users first-class, powerful enough for serious technical projects and
+AI-assisted development (MC §1); audience intended to range from individual to small
+team to technical team to large user base (MC §37). Sonora is the first intended
+consumer (MC §2).
+
+WHY IT MATTERS
+Today, humans organize files but AI has to ingest them wholesale; knowledge tools
+demand taxonomies or swallow files into proprietary databases. FSP's bet: keep the
+filesystem sovereign and make the semantic layer a derived, rebuildable, user-governed
+projection (MC §12, §28, §39).
+
+WHAT WE HAVE DECIDED
+See DECISIONS.md (UD-001..UD-010). Headlines: open source, no ads; no mandatory
+taxonomy; no hidden prompt injection; Sonora not an authority; local-first with file
+survivability; research before implementation; Gemini-first research with Hermes
+cross-verification; layered permission intent; views and proactive intelligence wanted.
+
+WHAT WE ARE CURRENTLY TESTING
+Nothing empirical yet. The corpus S1-S11 is ingested research. The highest-risk open
+problem is the two-writers problem: filesystem authority + derived state + AI/internal
+writers + external mutation (OPEN-QUESTIONS Q1/Q2/Q15; tension T5).
+
+WHAT WE ARE NOT BUILDING
+A note app, an Obsidian clone, a project manager, an AI chat app, a filesystem browser,
+a Git replacement, an AI agent (MC §1). Not a database-with-file-export. Not a taxonomy.
+Not autonomous background writers of user files. Not a prompt-injecting host (A11).
+Nothing at all yet — no implementation is authorized (MC §48).
+
+WHAT COULD CHANGE OUR MIND
+- A demonstrated failure of the overlay premise: if semantics cannot be projected over
+  arbitrary files coherently under external mutation (Q10/T5), the product thesis needs
+  rework, not patching.
+- Evidence that users will not accept the filesystem mental model (S11's open doubt).
+- A candidate architecture scoring K1-K9 so decisively that scope assumptions change.
+- Any new explicit user decision — user authority always outranks research.
+
+CURRENT NEXT STEP
+Decide the MVP boundary and surface sequence (0.7/0.8 — the only user decisions the
+audit could not recover), then run the smallest experiment that tests the central
+assumption: index a real, messy directory, project semantics from content alone, and
+measure whether external mutation stays coherent (RESEARCH-AGENDA Phase 1). Failure
+there is a result, and a decisive one.
