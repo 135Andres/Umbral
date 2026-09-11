@@ -4,6 +4,7 @@
 //! Increment boundary: observation only. No identity resolution, no hashing,
 //! no persistence, no reconcile — those belong to later increments.
 
+pub mod identity;
 pub mod scan;
 
 /// A filesystem observation record. Pure data: the future reconciler consumes
