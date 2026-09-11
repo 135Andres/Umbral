@@ -74,3 +74,16 @@ installed — the single setup step before implementation; (2) portability bound
 to the plan (§12) with INV-8 (ambiguity over invented identity, mandate-directed);
 (3) no additional dependencies needed; (4) no blockers otherwise. No decision closed
 (Q25 untouched); environment versions recorded for reproducibility only.
+
+--- AMENDMENT 3: increment 1 SCAN implemented (user mandate, same day) ---
+fsp-check crate created at fsp-check/ (walkdir + tempfile dev-dep only; rusqlite/blake3/
+uuid/proptest deliberately absent until their increments). Scanner: deterministic sorted
+output, symlink-aware, read-only, errors represented not dropped; lib seam exposes
+observation records so the future reconciler never touches walkdir/syscalls. Determinism
+contract A/B/C implemented (state / observation-time / order). Tests 8/8 including the
+INV-5 seed and a no-modification proof via raw metadata snapshots. cargo check/test/
+clippy/fmt all clean. Two defects found and fixed during the increment, both in the test
+suite, not the scanner: (1) Path::starts_with("dirlink/") matches the dirlink entry
+itself (trailing slash ignored by component comparison); (2) missing PermissionsExt
+import. Toolchain note: user authorized rustup user-level install during this increment
+(stable 1.98.1); no crate code installs anything.
