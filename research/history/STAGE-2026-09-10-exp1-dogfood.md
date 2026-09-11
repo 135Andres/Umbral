@@ -41,10 +41,25 @@ Resolving it internally would have been the repository deciding for the user.
 USER COMMITMENT — none created, none altered. No UD was added, changed, or superseded this
 stage.
 
-DOCUMENTATION STRUCTURE — one candidate, NOT applied. Two readers converged on the same
-structural hazard: frozen historical records sit beside living artifacts in research/,
-distinguished only by a status line (DOC-FRICTION-010). A fix (a history directory) is a
-structural change and was withheld pending a third observation or growth of the frozen set.
+DOCUMENTATION STRUCTURE — two candidates, BOTH APPLIED after their triggers were met.
+  (a) Frozen records beside living artifacts (reported by readers 2 and 3): applied —
+      research/history/ created and the three frozen records moved into it.
+  (b) Fixture corpus indistinguishable from project memory (reported by readers 1, 2, 3):
+      applied — the corpus was renamed exp1/fixture-corpus-synthetic and given an adjacent
+      FIXTURE-CORPUS.md. The fixtures were not edited, and the instrument was re-verified
+      reproducible after the move.
+  Both were withheld on first observation and applied only when a second/third independent
+  reader made the same error. That is the discipline the mandate required, and it is the
+  main process lesson of this stage.
+
+DRIFT CHECK — ADDENDUM (after readers 3 and 4). Two further near-misses were found and
+neutralised at the artifact that carried the signal: the repository's own git usage
+(the strongest wrong signal in the repository, now declared non-inferential in README's
+front matter as well as in DOCUMENTATION-ARCHITECTURE §7) and the H9 hypothesis title
+("with Git as a projection", now marked CANDIDATE ONLY). One genuine gap was found and
+documented rather than closed: the decision log has no record for provenance, because
+writing one would silently resolve the MC §40 caveat that this repository leaves to the
+user. DECISIONS.md now names that gap explicitly.
 
 ================================================================================
 DECISIONS REQUIRED FROM THE USER (only these)
@@ -59,8 +74,10 @@ D2. MVP BOUNDARY (OPEN-QUESTIONS 0.8). MC §48 requires requirements -> research
 D3. ARCHIVE AUTHORIZATION. The S1-S11 report texts exist in the conversation that
     produced this repository and nowhere else. Archiving them verbatim (~120 KB, 11 files)
     would close the highest-severity provenance defect in the repository
-    (DOC-FRICTION-004). It needs one word from the user, because it is bulk transcription
-    of material the user supplied.
+    (DOC-FRICTION-004), which four independent readers each surfaced in some form. It needs
+    one word from the user, because it is bulk transcription of material the user supplied.
+    Note for the decision: the four readers also showed that citations pointing at an
+    unarchived source are the single most repeated provenance weakness in the repository.
 D4. (Optional, single confirmation) UD-007 — "Gemini-first research with Hermes as
     independent cross-verifier" was inferred from the user's behavior (delivering the
     corpus and requiring verification), not stated. Confirm once and it becomes a stated

@@ -31,6 +31,9 @@ See DECISIONS.md (UD-001..UD-010). Headlines: open source, no ads; no mandatory
 taxonomy; no hidden prompt injection; Sonora not an authority; local-first with file
 survivability; research before implementation; Gemini-first research with Hermes
 cross-verification; layered permission intent; views and proactive intelligence wanted.
+Known gap in that log: provenance has no record — the charter states it (MC §40) but its
+own section header demotes it, and this repository deliberately did not resolve that for
+the user. See DECISIONS.md "GAPS IN THIS LOG".
 
 WHAT WE ARE CURRENTLY TESTING
 EXP-1 ran 2026-09-10 (experiments/exp1/): a content-only semantic projection over a
