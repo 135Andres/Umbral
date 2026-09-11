@@ -328,7 +328,11 @@ New information arrives constantly. The rule, applied in order:
   1. Is it a user commitment?                      -> DECISION RECORD (DT3, UD-n)
   2. Does it come from outside FSP (source, report, other AI)?
                                                    -> RESEARCH ARTIFACT (DT5), with S-n
-  3. Is it the result of a measurement?            -> EXPERIMENT (DT6, EXP-n)
+  3. Is it the result of a measurement?            -> EXPERIMENT (T6, EXP-n)
+  3b. Is it a proposed experiment not yet specified? -> EXPERIMENT (T6, EXP-n) in
+                                                     experiments/, spec written BEFORE
+                                                     the run (a proposed experiment is a
+                                                     document, not a plan in prose)
   4. Does it change what is currently true about the product?
                                                    -> CANONICAL KNOWLEDGE (DT2), in the
                                                       existing file that owns that subject
@@ -371,7 +375,12 @@ research/   external evidence and process records
   DOC-ARCHITECTURE-RESEARCH.md  evidence base for this document
   sources/                 verbatim, immutable archives (MC, and S1-S11 when archived)
 
-experiments/  created only when the first experiment exists; EXP-<n>-<slug>.md
+experiments/  created when the first experiment exists. One directory per experiment:
+              experiments/<exp-id>/EXP-<id>.md   (spec written BEFORE the run; result and
+                                                  diagnostics appended AFTER it)
+              experiments/<exp-id>/             (instrument, corpus, raw results as needed)
+              Naming follows the repository's own choice (exp1/, exp-doc1/), not a new
+              scheme: the experiment id is already unique.
 
 No numbering prefixes (01-, 02-): they encode an order that will change, and they add a
 rename cost to every insertion. Order is expressed in the README read order, which is

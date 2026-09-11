@@ -1,0 +1,5 @@
+service: kestrel
+port: 8080
+poll_seconds: 30      # see decisions-2024.md
+rate_limit: null      # NOT IMPLEMENTED - open-questions.md Q1
+cache: memory

@@ -1,0 +1,6 @@
+item,nimbus_monthly,stratus_monthly,note
+compute base,240,180,2 small instances
+egress 500GB,10,45,assumes current traffic
+backup,15,15,fixed
+support,0,60,stratus only
+total,265,300,current traffic

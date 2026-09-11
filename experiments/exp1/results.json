@@ -1,0 +1,1021 @@
+{
+  "corpus": {
+    "root": "/home/<user>/FSP/experiments/corpus-messy",
+    "files": 36,
+    "text_files": 35,
+    "binary_files": 1,
+    "bytes": 10730,
+    "dirs": [
+      "",
+      "app",
+      "archive",
+      "docs",
+      "misc",
+      "research"
+    ]
+  },
+  "projection": {
+    "docs_with_links": 11,
+    "typed_edges": 4,
+    "superseded_docs": [
+      "decisions-2024.md"
+    ],
+    "questions_found": 3,
+    "dates_found": 6,
+    "authors_found": 2
+  },
+  "retrieval": {
+    "B0": [
+      {
+        "query": "Q1",
+        "class": "exact-name",
+        "top3": [
+          "deploy-checklist.md",
+          "misc/random-links.md",
+          "TODO.txt"
+        ],
+        "detail": [
+          [
+            "deploy-checklist.md",
+            6.589,
+            "lexical"
+          ],
+          [
+            "misc/random-links.md",
+            4.948,
+            "lexical"
+          ],
+          [
+            "TODO.txt",
+            3.929,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "deploy-checklist.md": 0
+        }
+      },
+      {
+        "query": "Q2",
+        "class": "vocabulary-mismatch",
+        "top3": [
+          "open-questions.md",
+          "ADR-007-realtime-updates.md",
+          "misc/bug-1421.md"
+        ],
+        "detail": [
+          [
+            "open-questions.md",
+            5.978,
+            "lexical"
+          ],
+          [
+            "ADR-007-realtime-updates.md",
+            4.417,
+            "lexical"
+          ],
+          [
+            "misc/bug-1421.md",
+            3.656,
+            "lexical"
+          ]
+        ],
+        "result": "not-found",
+        "hops": {}
+      },
+      {
+        "query": "Q3",
+        "class": "conceptual",
+        "top3": [
+          "vendor-comparison-nimbus-stratus.md",
+          "notes.txt",
+          "cost-model.csv"
+        ],
+        "detail": [
+          [
+            "vendor-comparison-nimbus-stratus.md",
+            4.94,
+            "lexical"
+          ],
+          [
+            "notes.txt",
+            3.735,
+            "lexical"
+          ],
+          [
+            "cost-model.csv",
+            3.713,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "cost-model.csv": 0,
+          "vendor-comparison-nimbus-stratus.md": 0
+        }
+      },
+      {
+        "query": "Q4",
+        "class": "relationship",
+        "top3": [
+          "deploy-checklist.md",
+          "ADR-007-realtime-updates.md",
+          "open-questions.md"
+        ],
+        "detail": [
+          [
+            "deploy-checklist.md",
+            5.222,
+            "lexical"
+          ],
+          [
+            "ADR-007-realtime-updates.md",
+            5.193,
+            "lexical"
+          ],
+          [
+            "open-questions.md",
+            4.047,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "deploy-checklist.md": 0,
+          "open-questions.md": 0,
+          "TODO.txt": 0
+        }
+      },
+      {
+        "query": "Q5",
+        "class": "multi-hop",
+        "top3": [
+          "research/latency-notes.md",
+          "vendor-comparison-nimbus-stratus.md",
+          "api-draft.md"
+        ],
+        "detail": [
+          [
+            "research/latency-notes.md",
+            4.709,
+            "lexical"
+          ],
+          [
+            "vendor-comparison-nimbus-stratus.md",
+            4.171,
+            "lexical"
+          ],
+          [
+            "api-draft.md",
+            3.859,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "research/vendor-security-review.md": 0,
+          "vendor-comparison-nimbus-stratus.md": 0,
+          "api-draft.md": 0
+        }
+      },
+      {
+        "query": "Q6",
+        "class": "irrelevant",
+        "top3": [
+          "archive/meeting-2022.md",
+          "misc/scratch.md",
+          "onboarding.html"
+        ],
+        "detail": [
+          [
+            "archive/meeting-2022.md",
+            2.362,
+            "lexical"
+          ],
+          [
+            "misc/scratch.md",
+            2.106,
+            "lexical"
+          ],
+          [
+            "onboarding.html",
+            2.015,
+            "lexical"
+          ]
+        ],
+        "result": "spurious-results"
+      },
+      {
+        "query": "Q7",
+        "class": "missing-information",
+        "top3": [
+          "open-questions.md",
+          "call-notes-delta-corp-2025-03-11.md",
+          "docs/api.md"
+        ],
+        "detail": [
+          [
+            "open-questions.md",
+            6.13,
+            "lexical"
+          ],
+          [
+            "call-notes-delta-corp-2025-03-11.md",
+            3.199,
+            "lexical"
+          ],
+          [
+            "docs/api.md",
+            2.436,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "open-questions.md": 0
+        }
+      },
+      {
+        "query": "Q8",
+        "class": "provenance",
+        "top3": [
+          "decisions-2024.md",
+          "notes.txt",
+          "q3-planning.md"
+        ],
+        "detail": [
+          [
+            "decisions-2024.md",
+            4.541,
+            "lexical"
+          ],
+          [
+            "notes.txt",
+            4.153,
+            "lexical"
+          ],
+          [
+            "q3-planning.md",
+            3.779,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "decisions-2024.md": 0,
+          "ADR-007-realtime-updates.md": 0
+        }
+      }
+    ],
+    "B1": [
+      {
+        "query": "Q1",
+        "class": "exact-name",
+        "top3": [
+          "deploy-checklist.md",
+          "misc/random-links.md",
+          "TODO.txt"
+        ],
+        "detail": [
+          [
+            "deploy-checklist.md",
+            6.589,
+            "lexical"
+          ],
+          [
+            "misc/random-links.md",
+            4.948,
+            "lexical"
+          ],
+          [
+            "TODO.txt",
+            3.929,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "deploy-checklist.md": 0
+        }
+      },
+      {
+        "query": "Q2",
+        "class": "vocabulary-mismatch",
+        "top3": [
+          "open-questions.md",
+          "ADR-007-realtime-updates.md",
+          "misc/bug-1421.md"
+        ],
+        "detail": [
+          [
+            "open-questions.md",
+            5.978,
+            "lexical"
+          ],
+          [
+            "ADR-007-realtime-updates.md",
+            4.417,
+            "lexical"
+          ],
+          [
+            "misc/bug-1421.md",
+            3.656,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-below-top3",
+        "hops": {
+          "research/latency-notes.md": 1
+        }
+      },
+      {
+        "query": "Q3",
+        "class": "conceptual",
+        "top3": [
+          "vendor-comparison-nimbus-stratus.md",
+          "notes.txt",
+          "cost-model.csv"
+        ],
+        "detail": [
+          [
+            "vendor-comparison-nimbus-stratus.md",
+            4.94,
+            "lexical"
+          ],
+          [
+            "notes.txt",
+            3.735,
+            "lexical"
+          ],
+          [
+            "cost-model.csv",
+            3.713,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "cost-model.csv": 0,
+          "vendor-comparison-nimbus-stratus.md": 0
+        }
+      },
+      {
+        "query": "Q4",
+        "class": "relationship",
+        "top3": [
+          "deploy-checklist.md",
+          "ADR-007-realtime-updates.md",
+          "open-questions.md"
+        ],
+        "detail": [
+          [
+            "deploy-checklist.md",
+            5.222,
+            "lexical"
+          ],
+          [
+            "ADR-007-realtime-updates.md",
+            5.193,
+            "lexical"
+          ],
+          [
+            "open-questions.md",
+            4.047,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "deploy-checklist.md": 0,
+          "open-questions.md": 0
+        }
+      },
+      {
+        "query": "Q5",
+        "class": "multi-hop",
+        "top3": [
+          "research/latency-notes.md",
+          "vendor-comparison-nimbus-stratus.md",
+          "api-draft.md"
+        ],
+        "detail": [
+          [
+            "research/latency-notes.md",
+            4.709,
+            "lexical"
+          ],
+          [
+            "vendor-comparison-nimbus-stratus.md",
+            4.171,
+            "lexical"
+          ],
+          [
+            "api-draft.md",
+            3.859,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "research/vendor-security-review.md": 1,
+          "vendor-comparison-nimbus-stratus.md": 0,
+          "api-draft.md": 0
+        }
+      },
+      {
+        "query": "Q6",
+        "class": "irrelevant",
+        "top3": [
+          "archive/meeting-2022.md",
+          "misc/scratch.md",
+          "onboarding.html"
+        ],
+        "detail": [
+          [
+            "archive/meeting-2022.md",
+            2.362,
+            "lexical"
+          ],
+          [
+            "misc/scratch.md",
+            2.106,
+            "lexical"
+          ],
+          [
+            "onboarding.html",
+            2.015,
+            "lexical"
+          ]
+        ],
+        "result": "spurious-results"
+      },
+      {
+        "query": "Q7",
+        "class": "missing-information",
+        "top3": [
+          "open-questions.md",
+          "call-notes-delta-corp-2025-03-11.md",
+          "docs/api.md"
+        ],
+        "detail": [
+          [
+            "open-questions.md",
+            6.13,
+            "lexical"
+          ],
+          [
+            "call-notes-delta-corp-2025-03-11.md",
+            3.199,
+            "lexical"
+          ],
+          [
+            "docs/api.md",
+            2.436,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "open-questions.md": 0
+        }
+      },
+      {
+        "query": "Q8",
+        "class": "provenance",
+        "top3": [
+          "decisions-2024.md",
+          "notes.txt",
+          "q3-planning.md"
+        ],
+        "detail": [
+          [
+            "decisions-2024.md",
+            4.541,
+            "lexical"
+          ],
+          [
+            "notes.txt",
+            4.153,
+            "lexical"
+          ],
+          [
+            "q3-planning.md",
+            3.779,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "decisions-2024.md": 0,
+          "ADR-007-realtime-updates.md": 0
+        }
+      }
+    ],
+    "B2": [
+      {
+        "query": "Q1",
+        "class": "exact-name",
+        "top3": [
+          "deploy-checklist.md",
+          "misc/random-links.md",
+          "TODO.txt"
+        ],
+        "detail": [
+          [
+            "deploy-checklist.md",
+            6.589,
+            "lexical"
+          ],
+          [
+            "misc/random-links.md",
+            4.948,
+            "lexical"
+          ],
+          [
+            "TODO.txt",
+            3.929,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "deploy-checklist.md": 0
+        }
+      },
+      {
+        "query": "Q2",
+        "class": "vocabulary-mismatch",
+        "top3": [
+          "open-questions.md",
+          "ADR-007-realtime-updates.md",
+          "misc/bug-1421.md"
+        ],
+        "detail": [
+          [
+            "open-questions.md",
+            5.978,
+            "lexical"
+          ],
+          [
+            "ADR-007-realtime-updates.md",
+            4.417,
+            "lexical"
+          ],
+          [
+            "misc/bug-1421.md",
+            3.656,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-below-top3",
+        "hops": {
+          "research/latency-notes.md": 1
+        }
+      },
+      {
+        "query": "Q3",
+        "class": "conceptual",
+        "top3": [
+          "vendor-comparison-nimbus-stratus.md",
+          "notes.txt",
+          "cost-model.csv"
+        ],
+        "detail": [
+          [
+            "vendor-comparison-nimbus-stratus.md",
+            4.94,
+            "lexical"
+          ],
+          [
+            "notes.txt",
+            3.735,
+            "lexical"
+          ],
+          [
+            "cost-model.csv",
+            3.713,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "cost-model.csv": 0,
+          "vendor-comparison-nimbus-stratus.md": 0
+        }
+      },
+      {
+        "query": "Q4",
+        "class": "relationship",
+        "top3": [
+          "deploy-checklist.md",
+          "ADR-007-realtime-updates.md",
+          "open-questions.md"
+        ],
+        "detail": [
+          [
+            "deploy-checklist.md",
+            5.222,
+            "lexical"
+          ],
+          [
+            "ADR-007-realtime-updates.md",
+            5.193,
+            "lexical"
+          ],
+          [
+            "open-questions.md",
+            4.047,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "deploy-checklist.md": 0,
+          "open-questions.md": 0
+        }
+      },
+      {
+        "query": "Q5",
+        "class": "multi-hop",
+        "top3": [
+          "research/latency-notes.md",
+          "vendor-comparison-nimbus-stratus.md",
+          "api-draft.md"
+        ],
+        "detail": [
+          [
+            "research/latency-notes.md",
+            4.709,
+            "lexical"
+          ],
+          [
+            "vendor-comparison-nimbus-stratus.md",
+            4.171,
+            "lexical"
+          ],
+          [
+            "api-draft.md",
+            3.859,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "research/vendor-security-review.md": 1,
+          "vendor-comparison-nimbus-stratus.md": 0,
+          "api-draft.md": 0
+        }
+      },
+      {
+        "query": "Q6",
+        "class": "irrelevant",
+        "top3": [
+          "archive/meeting-2022.md",
+          "misc/scratch.md",
+          "onboarding.html"
+        ],
+        "detail": [
+          [
+            "archive/meeting-2022.md",
+            2.362,
+            "lexical"
+          ],
+          [
+            "misc/scratch.md",
+            2.106,
+            "lexical"
+          ],
+          [
+            "onboarding.html",
+            2.015,
+            "lexical"
+          ]
+        ],
+        "result": "spurious-results"
+      },
+      {
+        "query": "Q7",
+        "class": "missing-information",
+        "top3": [
+          "open-questions.md",
+          "call-notes-delta-corp-2025-03-11.md",
+          "docs/api.md"
+        ],
+        "detail": [
+          [
+            "open-questions.md",
+            6.13,
+            "lexical"
+          ],
+          [
+            "call-notes-delta-corp-2025-03-11.md",
+            3.199,
+            "lexical"
+          ],
+          [
+            "docs/api.md",
+            2.436,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-correctly",
+        "hops": {
+          "open-questions.md": 0
+        }
+      },
+      {
+        "query": "Q8",
+        "class": "provenance",
+        "top3": [
+          "notes.txt",
+          "q3-planning.md",
+          "research/caching.md"
+        ],
+        "detail": [
+          [
+            "notes.txt",
+            4.153,
+            "lexical"
+          ],
+          [
+            "q3-planning.md",
+            3.779,
+            "lexical"
+          ],
+          [
+            "research/caching.md",
+            2.987,
+            "lexical"
+          ]
+        ],
+        "result": "retrieved-below-top3",
+        "hops": {
+          "decisions-2024.md": 0,
+          "ADR-007-realtime-updates.md": 0
+        }
+      }
+    ]
+  },
+  "mutations": [
+    {
+      "mutation": "M1-rename",
+      "what": "rename deploy-checklist.md -> deploy.md",
+      "events": [
+        {
+          "event": "rename-or-move",
+          "from": "deploy-checklist.md",
+          "to": "deploy.md"
+        }
+      ],
+      "stale_links": [],
+      "entities_tracked": 36,
+      "entities_lost": [],
+      "unexpected_loss": [],
+      "collisions": [],
+      "identity_preserved": true,
+      "reconciliation_actions": 1
+    },
+    {
+      "mutation": "M2-move",
+      "what": "move misc/bug-1421.md -> research/bug-1421.md",
+      "events": [
+        {
+          "event": "rename-or-move",
+          "from": "misc/bug-1421.md",
+          "to": "research/bug-1421.md"
+        }
+      ],
+      "stale_links": [],
+      "entities_tracked": 36,
+      "entities_lost": [],
+      "unexpected_loss": [],
+      "collisions": [],
+      "identity_preserved": true,
+      "reconciliation_actions": 1
+    },
+    {
+      "mutation": "M3-dir-move",
+      "what": "move directory archive/ -> old/",
+      "events": [
+        {
+          "event": "rename-or-move",
+          "from": "archive/meeting-2022.md",
+          "to": "old/meeting-2022.md"
+        },
+        {
+          "event": "rename-or-move",
+          "from": "archive/old-spec-v1-copy.md",
+          "to": "old/old-spec-v1-copy.md"
+        },
+        {
+          "event": "rename-or-move",
+          "from": "archive/old-spec-v1.md",
+          "to": "old/old-spec-v1-copy.md"
+        },
+        {
+          "event": "rename-or-move",
+          "from": "archive/pricing-old.csv",
+          "to": "old/pricing-old.csv"
+        }
+      ],
+      "stale_links": [],
+      "entities_tracked": 36,
+      "entities_lost": [],
+      "unexpected_loss": [],
+      "collisions": [],
+      "identity_preserved": true,
+      "reconciliation_actions": 4
+    },
+    {
+      "mutation": "M4-duplicate",
+      "what": "duplicate decisions-2024.md (identical content, two live paths)",
+      "events": [
+        {
+          "event": "duplicate-content",
+          "hash": "9a8aec0d862c",
+          "paths": [
+            "decisions-2024 (copy).md",
+            "decisions-2024.md"
+          ]
+        }
+      ],
+      "stale_links": [],
+      "entities_tracked": 36,
+      "entities_lost": [],
+      "unexpected_loss": [],
+      "collisions": [
+        [
+          "decisions-2024 (copy).md",
+          "decisions-2024.md"
+        ]
+      ],
+      "identity_preserved": true,
+      "reconciliation_actions": 1
+    },
+    {
+      "mutation": "M5-delete",
+      "what": "delete notes.txt",
+      "events": [
+        {
+          "event": "deleted-or-unknown",
+          "path": "notes.txt"
+        }
+      ],
+      "stale_links": [],
+      "entities_tracked": 36,
+      "entities_lost": [
+        "notes.txt"
+      ],
+      "unexpected_loss": [],
+      "collisions": [],
+      "identity_preserved": true,
+      "reconciliation_actions": 1
+    },
+    {
+      "mutation": "M6-restore",
+      "what": "restore notes.txt from outside the workspace",
+      "events": [
+        {
+          "event": "restored",
+          "path": "notes.txt"
+        }
+      ],
+      "stale_links": [],
+      "entities_tracked": 36,
+      "entities_lost": [],
+      "unexpected_loss": [],
+      "collisions": [],
+      "identity_preserved": true,
+      "reconciliation_actions": 1
+    },
+    {
+      "mutation": "M7-external-edit",
+      "what": "append a line to docs/api.md (content edit)",
+      "events": [
+        {
+          "event": "content-changed-in-place",
+          "path": "docs/api.md"
+        }
+      ],
+      "stale_links": [],
+      "entities_tracked": 36,
+      "entities_lost": [],
+      "unexpected_loss": [],
+      "collisions": [],
+      "identity_preserved": true,
+      "reconciliation_actions": 1
+    },
+    {
+      "mutation": "M8-atomic-save",
+      "what": "write tmp + rename over docs/faq.md",
+      "events": [
+        {
+          "event": "content-changed-in-place",
+          "path": "docs/faq.md"
+        }
+      ],
+      "stale_links": [],
+      "entities_tracked": 36,
+      "entities_lost": [],
+      "unexpected_loss": [],
+      "collisions": [],
+      "identity_preserved": true,
+      "reconciliation_actions": 1
+    },
+    {
+      "mutation": "M9-vcs-branch-switch",
+      "what": "git checkout of a branch that renamed a directory (bulk replacement, in effect)",
+      "events": [
+        {
+          "event": "content-changed-in-place",
+          "path": "README.md"
+        },
+        {
+          "event": "rename-or-move",
+          "from": "app/config.yaml",
+          "to": "service/config.yaml"
+        },
+        {
+          "event": "rename-or-move",
+          "from": "app/server.py",
+          "to": "service/server.py"
+        },
+        {
+          "event": "rename-or-move",
+          "from": "app/test_server.py",
+          "to": "service/test_server.py"
+        }
+      ],
+      "stale_links": [],
+      "entities_tracked": 36,
+      "entities_lost": [],
+      "unexpected_loss": [],
+      "collisions": [],
+      "identity_preserved": true,
+      "reconciliation_actions": 4
+    },
+    {
+      "mutation": "M10-vcs-return",
+      "what": "git checkout back to the original branch (bulk reversal)",
+      "events": [
+        {
+          "event": "content-changed-in-place",
+          "path": "README.md"
+        },
+        {
+          "event": "rename-or-move",
+          "from": "service/config.yaml",
+          "to": "app/config.yaml"
+        },
+        {
+          "event": "rename-or-move",
+          "from": "service/server.py",
+          "to": "app/server.py"
+        },
+        {
+          "event": "rename-or-move",
+          "from": "service/test_server.py",
+          "to": "app/test_server.py"
+        }
+      ],
+      "stale_links": [],
+      "entities_tracked": 36,
+      "entities_lost": [],
+      "unexpected_loss": [],
+      "collisions": [],
+      "identity_preserved": true,
+      "reconciliation_actions": 4
+    }
+  ],
+  "scale": [
+    {
+      "copies": 1,
+      "files": 36,
+      "scan_s": 0.0064,
+      "cold_index_s": 0.0177,
+      "query_ms": 0.243,
+      "naive_reindex_after_1_edit_s": 0.0064,
+      "bytes": 10736
+    },
+    {
+      "copies": 10,
+      "files": 360,
+      "scan_s": 0.0452,
+      "cold_index_s": 0.0832,
+      "query_ms": 0.143,
+      "naive_reindex_after_1_edit_s": 0.0248,
+      "bytes": 107306
+    },
+    {
+      "copies": 50,
+      "files": 1800,
+      "scan_s": 0.1288,
+      "cold_index_s": 0.3021,
+      "query_ms": 0.342,
+      "naive_reindex_after_1_edit_s": 0.1243,
+      "bytes": 536506
+    }
+  ],
+  "workdir": "/tmp/exp1-pufehx6v"
+}

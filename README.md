@@ -118,6 +118,8 @@ research/DOC-ARCHITECTURE-RESEARCH.md  evidence base for the documentation archi
 research/INGEST-NOTES.md .......... historical: the initial ingestion record
 research/AUDIT-2026-09-10.md ...... historical: first project-intelligence audit
 research/sources/ ................. verbatim archives (PROJECT-MASTER-CONTEXT.md)
+experiments/ ...................... one directory per experiment: spec + result +
+                                    instrument + raw results (EXP-1; EXP-DOC-1)
 
 -------------------------------------------------------------------------------
 LANGUAGE NOTE
