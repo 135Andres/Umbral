@@ -7,6 +7,7 @@
 pub mod hash_obs;
 pub mod identity;
 pub mod scan;
+pub mod store;
 
 /// A filesystem observation record. Pure data: the future reconciler consumes
 /// this, never walkdir or syscalls (plan §12 portability boundary).
@@ -74,4 +75,14 @@ pub fn os_str_bytes(s: &std::ffi::OsStr) -> &[u8] {
 #[cfg(not(unix))]
 pub fn os_str_bytes(s: &std::ffi::OsStr) -> Vec<u8> {
     s.as_encoded_bytes().to_vec()
+}
+
+/// CLI helper: human name for an EntryKind.
+pub fn store_kind_name(k: EntryKind) -> &'static str {
+    match k {
+        EntryKind::File => "file",
+        EntryKind::Dir => "dir",
+        EntryKind::Symlink => "symlink",
+        EntryKind::Other => "other",
+    }
 }
