@@ -35,6 +35,14 @@ Known gap in that log: provenance has no record — the charter states it (MC §
 own section header demotes it, and this repository deliberately did not resolve that for
 the user. See DECISIONS.md "GAPS IN THIS LOG".
 
+CURRENT CENTRAL DIRECTION (UD-011, 2026-09-10)
+Coexistence with a world of AI systems: what must FSP provide so a human and several
+heterogeneous AIs can safely, coherently and continuously share one filesystem without the
+human reorganizing around any one AI's assumptions. This does NOT replace the semantic-
+projection thesis (MC §4-§6), which remains fundamental. Seven candidate strategies and
+eight invented mechanisms are recorded in COEXISTENCE-STRATEGIES.md — all unratified, none
+selected. The first question is whether the problem is material at all (E-CO-1).
+
 WHAT WE ARE CURRENTLY TESTING
 EXP-1 ran 2026-09-10 (experiments/exp1/): a content-only semantic projection over a
 36-file arbitrary corpus, measured on 8 retrieval classes and 10 filesystem mutations.
@@ -71,8 +79,9 @@ WHAT COULD CHANGE OUR MIND
 CURRENT NEXT STEP
 Two distinct lines, deliberately separated:
 
-  Evidence line (no user authority needed): EXP-2 — rename+edit under the identity
-  tracker, the weakest measured point (EXP-1 XQ-3). Runnable on request.
+  Evidence line (no user authority needed): E-CO-1 — the staleness harm test, which
+  decides whether the coexistence direction continues (see COEXISTENCE-STRATEGIES §4).
+  Deferred: EXP-2 (rename+edit identity), the weakest measured point of EXP-1 (XQ-3).
   Real-corpus line: re-run EXP-1's protocol against a directory the user authorizes,
   because every EXP-1 result is bounded by a Hermes-authored 36-file corpus (L1/L3).
 

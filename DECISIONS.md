@@ -137,6 +137,24 @@ of intent):
     without Git", MC §26) and explicitly left the mechanism to research (MC §52). The
     intent is recorded under NOT DECIDED below and in OPEN-QUESTIONS Q4.
 
+UD-011 — AI-native coexistence is the current central research direction
+Authority: USER (2026-09-10 stage mandate, §1/§16). Statement: "FSP must demonstrate that
+it can meaningfully coexist with an environment full of AI systems"; the central question
+is what FSP must provide so that humans and multiple AI systems can safely, coherently and
+continuously coexist around the same filesystem without forcing the human to reorganize the
+project around any one AI's assumptions.
+Explicit scope limit set by the user in the same instruction: "This is NOT yet a product
+decision. It is a research direction authorized by the user."
+Alternatives: the prior framing (semantic projection over an arbitrary filesystem as the
+minimum proof) remains FUNDAMENTAL and is explicitly preserved, not replaced.
+Evidence: research/COEXISTENCE-RESEARCH.md (external); S1-S11 (corpus); the problem is named
+and studied externally (stale agent memory, arXiv:2609.03340; multi-agent concurrency,
+arXiv:2608.23740) and is unsolved at the level FSP would need.
+Consequences: coexistence becomes the reference problem for architecture comparison
+(criteria K1-K9 still apply); the earlier MVP framing is widened, not discarded.
+Reversibility: high (a research direction).
+Status: DECIDED (research direction, not product).
+
 ================================================================================
 NOT DECIDED (explicitly, by the user's own record — MC §52): final name, final
 architecture, database, indexing technology, AI protocol, versioning model, permission

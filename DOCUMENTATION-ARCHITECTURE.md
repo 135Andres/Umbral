@@ -338,6 +338,11 @@ New information arrives constantly. The rule, applied in order:
                                                       existing file that owns that subject
   5. Is it a candidate mechanism or an unanswered question?
                                                    -> HYPOTHESIS / OPEN QUESTION (DT4)
+  5b. Is it a research DIRECTION the user authorized, whose output is candidate
+      strategies rather than findings?             -> CANONICAL (T2) strategy document +
+                                                      research/ evidence file + the
+                                                      direction recorded as a decision
+                                                      record if the user authorized it
   6. Is it process (how we work on FSP)?           -> the Hermes skill, not the repo
   7. Is it none of the above?                      -> do not write it down.
 

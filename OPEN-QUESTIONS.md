@@ -64,6 +64,29 @@ principle "setup is not ingestion" (§34), interaction modes list (§35), file-t
 capability tiers (§27), and the no-hidden-prompt principle (§11 -> invariant A11).
 
 ================================================================================
+ADDED 2026-09-10 (coexistence stage) — three questions the new direction raises
+================================================================================
+These are architecture-blocking and NOT answerable by opinion. Full context:
+COEXISTENCE-STRATEGIES.md; evidence: research/COEXISTENCE-RESEARCH.md.
+
+Q16 — IS COEXISTENCE HARM MATERIAL, OR A DEVELOPER-ONLY CONCERN?
+   No source found either way. If multi-AI coexistence failures cause no material harm to
+   real users, most of the candidate strategies are unnecessary and the cheaper answer
+   (version control plus conventions) suffices. This question decides whether the stage
+   continues. Settles by: E-CO-1.
+Q17 — CAN COORDINATION PRIMITIVES LIVE IN PLAIN FILES, OR DO THEY REQUIRE A LIVE PROCESS?
+   Advisory claims in plain files are weak; atomic claims normally need a process. The
+   plain-file constraint (A1/A2) and real coordination may be in tension. Settles by:
+   E-CO-2 (with the engine switched off) and E-CO-3.
+Q18 — DOES FSP MEDIATE COEXISTENCE, OR DEFER TO EXISTING MECHANISMS (GIT, ISOLATION)?
+   The strongest competitor to every candidate strategy is "use worktrees/branches and let
+   the human merge" (strategy S5). Settles by: E-CO-2 and E-CO-3, comparing mediated and
+   isolated conditions on the same task.
+NOTE ON SCOPE: these are not the same as the user-decision fork raised in
+COEXISTENCE-STRATEGIES.md §3 (O14) — whether FSP serves developers-with-agents first or
+ordinary users first. That is a product decision, listed in the stage record.
+
+================================================================================
 (original question list, as written 2026-09-10 before the recovery)
 ================================================================================
 
