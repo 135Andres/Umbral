@@ -73,5 +73,7 @@ Two distinct lines, deliberately separated:
   Real-corpus line: re-run EXP-1's protocol against a directory the user authorizes,
   because every EXP-1 result is bounded by a Hermes-authored 36-file corpus (L1/L3).
 
-  Authority line (needs the user): 0.7 surface sequence and 0.8 MVP boundary. These gate
-  the NEXT stage, not the evidence stage — EXP-1 ran without them, correctly.
+  Authority line (needs the user): 0.7 surface sequence, 0.8 MVP boundary, and
+  authorization to archive the S1-S11 report texts (the repository's highest-severity
+  provenance defect). These gate the NEXT stage, not the evidence stage — EXP-1 ran
+  without them, correctly. Full statement: research/STAGE-2026-09-10-exp1-dogfood.md.

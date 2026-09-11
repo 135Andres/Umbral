@@ -117,6 +117,8 @@ research/RESEARCH-INDEX.md ........ source inventory, authority status, gaps
 research/DOC-ARCHITECTURE-RESEARCH.md  evidence base for the documentation architecture
 research/INGEST-NOTES.md .......... historical: the initial ingestion record
 research/AUDIT-2026-09-10.md ...... historical: first project-intelligence audit
+research/STAGE-2026-09-10-exp1-dogfood.md  historical: drift check, decisions required,
+                                    next action for the EXP-1 / dogfood stage
 research/sources/ ................. verbatim archives (PROJECT-MASTER-CONTEXT.md)
 experiments/ ...................... one directory per experiment: spec + result +
                                     instrument + raw results (EXP-1; EXP-DOC-1)
