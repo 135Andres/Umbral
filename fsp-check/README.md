@@ -12,8 +12,25 @@ Increment 2 — IDENTITY (physical evidence): **implemented, tested** (2026-09-1
 Increment 3 — HASH (content evidence + re-read guard): **implemented, tested**
 (2026-09-11).
 
-- `cargo check` clean · `cargo test` 34/34 pass (15 hash + 11 identity + 8 scan) ·
-  `cargo clippy --all-targets` clean · `cargo fmt` applied.
+Increment 4 — STORE (SQLite history + projection, crash-tested): **implemented, tested**
+(2026-09-11).
+
+- `cargo check` clean · `cargo test` 43/43 pass (8 store + 1 crash-worker + 15 hash +
+  11 identity + 8 scan) · `cargo clippy --all-targets` clean · `cargo fmt` applied.
+
+Store (`src/store.rs`): rusqlite `bundled`, WAL + synchronous=FULL. TWO tables, each
+column justified: `observations` (append-only history — the only irreplaceable truth)
+and `projection` (latest-observation-per-path — a pure cache of the history, INV-2).
+One record = one transaction over both. INV-7 tested with REAL process kills at four
+instrumented points (before_first / mid_history / after_commit_1 / after_all, fresh DB
+per point, separate process via the ignored-test worker): after every kill the store
+reopens, history and projection agree, and rebuild-from-history reproduces the
+projection exactly. INV-1 at rest: only Stable hashes are ever persisted; unstable/
+errored content persists evidence, never bytes. Honest semantics finding: the V0
+projection has NO tombstones — a vanished path remains until a later observation
+updates it; disappearance classification belongs to RECONCILE (documented, not hidden).
+CLI: init / record / inspect / rebuild (development commands, not product UX).
+Q25 evidence recorded — see V0-IMPLEMENTATION-PLAN §14 and OPEN-QUESTIONS Q25 note.
 
 Hash module (`src/hash_obs.rs`): `observe_content(path) -> ContentObservation` —
 streaming BLAKE3 (64 KiB buffer, never whole-file), guarded stat-before / read /

@@ -119,3 +119,20 @@ hash+same size+mtime+new inode remains ambiguous-by-design (documented). 15 new 
 (13 deterministic, incl. controlled concurrency variant explicitly labelled
 concurrency-sensitive rather than faked; 2 proptest properties). 34/34 green, clippy 0,
 fmt ok. Q25 untouched; no SQLite, no reconcile, no watcher, no concurrency.
+
+--- AMENDMENT 6: increment 4 STORE implemented (user mandate, same day) ---
+src/store.rs (rusqlite bundled, WAL, synchronous=FULL): observations (append-only
+history, path stored as BLOB — paths are bytes) + projection (latest-per-path cache).
+One record = one transaction across both. INV-7 proved by REAL process kills at four
+instrumented points in separate processes with fresh DBs (not simulated): post-kill
+reopen consistent, rebuild reproduces projection. INV-1 at rest enforced in
+insert_observation. Rollback tested via failed-transaction (FK violation). RED-TEAM
+findings, classified per mandate §19: (B) no tombstones in V0 projection — vanished
+paths persist until re-observed; disappearance classification deferred to RECONCILE
+(documented in test comments and README); (B) crash tests cover process-kill only —
+power-loss and real disk corruption remain out of V0 scope; (C) multi-writer
+concurrency and cache-mode tuning deferred. One real bug found by the crash tests
+during development: rebuild SELECT had a different column order than row_to_record —
+fixed; the crash suite now pins it. 43/43 green, clippy 0, fmt ok. Q25: evidence
+recorded in plan §14; question stays OPEN (correct: SQLite-only sufficient so far;
+thin evidence acknowledged).

@@ -228,6 +228,28 @@ Environment of record: Fedora 44, kernel 7.1.13, btrfs workspace, tmpfs /tmp —
 for reproducibility only, NOT a project requirement.
 
 ================================================================================
+14. Q25 EVIDENCE — SQLITE-ONLY VS SQLITE+JSONL (increment 4; Q25 remains OPEN)
+================================================================================
+What was tested (evidence, not opinion): process-kill crash trials at four points
+(before first write, between history appends, immediately after a commit, clean run),
+each in a fresh database and a separate process. Results on Fedora (btrfs DB files):
+  - atomicity per observation: one transaction covers history+projection; every kill
+    left the store reopenable with history and projection consistent (INV-7 held);
+  - rebuild: replay of history alone reproduced the projection byte-for-byte after
+    every kill and after deliberate projection loss;
+  - rollback: a failed transaction left zero trace in either table;
+  - history: append-only, every observation kept, unstable hashes never stored as
+    valid (INV-1 at rest).
+What SQLite-only already provides for V0: atomicity, crash-consistency, rebuildable
+derived state, queryable history. What JSONL would add: raw-text inspectability and
+independence from SQLite's file format — a PORTABILITY/recoverability argument, not a
+correctness one; no V0-required property was found that SQLite cannot provide.
+Status: Q25 stays OPEN; SQLite-only is sufficient so far, evidence still thin (one
+filesystem, one process shape, no power-loss tests — synchronous=FULL asserts
+process-kill durability only, not power-cut durability). Reconcile increment will
+exercise the store harder and add evidence before any closure.
+
+================================================================================
 13. DEFINITION OF DONE
 ================================================================================
 V0 is finished when the user-confirmed §9 criteria (SC-1..SC-5) pass, the red-team A-class scenarios are
