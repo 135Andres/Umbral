@@ -103,3 +103,19 @@ path alone never positive; delete can never produce a positive match. 11 new tes
 (6 observed-fs, 5 pure-model), all green with scan's 8. No hashing, no SQLite, no new
 dependencies (proptest not yet needed — properties are deterministic here; adopting it
 is deferred to the harness increment where generation is the point). Q25 untouched.
+
+--- AMENDMENT 5: increment 3 HASH implemented (user mandate, same day) ---
+src/hash_obs.rs + blake3 dependency (this increment's justification) + proptest (dev-dep;
+now earns its place: byte-sequence stability + the never-fake-valid-hash property).
+Model: ContentObservation {physical_id, hash: Option, hashed_len, stability, deltas,
+error}; valid_hash() only when Stable. Guard: stat-before/read/stat-after over
+size+ns-mtime+dev/ino; policy = 1 retry then Unstable (explicit constant, recorded as
+instrument policy not architecture). Symlinks: NotARegularFile, target never hashed
+into the link (scanner contract kept). Directories/specials: not hashable in V0 (no
+Merkle). Atomic save observed as PhysicalId change on the same path (rename swaps the
+inode): old hash is history, not current truth. Delete+revisit: hash adds content
+evidence to the Ambiguous same-path case but does NOT force resolution — same
+hash+same size+mtime+new inode remains ambiguous-by-design (documented). 15 new tests
+(13 deterministic, incl. controlled concurrency variant explicitly labelled
+concurrency-sensitive rather than faked; 2 proptest properties). 34/34 green, clippy 0,
+fmt ok. Q25 untouched; no SQLite, no reconcile, no watcher, no concurrency.

@@ -4,6 +4,7 @@
 //! Increment boundary: observation only. No identity resolution, no hashing,
 //! no persistence, no reconcile — those belong to later increments.
 
+pub mod hash_obs;
 pub mod identity;
 pub mod scan;
 
