@@ -6,6 +6,7 @@
 
 pub mod hash_obs;
 pub mod identity;
+pub mod reconcile;
 pub mod scan;
 pub mod store;
 
