@@ -122,7 +122,7 @@ to win the orchestration market (CO-10 warns against orchestration).
 Weaknesses: FSP becomes a dependency for the very thing it promises (if the mediator is
 down, do AIs stop?); participants must call it (adoption); the primitives are only useful
 if more than one participant exists — the same "nobody needs it alone" problem as
-versioning; plain-file constraint may conflict with atomic claims (see M3 and T7).
+versioning; plain-file constraint may conflict with atomic claims (see M3 and Q17).
 Failure modes: claims leak (agent crashes holding a lease); reality version goes stale
 between check and write (TOCTOU); the mediator becomes a single point of failure and of
 authority.
@@ -436,7 +436,8 @@ O11. Does it violate local-first?
     and only the minimum sent (A7). Requires care, not a new principle.
 O12. Does it create lock-in or hidden metadata?
     Plain files: no. A process-owned journal: yes. This is the same tension as Q1/Q2 (the
-    state-partition problem) in a new place, and it is unresolved — see T7.
+    state-partition problem, OPEN-QUESTIONS Q1/Q2) in a new place, and it is unresolved —
+    see Q17 and tension T5.
 O13. Does it require every AI provider to cooperate?
     For full value, yes — and that will not happen. The realistic path is unilateral:
     conventions any model can read, plus tools (MCP/CLI) that make compliance easier. If the

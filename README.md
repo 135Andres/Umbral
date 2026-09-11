@@ -130,8 +130,10 @@ research/history/AUDIT-2026-09-10.md ...... historical: first project-intelligen
 research/history/STAGE-2026-09-10-exp1-dogfood.md  historical: drift check, decisions required,
                                     next action for the EXP-1 / dogfood stage
 research/sources/ ................. verbatim archives (PROJECT-MASTER-CONTEXT.md)
-experiments/ ...................... one directory per experiment: spec + result +
-                                    instrument + raw results (EXP-1; EXP-DOC-1)
+experiments/exp1/ ................. EXP-1: EXP-1.md (spec + result), harness.py,
+                                    results.json, FIXTURE-CORPUS.md, fixture-corpus-synthetic/
+experiments/exp-doc1/ ............. EXP-DOC-1: EXP-DOC-1.md, DOC-FRICTION-LOG.md,
+                                    navigation-run-{1,2,3}.md, authority-run-{1,2,3}.md
 experiments/exp1/fixture-corpus-synthetic/  SYNTHETIC test data for a fictional project
                                     ("Kestrel"), NOT FSP records — see
                                     experiments/exp1/FIXTURE-CORPUS.md before reading
