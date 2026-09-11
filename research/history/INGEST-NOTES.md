@@ -77,6 +77,7 @@ Architect-side reasoning belongs in a marked research note, not mixed with corpu
 | Research sequence + criteria   | H   | PERMANENT   | RESEARCH-AGENDA.md       |
 | Source inventory + authority   | -   | PERMANENT   | research/RESEARCH-INDEX  |
 | Classification decisions (this)| -   | PERMANENT   | research/INGEST-NOTES.md |
+                              [path note: this file now lives at research/history/]
 
 --------------------------------------------------------------------------------
 3. DELIBERATELY NOT PERSISTED

@@ -23,12 +23,16 @@ product architecture (see DOCUMENTATION-ARCHITECTURE.md §0).
 WHAT IS DELIBERATELY NOT HERE
 -------------------------------------------------------------------------------
 - No architecture selection, no technology choice, no schema, no API surface, no code.
+- THIS REPOSITORY IS A GIT REPOSITORY, and that is NOT a versioning decision for FSP.
+  Git here is documentation infrastructure (change history for these files). FSP's
+  versioning architecture is undecided (MC §26 wants "Git without Git"; MC §52 lists the
+  versioning model as not selected). See DOCUMENTATION-ARCHITECTURE.md §7 H-3.
 - No SONORA-LESSONS.md as a product document. Sonora is a separate project and never an
   architectural authority for FSP (UD-004); its lessons appear only inside the charter
   (MC §40) and are treated as research inputs.
 - No transcript archive, no AI-reasoning dump, no generic software-architecture advice.
 - No feature wishlist. Unweighted ideas are classified and left out on purpose
-  (see research/INGEST-NOTES.md §3).
+  (see research/history/history/INGEST-NOTES.md §3).
 - No product-facing documentation (install guides, tutorials). The product does not exist;
   MC §48 forbids implementation-phase artifacts.
 
@@ -115,19 +119,17 @@ RESEARCH-AGENDA.md ................ research phases, comparison criteria K1-K9, 
 DOCUMENTATION-ARCHITECTURE.md ..... PROPOSED structure of this repository (not a product doc)
 research/RESEARCH-INDEX.md ........ source inventory, authority status, gaps
 research/DOC-ARCHITECTURE-RESEARCH.md  evidence base for the documentation architecture
-research/INGEST-NOTES.md .......... historical: the initial ingestion record
-research/AUDIT-2026-09-10.md ...... historical: first project-intelligence audit
-research/STAGE-2026-09-10-exp1-dogfood.md  historical: drift check, decisions required,
+research/history/INGEST-NOTES.md .......... historical: the initial ingestion record
+research/history/AUDIT-2026-09-10.md ...... historical: first project-intelligence audit
+research/history/STAGE-2026-09-10-exp1-dogfood.md  historical: drift check, decisions required,
                                     next action for the EXP-1 / dogfood stage
 research/sources/ ................. verbatim archives (PROJECT-MASTER-CONTEXT.md)
 experiments/ ...................... one directory per experiment: spec + result +
                                     instrument + raw results (EXP-1; EXP-DOC-1)
-experiments/corpus-messy/ ......... SYNTHETIC fixture data for a fictional project
-                                    ("Kestrel"). NOT FSP records: its files are named
-                                    like real project documents (decisions-2024.md,
-                                    ADR-007-*.md, open-questions.md) because that is
-                                    what the experiment needed. Read nothing there as
-                                    a statement about FSP.
+experiments/exp1/fixture-corpus-synthetic/  SYNTHETIC test data for a fictional project
+                                    ("Kestrel"), NOT FSP records — see
+                                    experiments/exp1/FIXTURE-CORPUS.md before reading
+                                    anything in it.
 
 -------------------------------------------------------------------------------
 LANGUAGE NOTE

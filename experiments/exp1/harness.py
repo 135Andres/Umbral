@@ -27,7 +27,7 @@ Usage: python3 harness.py [--json OUT] [--workdir TMP]
 """
 import os, re, sys, json, shutil, hashlib, sqlite3, tempfile, subprocess, argparse
 
-CORPUS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "corpus-messy")
+CORPUS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixture-corpus-synthetic")
 TEXT_EXT = {".md", ".txt", ".csv", ".json", ".yaml", ".yml", ".py", ".html", ".cfg", ".ini"}
 
 # ---------------------------------------------------------------- corpus
@@ -42,8 +42,10 @@ def read_text(path):
 def load_corpus(root):
     docs = {}
     for dp, dn, fn in os.walk(root):
-        dn[:] = [d for d in dn if d != ".git"]
+        dn[:] = [d for d in dn if not d.startswith(".")]     # never index dot-dirs
         for f in fn:
+            if f.startswith("."):                            # never index dotfiles
+                continue
             p = os.path.join(dp, f)
             rel = os.path.relpath(p, root)
             st = os.stat(p)

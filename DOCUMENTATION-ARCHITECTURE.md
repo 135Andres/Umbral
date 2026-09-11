@@ -136,7 +136,7 @@ DT5 RESEARCH ARTIFACT (external evidence, unratified)
    A: source (attributed, never adopted). L: immutable once ingested; corrected only by
    an explicit amendment note. W: Hermes. AI: may cite; must not treat as FSP position.
    Homes: research/reports/ (S1-S11 when archived), research/*-RESEARCH.md,
-   research/RESEARCH-INDEX.md, research/INGEST-NOTES.md.
+   research/RESEARCH-INDEX.md, research/history/INGEST-NOTES.md.
 
 DT6 EXPERIMENT (specification and result)
    Purpose: a question answered by measurement. A: project; result is EVIDENCE, not a
@@ -365,6 +365,10 @@ Top level, canonical and current-state (UPPERCASE-KEBAB, no numbering, no prefix
   PRINCIPLES.md, REQUIREMENTS.md, CONSTRAINTS.md, ARCHITECTURE-HYPOTHESES.md,
   OPEN-QUESTIONS.md, RESEARCH-AGENDA.md, DOCUMENTATION-ARCHITECTURE.md
 
+research/history/  FROZEN records only (dated, never edited except for a supersession
+              pointer). Anything a reader could mistake for current state does not live
+              here, and anything here is not current state. The directory is the signal;
+              the status line is the backstop.
 research/   external evidence and process records
   RESEARCH-INDEX.md        index of sources (derived + per-source authority notes)
   <TOPIC>-RESEARCH.md      a research report produced for FSP — the naming convention
@@ -407,6 +411,20 @@ M1 — APPLIED 2026-09-10 (this change set):
      - AUDIT-2026-09-10: gained the documentation-architecture audit section.
      - RESEARCH-AGENDA: mapped to the research tracks the user already defined (MC §44/§47).
      - git initialised for the repository (H-3), one commit.
+
+M1b — APPLIED 2026-09-10 (second change set; triggered by observed failures, not taste):
+     Two structural changes, both with their trigger recorded in the friction log:
+     (1) `research/history/` created; INGEST-NOTES, AUDIT-2026-09-10 and the EXP-1 stage
+         record moved into it. Trigger: two independent EXP-DOC-1 readers reported that
+         frozen records beside living artifacts let them reach pre-recovery answers
+         (DOC-FRICTION-010/012).
+     (2) The EXP-1 fixture corpus renamed `corpus-messy` -> `exp1/fixture-corpus-synthetic`
+         and given an adjacent FIXTURE-CORPUS.md. Trigger: three readers reported that a
+         directory listing could mistake the fixtures for project memory
+         (DOC-FRICTION-011). Fixtures were NOT edited: that would change the experiment's
+         inputs and invalidate its results. Verified reproducible after the move.
+     Also: the git non-inference moved to the front door (README) after two readers named
+     the repository's own git usage as the strongest wrong signal in the whole repository.
 
 M2 — WHEN TRIGGERED (no action now):
      - experiments/ + EXP-1 record: when the first experiment runs.

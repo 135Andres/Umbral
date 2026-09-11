@@ -1,7 +1,7 @@
 {
   "_disclaimer": "EXP-1 instrument output. sqlite3/FTS5 was used because it is the cheapest stdlib option. This file is NOT evidence that FSP has selected SQLite, an index technology, a retrieval technique or an identity mechanism; FSP has selected none of these.",
   "corpus": {
-    "root": "/home/<user>/FSP/experiments/corpus-messy",
+    "root": "/home/<user>/FSP/experiments/exp1/fixture-corpus-synthetic",
     "files": 36,
     "text_files": 35,
     "binary_files": 1,
@@ -993,30 +993,30 @@
     {
       "copies": 1,
       "files": 36,
-      "scan_s": 0.0065,
-      "cold_index_s": 0.0179,
-      "query_ms": 0.245,
-      "naive_reindex_after_1_edit_s": 0.0063,
+      "scan_s": 0.007,
+      "cold_index_s": 0.0184,
+      "query_ms": 0.251,
+      "naive_reindex_after_1_edit_s": 0.0065,
       "bytes": 10736
     },
     {
       "copies": 10,
       "files": 360,
-      "scan_s": 0.0432,
-      "cold_index_s": 0.081,
-      "query_ms": 0.142,
-      "naive_reindex_after_1_edit_s": 0.0249,
+      "scan_s": 0.0389,
+      "cold_index_s": 0.0769,
+      "query_ms": 0.172,
+      "naive_reindex_after_1_edit_s": 0.028,
       "bytes": 107306
     },
     {
       "copies": 50,
       "files": 1800,
-      "scan_s": 0.1248,
-      "cold_index_s": 0.2979,
-      "query_ms": 0.355,
-      "naive_reindex_after_1_edit_s": 0.125,
+      "scan_s": 0.1274,
+      "cold_index_s": 0.3003,
+      "query_ms": 0.341,
+      "naive_reindex_after_1_edit_s": 0.1242,
       "bytes": 536506
     }
   ],
-  "workdir": "/tmp/exp1-49rmf9xt"
+  "workdir": "/tmp/exp1-t6tqz2vv"
 }
