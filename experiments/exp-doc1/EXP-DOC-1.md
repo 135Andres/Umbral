@@ -62,12 +62,53 @@ and evidence that the remaining cost sits exactly where the documentation audit 
 did: authority, currency, and provenance discipline, not folder layout.
 
 ================================================================================
-T1 / T2 RESULTS
+T1 / T2 RESULTS — RUN 1 OF 2 (n=2 design; sibling run pending)
 ================================================================================
-Pending the delegated navigation tests. To be appended, with the raw agent reports kept
-verbatim in this directory (navigation-run-1.md, navigation-run-2.md,
-authority-run-1.md, authority-run-2.md) so the evidence is inspectable without trusting
-this summary.
+Raw evidence: navigation-run-1.md, authority-run-1.md (both in this directory; the
+delegate reports are preserved verbatim there).
+
+T1 navigation (fresh reader, no context, read-only):
+  22 files opened; 1 routing trap (attempted a path that does not exist).
+  Files per question: mean 3.9, median 3.5; mean 3.2 excluding the Q8 anomaly.
+  Questions unanswerable: 0 of 10.
+  First file opened contained the answer: only for Q1; for Q2-Q10 README routed
+  correctly but did not answer (by the strict definition used).
+  Threshold check: "<= 3 files per question" -> MARGINAL (3.2-3.9 vs 3.0).
+  Authority errors: 0, but one AUTHORITY-LADDER INVERSION observed (F1): the canonical
+  statement "nothing empirical yet" was stale while the experiment result sat untracked
+  and unmapped. Recorded as a real defect in this repository's currency discipline,
+  caused by the experiment report being written in the same stage as the experiment.
+
+T2 authority-confusion (adversarial, instructed to try to be misled):
+  6 of 6 probes answered with the correct authority; 0 authority errors.
+  3 named temptations (technology inventory as a chosen stack; repository git usage as a
+  versioning decision; S11 verdicts as product direction) were each corrected by the
+  repository's own labels.
+  4 residual hazards identified; 1 unresolved authority question raised (MC §40's
+  "research inputs, not final requirements" header vs. the repository promoting provenance
+  to user-facing intent) — recorded as a caveat, deliberately NOT resolved here.
+  Threshold check: "zero authority errors" -> PASS.
+
+VERDICTS (thresholds pre-registered above):
+  H-DOC-1: PARTIAL PASS. Comprehension is high and nothing was unanswerable, but the
+  navigation-cost threshold was missed and one currency defect was found.
+  H-DOC-2: PASS. The explicit authority ordering did its job under adversarial reading.
+  MECHANISM note (not a verdict): the mechanism that carried both tests was the authority
+  ladder + decision ids + status lines + override notes — NOT the folder structure. This
+  reproduces, on independent readers, the documentation audit's central finding.
+
+DEFECTS FOUND BY THE TESTS AND FIXED (each justified by an observation, per mandate §4):
+  - README map omitted experiments/ (F2); fixture corpus not marked synthetic (F3).
+  - Tension footer asserted superseded research positions as live (F4).
+  - PROJECT-DIRECTION currency stale (F5); INGEST-NOTES stale statements now enumerated
+    (F6); AGENTS.md gained a status line (F7).
+  - AUDIT-2026-09-10 internal contradiction (section M vs documentation-audit M1):
+    corrected by an appended dated correction, not a rewrite.
+  - VISION anti-goal wording made unambiguous (A3).
+  - RESEARCH-AGENDA 0.5 gained the MC §40 caveat (A5) — the only finding left OPEN,
+    because resolving it would be the repository deciding for the user.
+NOT FIXED (monitoring, with triggers): update-block accumulation (MR-2); the PROPOSED
+document as a second authority surface (MR-3); convention decay (MR-1).
 
 ================================================================================
 WHAT THIS EXPERIMENT CANNOT SHOW (stated in advance)

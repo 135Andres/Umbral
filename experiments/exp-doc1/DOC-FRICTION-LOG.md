@@ -99,9 +99,54 @@ Disposition: FIXED (map updated). Recorded as evidence for EXP-DOC-1's drift cou
 Severity: low in cost, high in signal.
 
 ================================================================================
-SUMMARY (as of 2026-09-10, after EXP-1)
+DOC-FRICTION-006 — a fresh reader could not tell that a document was synthetic
 ================================================================================
-Incidents: 5 recorded, of which 2 fixed, 1 partially fixed, 2 open (one high severity).
+Question: "What has been tested?" (Q8 of the navigation test)
+Path taken: README map -> PROJECT-DIRECTION -> then the agent left the documented map and
+found experiments/exp1/ by listing directories.
+Expected: a documented, mapped experiment record with a status line, plus a clear marker
+that the experiment's fixture corpus is not project data.
+Actual: at the time of the run, experiments/ was absent from the README map, PROJECT-
+DIRECTION still said "Nothing empirical yet", and the fixture corpus contained files named
+decisions-2024.md, ADR-007-realtime-updates.md and open-questions.md with nothing saying
+they were fixtures for a fictional project.
+Failure: CURRENCY + AUTHORITY failure (the most serious class found in this stage): the
+canonical statement was stale and the true evidence was unmapped and untracked.
+Potential cause: the experiment report and the canonical update were written in the same
+stage; the agent's run caught the repository mid-change.
+Disposition: FIXED (map, status, commit, fixture warning in README, and a status line on
+EXP-1.md). Recorded as evidence for EXP-DOC-1's drift count: this is the second drift
+incident of the stage.
+
+================================================================================
+DOC-FRICTION-007 — a preserved tension list asserted a superseded position
+================================================================================
+Question: "Does FSP want graph views?"
+Path taken: OPEN-QUESTIONS.md -> the tension footer.
+Expected: a tension list whose entries state their own current status.
+Actual: the footer still read "T4 view layer: ... versus no dashboards, no graph views",
+with no marker that the user had resolved it. A reader stopping there concludes the
+opposite of UD-009.
+Failure: AUTHORITY failure (a superseded research position presented as live).
+Potential cause: when the user's decision landed, the resolution was recorded in the
+UPDATE block at the top of the file and in ARCHITECTURE-HYPOTHESES, but not in the footer
+that a reader reaches last.
+Disposition: FIXED (footer entries now carry OPEN / RESOLVED BY USER and state that a
+resolved tension is not a live disagreement). Severity: medium-high, because it is the
+exact confusion the architecture exists to prevent — caught only because the test reader
+was adversarial.
+
+================================================================================
+SUMMARY (as of 2026-09-10, after EXP-1 and EXP-DOC-1 run 1)
+================================================================================
+Incidents: 7 recorded: 4 fixed, 1 partially fixed, 2 open (one HIGH — DOC-FRICTION-004,
+unarchived sources, awaiting user authorization).
+Classes: currency 3, authority-clarity 3, provenance 1.
+No incident was a failure of the folder structure. Every one was a failure of status,
+currency, or provenance discipline — the layer the documentation audit identified as the
+missing one. That is now the second independent confirmation of that finding (the first
+being the audit itself; the second, the two delegated readers, one of whom reported being
+tempted three times and corrected each time by the labels the architecture added).
 The structure itself did not fail in any incident: every failure was in the routing rule
 (incomplete by one row), in the currency of a compass document, in a deferred archiving
 decision, or in convention discipline. That is evidence FOR H-DOC-1's premise (the

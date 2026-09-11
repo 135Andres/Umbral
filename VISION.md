@@ -82,7 +82,10 @@ The product must not become:
   - a chat box as the primary interface to the user's files;
   - an autonomous background writer that mutates user files unsolicited;
   - a service whose unavailability disables the user's own material;
-  - a graph-visualisation product.
+  - a graph-visualisation product (meaning: graph-as-the-product, i.e. a tool whose
+    primary value is drawing graphs. Graph VIEWS over the user's files are explicitly
+    WANTED — MC §7/§8, UD-009. Read alone, the previous wording could be taken as a
+    rejection of graph views, which would contradict the user.)
 
 Most of these now carry direct user authority via MC §1 (the product is NOT list:
 note-taking app, Obsidian clone, project manager, AI chat app, filesystem browser, Git

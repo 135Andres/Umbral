@@ -9,7 +9,13 @@ file wins — this one records what was believed at ingestion time.
 
 Known drift in this file, left in place as history: it was written before the Master
 Context was recovered, so §1 counts A1-A10 (now A1-A11), it describes 11 files (now more),
-and its §4 tension list (seven entries) predates the canonical list. The canonical list is
+and its §4 tension list (seven entries) predates the canonical list.
+SPECIFIC STATEMENTS THAT ARE NOW FALSE (do not act on them; the canonical file wins):
+  §1 "10 items" (now A1-A11) · §2 "11 files" (now more) · §6.7 "DECISIONS.md was not
+  created" (it exists, UD-001..UD-010) · §5 "the intended user, stated once and
+  consistently" as MISSING (MC §1/§37 now state it) · §5 "no user-side anti-goal list"
+  (MC §1/§39 now provide one) · §6.11/§6.13 authority and provenance gaps (both
+  addressed by the charter recovery). The canonical list is
 T1-T6 in ARCHITECTURE-HYPOTHESES.md / OPEN-QUESTIONS.md; the seventh entry here is folded into
 T1 (both concern "context package" being used as a product concept and as a schema).
 
