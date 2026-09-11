@@ -178,7 +178,7 @@ belief revision (EI-18), argumentation semantics for competing claims (EI-18) �
 a working social precedent for holding contested claims visibly (EI-20).
 Novelty: COMBINATION. FSP is not inventing a stance concept; it is deciding whether to
 embody a 1979 idea in a filesystem.
-THE SHARP RISK (objection C11, taken seriously): a stance IS an implicit authority. "FSP says
+THE SHARP RISK (objection OBJ-11, taken seriously): a stance IS an implicit authority. "FSP says
 not related" will be read as fact by both models and humans, and by the time anyone notices,
 it has shaped a decision. Two conditions follow, and they are REASONED requirements if this
 hypothesis is ever adopted:
@@ -334,31 +334,31 @@ NOTHING in this cycle is claimed as an invention. Two mechanisms are proposed an
 not new capabilities.
 
 ================================================================================
-6. ADVERSARIAL CRITIQUE — C1-C13 (mandate §30)
+6. ADVERSARIAL CRITIQUE — OBJ-1-OBJ-13 (mandate §30)
 ================================================================================
-C1 "Just an MCP server with good tool descriptions."
+OBJ-1 "Just an MCP server with good tool descriptions."
    Largely fair, and partially fatal. For any participant that supports MCP, an MCP server
    with excellent descriptions (EI-25 shows how much that is worth) covers capability
    discovery and execution. What it does not cover: authority per participant, mutability
    class, currency of returned state (CO-3), survival without the server, and any participant
-   that does not speak MCP. Verdict: C1 kills the SELF-DESCRIPTION hypothesis as a
+   that does not speak MCP. Verdict: OBJ-1 kills the SELF-DESCRIPTION hypothesis as a
    standalone product, and leaves H15/H18/H21/H22 untouched. This is the most useful
    objection in the list.
 
-C2 "Just AGENTS.md + Skills."
+OBJ-2 "Just AGENTS.md + Skills."
    Partially fair. AGENTS.md-style files are already filesystem-based, human-readable and
    provider-neutral, and Skills already implement progressive disclosure. Their limits: they
    carry INSTRUCTIONS, not STATE; they have no authority model; they say nothing about
-   whether a participant's understanding is current. Verdict: C2 shows the self-description
+   whether a participant's understanding is current. Verdict: OBJ-2 shows the self-description
    layer should be BUILT ON this convention rather than replacing it. That is a design
    constraint the project should adopt regardless of whether H16 survives.
 
-C3 "Just OpenAPI/JSON Schema introspection."
+OBJ-3 "Just OpenAPI/JSON Schema introspection."
    Fair for schema-shaped problems. Insufficient here: a schema describes valid inputs and
    outputs, not authority, mutability, egress, or currency. EI-25 is the evidence that
    descriptions of shape are not enough for agents.
 
-C4 "Just observability."
+OBJ-4 "Just observability."
    Strongest objection to H15, and it needs an honest answer. Observability gives state and
    telemetry about a SYSTEM. H15 claims something more: statements about the PROJECT carrying
    standing and currency, usable by a participant with no access to the system. If E-CO-1
@@ -366,55 +366,55 @@ C4 "Just observability."
    reduces to observability and should be dropped. Verdict: UNRESOLVED, and it is E-CO-1's
    job.
 
-C5 "Just Git + provenance."
+OBJ-5 "Just Git + provenance."
    Fair for history and attribution-by-authorship. Git cannot express "the user decided this"
    versus "an AI proposed this", and cannot express validity of belief. Provenance
    vocabularies (EI-21) can express attribution but assume the actor self-identifies.
-   Verdict: C5 leaves the standing and currency gap intact.
+   Verdict: OBJ-5 leaves the standing and currency gap intact.
 
-C6 "Just agent memory."
+OBJ-6 "Just agent memory."
    Wrong on the axis that matters: agent memory is per-vendor, per-session-scoped, and not
    the user's (CO-4..CO-6). It solves continuity INSIDE one provider. FSP's problem is
    continuity ACROSS providers and across the provider's absence.
 
-C7 "Just a knowledge graph."
+OBJ-7 "Just a knowledge graph."
    Correct as a warning, wrong as a reduction. A graph is a possible internal representation
    of relations; it cannot carry authority, and it is not portable in the sense FSP needs.
    The project has already refused to make the graph the authority (A1/A2).
 
-C8 "The model can simply read the files itself."
+OBJ-8 "The model can simply read the files itself."
    TRUE and it is the single most important objection. Reading the files gives content.
    It does not give standing, currency, or attribution — and the model cannot compute those
    from content alone (it cannot know that a decision was superseded, or that another
-   participant is mid-edit). Verdict: C8 defines the boundary. Any FSP feature that only
+   participant is mid-edit). Verdict: OBJ-8 defines the boundary. Any FSP feature that only
    re-presents content the model could read is worthless; the value must be in what reading
    cannot produce. This should become a design test applied to every proposed capability.
 
-C9 "Users do not care about any of this."
+OBJ-9 "Users do not care about any of this."
    UNRESOLVED, and it is the same fork as D5 in the coexistence stage. Every piece of
    evidence for staleness and concurrent-writer harm concerns DEVELOPERS running concurrent
    agents (CO-9). No evidence was found that ordinary users experience material harm from any
    of it. Verdict: keep unresolved. Do not let the elegance of the abstraction substitute for
    the missing evidence.
 
-C10 "Progressive disclosure will hide information the AI needs."
+OBJ-10 "Progressive disclosure will hide information the AI needs."
    Fair, and Nielsen documented the same failure in human interfaces 20 years ago (EI-11).
    The safety floor (H17) is the designed answer; E-CO-6a is the test of whether it works.
    Verdict: partially mitigated by design, unproven empirically.
 
-C11 "FSP's own stance is an implicit authority."
+OBJ-11 "FSP's own stance is an implicit authority."
    FAIR AND DANGEROUS. This is the objection most likely to be right. Mitigations in H21
    (participant-claim labelling, no outranking) reduce but do not eliminate it. Verdict:
    H21 should probably be rejected unless E-CO-9 shows a measurable benefit; the burden of
    proof is on the hypothesis.
 
-C12 "The Maintenance agent will become an autonomous janitor users do not understand."
+OBJ-12 "The Maintenance agent will become an autonomous janitor users do not understand."
    Fair, and it is exactly the documented failure mode of autonomic computing (EI-14) and of
    Wikipedia's dispute templates (EI-20). The structural finding in H23 (no desired state ⇒
    no objective function) is the strongest available mitigation: it confines maintenance to
    verifiable operations and proposals.
 
-C13 "The entire architecture is unnecessary if E-CO-1 fails."
+OBJ-13 "The entire architecture is unnecessary if E-CO-1 fails."
    PARTIALLY TRUE, and worth separating. If E-CO-1 fails, the CURRENCY dimension dies — and
    with it the strongest argument for shared environment reality. The standing dimension
    (H21, H22) and the self-description residual (H16, H17) do NOT die with it; they are
@@ -454,7 +454,7 @@ E-CO-8  INTROSPECTION USEFULNESS
 
 E-CO-9  STANCE AND DISAGREEMENT — DEFERRED, DELIBERATELY NOT PROPOSED AS THE NEXT TEST
    Reason: it requires a stance mechanism to exist before it can be tested, and the prior
-   probability from C11 (a stance is an implicit authority) is high enough that the cheaper
+   probability from OBJ-11 (a stance is an implicit authority) is high enough that the cheaper
    move is to attack the hypothesis on paper. Recorded as deferred, not discarded.
 
 E-CO-1..E-CO-5 from the coexistence stage are unchanged and NOT superseded. E-CO-1 still
@@ -475,7 +475,7 @@ independent.
    instrument the project already has. It also tests the safety floor, which is the one part
    of progressive disclosure that could cause harm if wrong.
 4. WHAT COULD KILL THE LARGEST AMOUNT OF SPECULATIVE WORK: E-CO-1 still holds that title for
-   the coexistence direction as a whole (C13). E-CO-6a holds it for the self-description
+   the coexistence direction as a whole (OBJ-13). E-CO-6a holds it for the self-description
    direction. If both fail, the remaining defensible ground is the standing/attribution
    dimension alone — a much smaller product.
 
@@ -500,7 +500,7 @@ independent.
     corrections: separate liveness from readiness in ORIENT, and keep DIAGNOSE user-invoked
     and read-only. Naming NOT finalized.
  8. Should FSP expose its own stance? OPEN, and probably NO. It is an implicit authority
-    (C11) and the burden of proof is on the hypothesis.
+    (OBJ-11) and the burden of proof is on the hypothesis.
  9. How should certainty be represented? Categorically (OBSERVED/INFERRED/ASSUMED/UNKNOWN/
     DISPUTED) by default; numeric confidence only where calibration has been measured (M9).
     REASONED.
@@ -529,7 +529,7 @@ independent.
     running in parallel on the currency dimension.
 19. What could falsify this entire direction? (a) E-CO-1 shows staleness harms no one who
     matters → currency dies. (b) E-CO-6a shows models cannot extract the safety floor from a
-    self-description surface → self-description dies. (c) C8 wins: if everything FSP would
+    self-description surface → self-description dies. (c) OBJ-8 wins: if everything FSP would
     expose is already obtainable by reading the files, the whole layer is unnecessary.
 
 ================================================================================

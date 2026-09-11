@@ -7,7 +7,7 @@ directory. Carries only the drift check, the user decisions required, and the ne
 WHAT THIS STAGE PRODUCED (pointers; no duplication)
 ================================================================================
 Eight hypotheses (H15-H23), the candidate broader abstraction (SHARED ENVIRONMENT REALITY),
-novelty analysis, objections C1-C13, experiments E-CO-6a/7/8/9, the synthesis (19 answers),
+novelty analysis, objections C1-C13 (labelled OBJ-1..13 in ENVIRONMENT-INTELLIGENCE.md), experiments E-CO-6a/7/8/9, the synthesis (19 answers),
 and two NEW-HYPOTHESIS mechanisms (M9 calibration precondition, M10 read/write recording
 split) ................................ ENVIRONMENT-INTELLIGENCE.md
 Evidence EI-1..EI-27 + the 13-question prior-art matrix . research/ENVIRONMENT-INTELLIGENCE-RESEARCH.md
@@ -47,7 +47,7 @@ read/write split (M10).
 
 E-CO-1 NOT DISPLACED — verified. The mandate warned against letting the new ideas displace
 the standing kill-test. E-CO-1 remains Phase 7.1; E-CO-6a was added alongside it (7.7), with
-the independence of the two recorded (objection C13).
+the independence of the two recorded (objection OBJ-13).
 
 STAGE-SEQUENCE INTEGRITY — verified: the two earlier stage records are untouched; this file
 is additive; no earlier finding was weakened. The coexistence research's Shared Validity

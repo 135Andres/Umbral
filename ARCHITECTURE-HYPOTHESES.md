@@ -18,18 +18,18 @@ HOW TO READ THIS FILE
 H15-H23 — ENVIRONMENT INTELLIGENCE SET (2026-09-10b cycle)
 Product-level hypotheses with full entries in ENVIRONMENT-INTELLIGENCE.md (their home).
 Listed here for index completeness only; these are PRODUCT hypotheses, not architecture.
-  H15 environment intelligence as a product-level concept (SPECULATIVE)
-  H16 self-description layer; residual: no process, carries authority (SPECULATIVE)
-  H17 progressive disclosure with a 5-item safety floor that never defers (REASONED)
-  H18 tiered introspection ORIENT/EXPLAIN/DIAGNOSE; liveness-vs-readiness gap (REASONED)
-  H19 documentation = intent; introspection = actuality; drift detection applied to
+  H15 — environment intelligence as a product-level concept (SPECULATIVE)
+  H16 — self-description layer; residual: no process, carries authority (SPECULATIVE)
+  H17 — progressive disclosure with a 5-item safety floor that never defers (REASONED)
+  H18 — tiered introspection ORIENT/EXPLAIN/DIAGNOSE; liveness-vs-readiness gap (REASONED)
+  H19 — documentation = intent; introspection = actuality; drift detection applied to
       knowledge (REASONED)
-  H20 machine-first output; categorical epistemic labels; numeric confidence only where
+  H20 — machine-first output; categorical epistemic labels; numeric confidence only where
       calibrated (M9) (REASONED)
-  H21 FSP may hold a stance without authority — probably reject; C11 (implicit authority)
+  H21 — FSP may hold a stance without authority — probably reject; OBJ-11 (implicit authority)
       stands (SPECULATIVE)
-  H22 AI activity history; default recording CONTRADICTED for reads (M10 split) (SPECULATIVE)
-  H23 maintenance role: no desired state exists, so no objective function without the user;
+  H22 — AI activity history; default recording CONTRADICTED for reads (M10 split) (SPECULATIVE)
+  H23 — maintenance role: no desired state exists, so no objective function without the user;
       verifiable operations and proposals only (REASONED)
 Related candidate mechanism M9 (calibration precondition) and M10 (read/write recording
 split) are recorded in ENVIRONMENT-INTELLIGENCE.md §2/§5, in the same namespace as the
@@ -210,6 +210,14 @@ T6  Scale envelope: S2/S5 treat 10^4-10^6 files as the design constraint, while 
     optimize for massive scale, and do not make choices that unnecessarily prevent
     scaling later. The empirical question (what the product must actually sustain on the
     target hardware) remains open: Q8 / RESEARCH-AGENDA Phase 3.
+
+T7  Maintenance needs an objective function, but a user's filesystem has no desired state.
+    Every working maintenance system reconciles toward a declared goal (Kubernetes .spec);
+    a personal filesystem has none, and only the user can supply one. Until a legitimate
+    source of the goal exists, "maintenance" can only mean report-and-propose, plus
+    verifiable operations (integrity, derived-state repair). Source: this cycle's analysis
+    of EI-13/EI-14 (research/ENVIRONMENT-INTELLIGENCE-RESEARCH.md); full entry:
+    ENVIRONMENT-INTELLIGENCE.md H23.
 
 -------------------------------------------------------------------------------
 NOT SELECTED — AND MUST NOT BE SELECTED YET

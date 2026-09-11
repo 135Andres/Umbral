@@ -137,6 +137,11 @@ research/history/INGEST-NOTES.md .......... historical: the initial ingestion re
 research/history/AUDIT-2026-09-10.md ...... historical: first project-intelligence audit
 research/history/STAGE-2026-09-10-exp1-dogfood.md  historical: drift check, decisions required,
                                     next action for the EXP-1 / dogfood stage
+research/history/STAGE-2026-09-10b-coexistence.md  historical: drift check, decisions required,
+                                    next action for the coexistence stage
+research/history/STAGE-2026-09-10c-environment-intelligence.md
+                                    historical: drift check, decisions required, next action
+                                    for the environment-intelligence stage
 research/sources/ ................. verbatim archives (PROJECT-MASTER-CONTEXT.md)
 experiments/exp1/ ................. EXP-1: EXP-1.md (spec + result), harness.py,
                                     results.json, FIXTURE-CORPUS.md, fixture-corpus-synthetic/

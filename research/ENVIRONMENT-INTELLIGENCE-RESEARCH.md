@@ -110,7 +110,7 @@ EI-11 Progressive disclosure as a UX principle. VERIFIED (Nielsen, 2006-12-03). 
       interfaces, not for agents. FSP applying it to AI participants is an ADAPTATION of an
       established pattern. Nielsen also documents the failure mode: complexity deferred is
       still complexity, and dialogs that hide too much become unusable — directly relevant
-      to objection C10.
+      to objection OBJ-10.
       URL: https://www.nngroup.com/articles/progressive-disclosure/
 
 EI-12 OpenAPI / JSON Schema / service discovery (UDDI, DNS-SD). SNIPPET-LEVEL for UDDI
@@ -123,7 +123,7 @@ EI-12 OpenAPI / JSON Schema / service discovery (UDDI, DNS-SD). SNIPPET-LEVEL fo
       -> The one historical lesson that matters most here: a CENTRAL registry that everyone
         must publish into and consult failed commercially, while a decentralised, no-
         registry-required mechanism (DNS-SD) survived. Directly supports EI-20 and objection
-        C1's inverse.
+        OBJ-1's inverse.
       URL: https://datatracker.ietf.org/doc/html/rfc6763 ; https://www.infoworld.com/article/2215182/microsoft-ibm-sap-discontinue-uddi-registry-effort.html
 
 ================================================================================
@@ -138,7 +138,7 @@ EI-13 Kubernetes controllers / reconciliation. VERIFIED. "controllers are contro
       STATE (the .spec) that the controller is allowed to enforce. This is the sharpest
       constraint on FSP's Maintenance hypothesis: a user's filesystem has no desired state,
       so a maintenance role has no objective function unless one is supplied. See
-      ENVIRONMENT-INTELLIGENCE.md H20 and tension T8.
+      ENVIRONMENT-INTELLIGENCE.md H23 and tension T7 (ARCHITECTURE-HYPOTHESES.md).
       URL: https://kubernetes.io/docs/concepts/architecture/controller/
 
 EI-14 Autonomic computing / MAPE-K. VERIFIED (Kephart & Chess, IEEE Computer 2003; IBM
@@ -212,7 +212,7 @@ EI-20 Dispute handling in a public knowledge corpus. VERIFIED (Wikipedia NPOV po
       -> A working, 20-year-old social mechanism for exactly FSP's requirement: hold
       competing claims without collapsing them, and mark contested state visibly at the
       point of the claim. It is a MODEL TO COPY, and its known failure (maintenance debt;
-      dispute templates that persist for years) is directly relevant to C12.
+      dispute templates that persist for years) is directly relevant to OBJ-12.
       URL: https://en.wikipedia.org/wiki/Wikipedia:Neutral_point_of_view
 
 ================================================================================
@@ -289,7 +289,7 @@ EI-27 Explanation and trust calibration. SNIPPET-LEVEL (C-XAI conceptual framewo
       Users"; Computers in Human Behavior study on XAI effects on trust). Trust calibration
       is "aligning user trust judgment with model capability"; exposing limitations changes
       lay users' trust.
-      -> Relevant to the stance hypothesis (H17) and to objection C11: an explanation is
+      -> Relevant to the stance hypothesis (H17) and to objection OBJ-11: an explanation is
       not neutral. What FSP discloses about its own confidence changes how much it is
       believed, independently of whether the disclosure is accurate.
       URL: https://discovery.ucl.ac.uk/id/eprint/10189099/1/1-s2.0-S2666659624000027-main.pdf
