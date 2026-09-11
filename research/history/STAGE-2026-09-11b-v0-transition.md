@@ -53,3 +53,15 @@ Begin V0 implementation of fsp-check per V0-IMPLEMENTATION-PLAN.md — the plan'
 module order (scan -> identity -> hash -> store -> reconcile -> harness) with the harness
 and INV tests built alongside, not after. The user's confirmation of §8-§9 targets can
 arrive during implementation; nothing in §1-§7 depends on it.
+
+================================================================================
+AMENDMENT 2026-09-11 (same day, user confirmation message)
+================================================================================
+The user confirmed V0-IMPLEMENTATION-PLAN.md §9 SC-1..SC-5 as V0 completion criteria and
+§8 benchmarks as experiments producing EVIDENCE only, with the explicit statement that no
+numeric performance threshold (throughput, latency, store size, memory) becomes a product
+requirement absent a later explicit decision. Status became READY FOR V0 IMPLEMENTATION.
+Guarded intact by the same instruction: UD-012 (V0 authorized), UD-013 (stack provisional,
+V0-scoped), H25 (store is not Project Reality), Q25 (OPEN, must not be closed), and the
+out-of-V0 list (out of scope, not rejected). The plan and README/DIRECTION were updated
+accordingly; no code written.

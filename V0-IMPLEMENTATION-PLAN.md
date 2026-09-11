@@ -30,6 +30,11 @@ FSP can:
 
 fsp-check is an EXPERIMENTAL BASE, not FSP. It implements no product surface.
 
+PROJECT STATE (2026-09-11, after user confirmation of §8/§9): READY FOR V0
+IMPLEMENTATION — documentally prepared to begin. This means nothing more: FSP is not
+designed, no final architecture or full stack is decided, no hypothesis is demonstrated,
+Project Reality is not resolved.
+
 ================================================================================
 2. SCOPE
 ================================================================================
@@ -140,8 +145,12 @@ prematurely.
       semantic identity in V0)
 
 ================================================================================
-8. TESTS AND BENCHMARKS
+8. TESTS AND BENCHMARKS — CONFIRMED BY THE USER (2026-09-11) AS EXPERIMENTS
 ================================================================================
+User confirmation statement (verbatim intent): no arbitrary numeric performance targets
+are established. Throughput, latency, store size and memory usage are measured and
+recorded as EVIDENCE only; none becomes a product requirement unless a later explicit
+user decision says so.
 Tests: property-based (proptest) operation sequences over tempfile trees; crash-injection
 tests around store writes; recovery tests (kill mid-write, reopen, verify INV-7).
 Benchmarks (PROPOSED targets, awaiting user confirmation): scan+hash throughput on a
@@ -151,7 +160,7 @@ benchmark that contradicts a hypothesis updates that hypothesis per the document
 it does not silently change the design.
 
 ================================================================================
-9. SUCCESS CRITERIA (PROPOSED — awaiting user confirmation before V0 is called done)
+9. SUCCESS CRITERIA — CONFIRMED BY THE USER (2026-09-11) AS V0 COMPLETION CRITERIA
 ================================================================================
   SC-1  Harness generates and runs all §7-A scenarios reproducibly.
   SC-2  INV-1..INV-7 hold, or every violation is a documented, understood limitation.
@@ -175,14 +184,16 @@ it does not silently change the design.
 11. OPEN QUESTIONS (kept ABIERTO; none closed by inference)
 ================================================================================
   Q25 (OPEN-QUESTIONS.md): SQLite-only vs SQLite + external JSONL log — validated in V0.
+      OPEN (user instruction 2026-09-11: do not close).
   Whether scan-based detection suffices or an event stream becomes necessary (§7-C).
-  Benchmark targets (§8) — PROPOSED, need user numbers or user confirmation.
-  Success criteria (§9) — PROPOSED, need user confirmation.
+  [Resolved by user confirmation 2026-09-11, formerly listed here: benchmark targets and
+  success criteria. §8 confirmed as experiments (evidence only, no numeric thresholds);
+  §9 SC-1..SC-5 confirmed as V0 completion criteria.]
 
 ================================================================================
 12. DEFINITION OF DONE
 ================================================================================
-V0 is finished when §9's confirmed criteria pass, the red-team A-class scenarios are
+V0 is finished when the user-confirmed §9 criteria (SC-1..SC-5) pass, the red-team A-class scenarios are
 exercised, failures are documented (not hidden), and a stage record freezes the outcome.
 V0 does NOT authorize: product behaviour claims, architecture decisions beyond V0 scope,
 or promotion of any provisional adoption without a new explicit user decision.
