@@ -116,6 +116,14 @@ Q24 — DOES FSP NEED A UNIVERSAL STATUS VOCABULARY, PER-SCOPE VOCABULARIES, OR 
    of a recorded vocabulary is untested and has a known drift risk (DOC-FRICTION-018
    precedent). Settles by: product research, only if the record model is ever carried
    toward design.
+Q25 — IS SQLITE ALONE SUFFICIENT FOR V0 PERSISTENCE, OR IS AN EXTERNAL APPEND-ONLY LOG
+      (E.G. JSONL) ALSO NEEDED?
+   Raised by the user in the 2026-09-11 transition mandate as a technical hypothesis to
+   validate DURING V0, not before it. Interacts with H25 (V0 store is an observation
+   instrument, not the Project Reality representation) and with FAL-3/H24's capture-at-
+   event-time rule: a log matters exactly when crash-consistency of observation history
+   cannot be guaranteed by the store alone. Settles by: V0 crash/recovery experiments
+   (V0-IMPLEMENTATION-PLAN.md §6 INV-7, §7-A).
 
 ================================================================================
 (original question list, as written 2026-09-10 before the recovery)

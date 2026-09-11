@@ -27,7 +27,7 @@ filesystem sovereign and make the semantic layer a derived, rebuildable, user-go
 projection (MC §12, §28, §39).
 
 WHAT WE HAVE DECIDED
-See DECISIONS.md (UD-001..UD-010). Headlines: open source, no ads; no mandatory
+See DECISIONS.md (UD-001..UD-013). Headlines: open source, no ads; no mandatory
 taxonomy; no hidden prompt injection; Sonora not an authority; local-first with file
 survivability; research before implementation; Gemini-first research with Hermes
 cross-verification; layered permission intent; views and proactive intelligence wanted.
@@ -64,7 +64,9 @@ WHAT WE ARE NOT BUILDING
 A note app, an Obsidian clone, a project manager, an AI chat app, a filesystem browser,
 a Git replacement, an AI agent (MC §1). Not a database-with-file-export. Not a taxonomy.
 Not autonomous background writers of user files. Not a prompt-injecting host (A11).
-Nothing at all yet — no implementation is authorized (MC §48).
+No product. Since 2026-09-11 the minimal technical prototype fsp-check IS authorized
+(UD-012) — an experimental observation/reconciliation base, explicitly not FSP and not a
+product surface; scope and limits in V0-IMPLEMENTATION-PLAN.md.
 
 TOP RISKS (one line each; ranking is Hermes interpretation, full reasoning in
 research/history/AUDIT-2026-09-10.md §H)
@@ -84,7 +86,14 @@ WHAT COULD CHANGE OUR MIND
 - A candidate architecture scoring K1-K9 so decisively that scope assumptions change.
 - Any new explicit user decision — user authority always outranks research.
 
-CURRENT NEXT STEP
+CURRENT NEXT STEP (updated 2026-09-11: transition to implementation, UD-012/UD-013)
+Primary line: BEGIN V0 (fsp-check) per V0-IMPLEMENTATION-PLAN.md — documentation stage is
+complete; code is now authorized. Pending user confirmations before V0 is called done:
+benchmark targets and success criteria (plan §8-§9, PROPOSED).
+Unchanged evidence lines (open, not cancelled, runnable independently):
+E-CO-1 (coexistence kill-test), E-CO-6a (safety floor), E-MIN-1 (field ablation with
+readers). Prior next-step text preserved below for continuity.
+
 Two distinct lines, deliberately separated:
 
   Evidence line (no user authority needed): E-CO-1 — the staleness harm test, which

@@ -44,6 +44,10 @@ the adversarial record live in research/PROJECT-REALITY-MINIMUM-MODEL.md (its ho
         Relation and Time are not peer primitives; provenance content is mandatory.
         Three of M's seven collapses failed (supersession-as-relation, authority-as-
         attribution-qualifier, freshness-as-derived-for-non-Git). (HYPOTHESIS)
+  H25 — the V0 store (fsp-check's SQLite observations+projection) is an observation
+        instrument, not the Project Reality representation; Records/Relations/provenance/
+        standing/currency must not enter V0 prematurely. Guard for UD-012/UD-013 scope.
+        (HYPOTHESIS, scope guard — V0-IMPLEMENTATION-PLAN.md §4)
 Related candidate mechanism M9 (calibration precondition) and M10 (read/write recording
 split) are recorded in ENVIRONMENT-INTELLIGENCE.md §2/§5, in the same namespace as the
 coexistence mechanisms M1-M8.
