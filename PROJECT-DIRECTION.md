@@ -86,10 +86,11 @@ WHAT COULD CHANGE OUR MIND
 - A candidate architecture scoring K1-K9 so decisively that scope assumptions change.
 - Any new explicit user decision — user authority always outranks research.
 
-CURRENT NEXT STEP (updated 2026-09-11: transition to implementation, UD-012/UD-013)
-Primary line: BEGIN V0 (fsp-check) per V0-IMPLEMENTATION-PLAN.md — documentation stage is
-complete; code is now authorized. Pending user confirmations before V0 is called done:
-benchmark targets and success criteria (plan §8-§9, PROPOSED).
+CURRENT NEXT STEP (updated 2026-09-11b: READY FOR V0 IMPLEMENTATION)
+Primary line: BEGIN V0 (fsp-check) per V0-IMPLEMENTATION-PLAN.md. The user confirmed
+(2026-09-11) plan §9 SC-1..SC-5 as V0 completion criteria and §8 benchmarks as
+experiments producing EVIDENCE only — no numeric performance thresholds exist as product
+requirements. Documentation stage closed; nothing blocks implementation start.
 Unchanged evidence lines (open, not cancelled, runnable independently):
 E-CO-1 (coexistence kill-test), E-CO-6a (safety floor), E-MIN-1 (field ablation with
 readers). Prior next-step text preserved below for continuity.
