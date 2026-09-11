@@ -62,10 +62,24 @@ and evidence that the remaining cost sits exactly where the documentation audit 
 did: authority, currency, and provenance discipline, not folder layout.
 
 ================================================================================
-T1 / T2 RESULTS — RUN 1 OF 2 (n=2 design; sibling run pending)
+T1 / T2 RESULTS — BOTH RUNS COMPLETE
 ================================================================================
-Raw evidence: navigation-run-1.md, authority-run-1.md (both in this directory; the
-delegate reports are preserved verbatim there).
+Raw evidence: navigation-run-1.md, authority-run-1.md, navigation-run-2.md,
+authority-run-2.md (all in this directory; delegate reports preserved verbatim there).
+Validity note: run 2 was dispatched before the run-1 fixes landed, so a few findings it
+reports were already corrected when it reported; each is marked in its record. Run 2's
+navigation reader self-disclosed a confound (it loaded the project skill first, giving it
+a file map) and reported its file count as a lower bound — so the navigation half is
+weaker evidence than the authority half.
+
+CROSS-RUN MEASUREMENTS
+  Navigation: 22 files (run 1) / 16 files (run 2, confounded); mean per question 3.9 and
+  3.5; median 3.5 both. Unanswerable: 0/10 both. Budget (<=3/question): MARGINAL both.
+  Authority: 0 authority errors in both runs; 3 temptations named in run 1, 10 misled-risk
+  items in run 2. Run 2's stricter standard found 3 concrete single-file traps that run 1
+  did not.
+
+RUN 1 (see the run-1 records for the full detail)
 
 T1 navigation (fresh reader, no context, read-only):
   22 files opened; 1 routing trap (attempted a path that does not exist).
@@ -89,13 +103,37 @@ T2 authority-confusion (adversarial, instructed to try to be misled):
   to user-facing intent) — recorded as a caveat, deliberately NOT resolved here.
   Threshold check: "zero authority errors" -> PASS.
 
-VERDICTS (thresholds pre-registered above):
-  H-DOC-1: PARTIAL PASS. Comprehension is high and nothing was unanswerable, but the
-  navigation-cost threshold was missed and one currency defect was found.
-  H-DOC-2: PASS. The explicit authority ordering did its job under adversarial reading.
-  MECHANISM note (not a verdict): the mechanism that carried both tests was the authority
-  ladder + decision ids + status lines + override notes — NOT the folder structure. This
-  reproduces, on independent readers, the documentation audit's central finding.
+RUN 2 (see navigation-run-2.md, authority-run-2.md)
+  Navigation: 0 unanswerable; Q9 ("top risks") had no single home (FIXED: PROJECT-DIRECTION
+  gained a risk block); independently re-confirmed the run-1 currency defect.
+  Authority: 0 errors in its own answers, but it listed 10 misled-risk items and identified
+  THREE places where a single-file reader reaches a wrong answer:
+    (a) REQUIREMENTS.md R6 asserted no user-facing provenance requirement exists
+        (contradicted by MC §40) — FIXED with a dated correction;
+    (b) REQUIREMENTS.md R12 framed the permission model as contested research with no
+        reference to UD-008 — FIXED (upgraded to USER INTENT, mechanism left open);
+    (c) frozen historical files (INGEST-NOTES, AUDIT) sit beside living artifacts in
+        research/, distinguished only by a status line — NOT FIXED (structural; recorded).
+  Also fixed from run 2: ARCHITECTURE-HYPOTHESES H10 now marks S11's counter as superseded;
+  harness.py header and results.json now carry an explicit "this is not a technology
+  choice" disclaimer at the artifact that carries the misleading signal.
+  Its verdict: "superseded research positions were left standing as live statements in
+  otherwise-current files — the same confusion one level down."
+
+VERDICTS (thresholds pre-registered above; both runs considered)
+  H-DOC-1: PARTIAL PASS. Comprehension high, nothing unanswerable in 20 questions across
+  two readers; the navigation-cost threshold was missed in both runs (marginal), and the
+  navigation evidence is weakened by run 2's self-disclosed confound.
+  H-DOC-2: PARTIAL PASS, not the PASS run 1 suggested. Zero authority errors were made by
+  either reader, but run 2's stricter standard found three single-file traps — two mine
+  (fixed), one structural (open). The mechanism protected careful readers; it did not yet
+  make being misled impossible. That distinction is the finding.
+  MECHANISM note (not a verdict): across both runs and both batches, every failure was
+  CURRENCY or PROVENANCE, never folder structure. Third independent confirmation of the
+  documentation audit's central finding — the missing layer was authority/currency, not
+  layout.
+  EXPERIMENT note: the n=2 design earned its keep. Run 1 alone would have produced an
+  over-confident PASS.
 
 DEFECTS FOUND BY THE TESTS AND FIXED (each justified by an observation, per mandate §4):
   - README map omitted experiments/ (F2); fixture corpus not marked synthetic (F3).
@@ -108,7 +146,19 @@ DEFECTS FOUND BY THE TESTS AND FIXED (each justified by an observation, per mand
   - RESEARCH-AGENDA 0.5 gained the MC §40 caveat (A5) — the only finding left OPEN,
     because resolving it would be the repository deciding for the user.
 NOT FIXED (monitoring, with triggers): update-block accumulation (MR-2); the PROPOSED
-document as a second authority surface (MR-3); convention decay (MR-1).
+document as a second authority surface (MR-3); convention decay (MR-1); frozen files
+beside living files in research/ (new, structural — the fix would be moving history into
+its own directory, which is a structural change this experiment is not authorized to make
+on one observation); the technology inventory's shortlist shape (M9 — judged
+disproportionate to change, since the heading prevented the trap for both readers); the
+git-adjacent non-inference surface (M7 — stated at §0/§7/MR-4, not yet where the signal
+is).
+
+WHAT THE EXPERIMENT ACTUALLY SHOWED (one line)
+A simple topic-oriented repository does give high comprehension and does not present
+research as decisions — but it decays into misleading text wherever a superseded position
+is left standing in a file that is otherwise current. The mechanism's failure surface is
+currency discipline, and it is invisible to a single reader.
 
 ================================================================================
 WHAT THIS EXPERIMENT CANNOT SHOW (stated in advance)

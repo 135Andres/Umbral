@@ -137,16 +137,70 @@ exact confusion the architecture exists to prevent — caught only because the t
 was adversarial.
 
 ================================================================================
-SUMMARY (as of 2026-09-10, after EXP-1 and EXP-DOC-1 run 1)
+DOC-FRICTION-008 — a superseded position survived inside a CURRENT file (R6)
 ================================================================================
-Incidents: 7 recorded: 4 fixed, 1 partially fixed, 2 open (one HIGH — DOC-FRICTION-004,
-unarchived sources, awaiting user authorization).
-Classes: currency 3, authority-clarity 3, provenance 1.
-No incident was a failure of the folder structure. Every one was a failure of status,
-currency, or provenance discipline — the layer the documentation audit identified as the
-missing one. That is now the second independent confirmation of that finding (the first
-being the audit itself; the second, the two delegated readers, one of whom reported being
-tempted three times and corrected each time by the labels the architecture added).
+Question: "Is provenance user-facing?" (EXP-DOC-1 authority test, run 2)
+Path taken: REQUIREMENTS.md alone.
+Expected: a current statement, or one marked superseded.
+Actual: R6 said "no user-facing requirement for it is stated anywhere", which was true of
+the research corpus and false after the charter was recovered (MC §40). A reader of that
+file alone answers the question wrongly.
+Failure: CURRENCY failure inside a canonical (CURRENT) file — the worst variant of the
+class, because the file's own status line asserts currency.
+Potential cause: the MC-recovery pass upgraded OPEN-QUESTIONS, RESEARCH-AGENDA and
+RESEARCH-INDEX, but did not sweep REQUIREMENTS for statements that MC invalidated.
+Disposition: FIXED (R6 carries a dated correction). Escalated into a rule: when a source
+is recovered that invalidates statements elsewhere, sweep EVERY canonical file for
+statements the source contradicts — not only the files that were already under edit.
+
+================================================================================
+DOC-FRICTION-009 — the same defect in the permission model (R12)
+================================================================================
+Question: "What permission model does FSP have?" (EXP-DOC-1 authority test, run 2)
+Path taken: REQUIREMENTS.md R12.
+Expected: user intent recorded as such.
+Actual: R12 described the model as RESEARCH OPINION, "contested" between S7 and S11, with
+no reference to the user's own MC §24 statement — so a user-decided intent read as an
+unsettled research question.
+Failure: AUTHORITY failure of the same class as DOC-FRICTION-008, found in the same file
+by the same reader. Two instances in one file is a pattern, not an accident.
+Disposition: FIXED (R12 upgraded to USER INTENT, mechanism left as research).
+Rule recorded: after any authority upgrade, sweep the affected canonical files for other
+statements about the same subject, because these defects cluster by file.
+
+================================================================================
+DOC-FRICTION-010 — history and current truth share a directory
+================================================================================
+Question: "Is provenance user-facing?" / "Does FSP want graph views?" (both runs)
+Path taken: research/ directory listing.
+Expected: historical records distinguishable from current artifacts by more than a status
+line.
+Actual: frozen records (INGEST-NOTES, AUDIT-<date>) sit beside living research artifacts
+in the same directory; a reader who opens one and trusts it reaches pre-recovery answers.
+Failure: STRUCTURAL navigation/authority failure — the first observed failure that IS
+structural rather than currency-based.
+Potential cause: history was never given its own home because the repository is young and
+each frozen record was created ad hoc.
+Disposition: NOT FIXED. A fix (moving frozen records to research/history/ or similar) is a
+structural change, and this experiment's own rule (mandate §4) requires a demonstrated
+problem and a proportionate response; one observation by two readers is not yet enough to
+move files. Recorded as the primary candidate for the next structural change, with its
+trigger: a third independent reader making the same error, or the frozen set growing.
+
+================================================================================
+SUMMARY (as of 2026-09-10, after EXP-1 and both EXP-DOC-1 runs)
+================================================================================
+Incidents: 10 recorded: 7 fixed, 1 partially fixed, 2 open (one HIGH — DOC-FRICTION-004,
+unarchived sources, awaiting user authorization; one structural — DOC-FRICTION-010).
+Classes: currency 5, authority-clarity 4, provenance 1.
+No incident was a failure of the topic-per-file organization. Every failure was currency,
+status, or provenance discipline — the layer the documentation audit identified as missing.
+That finding now has three independent confirmations: the audit, run 1's reader, and run
+2's stricter reader, who found two of the currency defects that the first reader and the
+author had both missed.
+The single most useful measurement in this stage: an identical brief given to two readers
+produced "largely succeeds" and "three concrete single-file traps". One reader was not
+enough evidence, and the repository would have recorded a false PASS without the second.
 The structure itself did not fail in any incident: every failure was in the routing rule
 (incomplete by one row), in the currency of a compass document, in a deferred archiving
 decision, or in convention discipline. That is evidence FOR H-DOC-1's premise (the

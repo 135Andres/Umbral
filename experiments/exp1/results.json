@@ -1,4 +1,5 @@
 {
+  "_disclaimer": "EXP-1 instrument output. sqlite3/FTS5 was used because it is the cheapest stdlib option. This file is NOT evidence that FSP has selected SQLite, an index technology, a retrieval technique or an identity mechanism; FSP has selected none of these.",
   "corpus": {
     "root": "/home/<user>/FSP/experiments/corpus-messy",
     "files": 36,
@@ -992,30 +993,30 @@
     {
       "copies": 1,
       "files": 36,
-      "scan_s": 0.0064,
-      "cold_index_s": 0.0177,
-      "query_ms": 0.243,
-      "naive_reindex_after_1_edit_s": 0.0064,
+      "scan_s": 0.0065,
+      "cold_index_s": 0.0179,
+      "query_ms": 0.245,
+      "naive_reindex_after_1_edit_s": 0.0063,
       "bytes": 10736
     },
     {
       "copies": 10,
       "files": 360,
-      "scan_s": 0.0452,
-      "cold_index_s": 0.0832,
-      "query_ms": 0.143,
-      "naive_reindex_after_1_edit_s": 0.0248,
+      "scan_s": 0.0432,
+      "cold_index_s": 0.081,
+      "query_ms": 0.142,
+      "naive_reindex_after_1_edit_s": 0.0249,
       "bytes": 107306
     },
     {
       "copies": 50,
       "files": 1800,
-      "scan_s": 0.1288,
-      "cold_index_s": 0.3021,
-      "query_ms": 0.342,
-      "naive_reindex_after_1_edit_s": 0.1243,
+      "scan_s": 0.1248,
+      "cold_index_s": 0.2979,
+      "query_ms": 0.355,
+      "naive_reindex_after_1_edit_s": 0.125,
       "bytes": 536506
     }
   ],
-  "workdir": "/tmp/exp1-pufehx6v"
+  "workdir": "/tmp/exp1-49rmf9xt"
 }

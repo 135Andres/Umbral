@@ -5,6 +5,12 @@ EXP-1 instrument: semantic projection over an arbitrary filesystem.
 This is an EXPERIMENTAL INSTRUMENT, not FSP architecture. It uses stdlib only
 (sqlite3 + FTS5), no embeddings, no LLM, no database beyond a scratch index.
 
+READ THIS BEFORE TREATING ANYTHING BELOW AS A CHOICE: sqlite3/FTS5 is here because
+it is the cheapest thing in the standard library, not because FSP selected SQLite or
+any index technology. FSP has selected NO database, NO index technology, NO retrieval
+technique and NO identity mechanism (MC §52; ARCHITECTURE-HYPOTHESES "NOT SELECTED").
+Running code in an experiment is not an architectural decision.
+
 Two measured questions:
   A. Can a useful semantic projection exist over arbitrary files with no
      user-supplied taxonomy?  (retrieval tests, baseline vs. enrichment)
@@ -472,7 +478,11 @@ def main():
     tmpdb = tempfile.mktemp(suffix=".db")
     db = build_index(docs, proj, tmpdb)
 
-    out = {"corpus": {"root": corpus, "files": len(docs),
+    out = {"_disclaimer": ("EXP-1 instrument output. sqlite3/FTS5 was used because it is "
+                           "the cheapest stdlib option. This file is NOT evidence that FSP "
+                           "has selected SQLite, an index technology, a retrieval technique "
+                           "or an identity mechanism; FSP has selected none of these."),
+           "corpus": {"root": corpus, "files": len(docs),
                       "text_files": sum(1 for d in docs.values() if d["text"] is not None),
                       "binary_files": sum(1 for d in docs.values() if d["text"] is None),
                       "bytes": sum(d["size"] for d in docs.values()),

@@ -27,8 +27,13 @@ R5  Present the same underlying files through multiple views without duplicating
 
 R6  Trace where a claim, relationship or artifact came from, and by which agent.
     Source: S1 §10.8, S4 §5, S6 §AI-Provenance. Status: STRONG HYPOTHESIS.
-    Note: the corpus repeatedly says provenance is a differentiator, but no user-facing
-    requirement for it is stated anywhere. Recorded as Q13.
+    Note: [CORRECTED 2026-09-10 — the previous note here said "no user-facing requirement
+    for it is stated anywhere", which was true of the research corpus but is contradicted
+    by the user's own charter: MC §40 states that it should be possible to understand
+    where information came from, who/what changed it, which AI/session produced a result,
+    and what context was used.] Provenance is therefore USER INTENT (MC §40), not merely a
+    research differentiator. Not yet a decision record; the residual open question is how
+    prominent it is in the UX (Q13).
 
 R7  Keep the user in control of what leaves the machine and what may be mutated.
     Source: S1 §15, S7 §17, S9 §11. Status: STRONG HYPOTHESIS.
@@ -53,9 +58,12 @@ R11 Extensibility for third-party and user-authored logic under an explicit capa
     Source: S10 §16/§17. Status: RESEARCH OPINION (WEAK HYPOTHESIS).
 
 R12 Declare and enforce permission scope, with modes that go beyond one binary switch.
-    Source: S7 §6/§17. Status: RESEARCH OPINION.
-    Contested: S7 proposes multi-tier NORMAL/CONFIRMATION/SEMI-BYPASS/FULL-BYPASS;
-    S11 §17-12 concludes two operational modes suffice. Tension T3.
+    Source: S7 §6/§17. Status: USER INTENT (MC §24; UD-008) — upgraded 2026-09-10.
+    The user's own words require the layered model (NORMAL / CONFIRMATION REQUIRED /
+    SEMI-BYPASS / FULL BYPASS, with semi-bypass authorizing edit/move/delete), so this is
+    no longer an unsettled research question: S11's two-mode simplification is superseded
+    (tension T3 resolved by user). What remains RESEARCH is the mechanism — the exact
+    semantics of each layer and how they are enforced (Q7, MC §43-Q10/Q11).
 
 R13 Progressive independence from any single AI provider.
     Source: S0 §9 index, S3 §Session Portability. Status: USER INTENT (indexed).
