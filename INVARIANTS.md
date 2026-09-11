@@ -27,7 +27,7 @@ property. Still no architecture follows from any of them.
   A8  <- MC §3 (local-first), MC §29 (works fully locally).
   A9  <- MC §10, §32, §39 (product should not depend on one AI provider; no canonical
          provider), MC §51.
-  A10 <- MC §28 ("highly desirable"), MC §43-Q29 (portability if the app disappears).
+  A10 <- MC §28 ("highly desirable"), MC §43 item 29 (portability if the app disappears).
   A11 <- MC §11 (verbatim: the system must NOT inject hidden prompts that override the
          user's/developer's instructions; capabilities are exposed as documentation/API,
          not behavioral override).
