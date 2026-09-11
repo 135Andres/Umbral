@@ -124,6 +124,10 @@ prematurely.
          non-existent observation — the verifier must flag, not silently repair.
   INV-7  Crash during persistence leaves the store loadable and either fully-before or
          fully-after the interrupted observation (no half-observation).
+  INV-8  When the physical evidence does not determine an identity (inode reuse, rename
+         ambiguity, hash mismatch), the reconciliation records AMBIGUOUS — it never
+         silently invents or silently resolves an identity. (Added by the user's
+         pre-flight mandate 2026-09-11.)
 
 ================================================================================
 7. RED-TEAM PROBLEM LIST (classification is PROPOSED — Hermes classification; the user
@@ -191,7 +195,27 @@ it does not silently change the design.
   §9 SC-1..SC-5 confirmed as V0 completion criteria.]
 
 ================================================================================
-12. DEFINITION OF DONE
+12. PORTABILITY BOUNDARY (added by the Fedora pre-flight, 2026-09-11 — see
+    experiments/v0-preflight/PREFLIGHT-V0-FEDORA.md for the evidence)
+================================================================================
+Minimal frontier, no premature abstraction: filesystem OBSERVATION code (stat/dev/ino,
+walkdir traversal, path/OsStr bytes, rename/symlink/hardlink calls) stays separated from
+RECONCILIATION logic (comparison, classification, invariants, store). The reconciler
+consumes observation records, never raw syscalls — this keeps future platform ports a
+listener problem, without adding indirection beyond that one seam.
+Linux-specific assumptions that must not leak into reconciliation:
+  - dev+ino reuse after delete (possible; §7-A must test it);
+  - case sensitivity of the dev filesystem;
+  - high-resolution mtimes trusted for ordering (never; §7-B);
+  - lossy UTF-8 path conversion (paths are bytes; use OsStr/PathBuf end to end);
+  - atomic-rename-across-filesystems (impossible; cross-device is copy+delete).
+Tests that depend on Linux-specific behaviour are LABELLED as such (mandate §6):
+deterministic tests vs behaviour-dependent tests (fs-type, kernel).
+Environment of record: Fedora 44, kernel 7.1.13, btrfs workspace, tmpfs /tmp — recorded
+for reproducibility only, NOT a project requirement.
+
+================================================================================
+13. DEFINITION OF DONE
 ================================================================================
 V0 is finished when the user-confirmed §9 criteria (SC-1..SC-5) pass, the red-team A-class scenarios are
 exercised, failures are documented (not hidden), and a stage record freezes the outcome.
