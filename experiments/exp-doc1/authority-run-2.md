@@ -36,7 +36,7 @@ M4. OPEN-QUESTIONS.md footer said "Tensions are recorded, not resolved" while th
     reader's phrasing — "the resolved answer and the unresolved answer live in one file,
     separated by ~120 lines" — is the clearest statement of the defect.
 
-M5. INGEST-NOTES.md §4 restates the pre-recovery T4 framing as an unresolved
+M5. history/INGEST-NOTES.md §4 restates the pre-recovery T4 framing as an unresolved
     contradiction. Partially addressed (the file now enumerates its own false statements
     and carries a frozen-historical status line). The reader's deeper point stands and is
     NOT fixed: frozen historical files sit beside living artifacts in research/,

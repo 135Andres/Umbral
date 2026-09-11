@@ -3,7 +3,11 @@
 Status: **RESULT RECORDED** (run 2026-09-10; results.json is the raw output).
 Question: EXP-1 in RESEARCH-AGENDA.md Phase 1. Hypotheses H-EXP1-A/B per the stage mandate.
 Instrument: experiments/exp1/harness.py (stdlib only: sqlite3 + FTS5; no embeddings, no
-model, no network). Corpus: experiments/corpus-messy/ (36 files, 6 top-level dirs,
+model, no network). Corpus: experiments/exp1/fixture-corpus-synthetic/ (renamed from
+`corpus-messy` on 2026-09-10 after three readers reported the old name/path could be
+mistaken for project memory; the fixtures and the results are unchanged — verified by
+re-running the instrument and diffing: retrieval, projection and mutations identical,
+only machine timings differ). 36 files, 6 top-level dirs,
 10.7 KB — deliberately heterogeneous: decisions, ADRs, bugs, vendor comparison, CSV
 numbers, code, HTML mockup, empty file, binary, duplicate specs, stale archive).
 Classification per mandate §18: every statement below is labeled.

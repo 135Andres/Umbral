@@ -13,7 +13,7 @@ DOC-FRICTION-001 — an experiment had no home for its own specification
 ================================================================================
 Question: "What exactly is EXP-1, as specified?"
 Path taken: PROJECT-DIRECTION.md ("NEXT STEP") -> RESEARCH-AGENDA.md Phase 1 ->
-research/AUDIT-2026-09-10.md §L -> experiments/ (did not exist).
+research/history/AUDIT-2026-09-10.md §L -> experiments/ (did not exist).
 Expected: one place holding the experiment's hypotheses, corpus, measurements and
 thresholds, reachable from the README map.
 Actual: EXP-1 existed as a recommendation in three documents, each partial: the audit
@@ -188,10 +188,66 @@ move files. Recorded as the primary candidate for the next structural change, wi
 trigger: a third independent reader making the same error, or the frozen set growing.
 
 ================================================================================
-SUMMARY (as of 2026-09-10, after EXP-1 and both EXP-DOC-1 runs)
+DOC-FRICTION-011 — the fixture corpus was indistinguishable from project memory
 ================================================================================
-Incidents: 10 recorded: 7 fixed, 1 partially fixed, 2 open (one HIGH — DOC-FRICTION-004,
-unarchived sources, awaiting user authorization; one structural — DOC-FRICTION-010).
+Question: "What is this repository?" (EXP-DOC-1 navigation test, readers 1, 2 and 3)
+Path taken: directory listing before reading the top-level README.
+Expected: experiment fixture data obviously not project memory.
+Actual: 22 of the repository's 44 Markdown files were fixtures for a fictional project,
+named exactly like real project documents (README.md, open-questions.md,
+decisions-2024.md, research/*.md). Reader 3: "a reader who lists the tree before reading
+the top-level README can mistake that corpus for project memory."
+Failure: STRUCTURAL navigation/authority failure, reported independently three times.
+Trigger stated in DOC-FRICTION-010 (a third independent observation) is now MET.
+Disposition: FIXED — directory renamed corpus-messy -> exp1/fixture-corpus-synthetic, an
+adjacent FIXTURE-CORPUS.md added, README map entry rewritten. The fixtures themselves were
+NOT edited (that would change the experiment's inputs); the instrument was re-run after the
+move and the results verified identical (retrieval, projection and mutations byte-equal;
+only machine timings differ). A dotfile-exclusion rule was added to the corpus loader after
+a marker file accidentally became corpus item #37 and altered the results — recorded
+because it is the second time this experiment's own instrumentation changed its inputs.
+
+================================================================================
+DOC-FRICTION-012 — history and living material shared a directory (second observation)
+================================================================================
+Question: "Is provenance user-facing?" (readers 2 and 3, independently)
+Path taken: research/ directory listing; INGEST-NOTES.md read as current.
+Expected: frozen records distinguishable from living artifacts by more than a header.
+Actual: three frozen records sat beside living research artifacts; two readers reached
+pre-recovery answers by trusting one of them.
+Failure: STRUCTURAL, same class as DOC-FRICTION-010 and its second independent report.
+Disposition: FIXED — research/history/ created, the three frozen records moved into it, and
+a history/README.md explains the directory's rule. Living artifacts (RESEARCH-INDEX,
+DOC-ARCHITECTURE-RESEARCH) stay in research/. All cross-references updated.
+
+================================================================================
+DOC-FRICTION-013 — a genuine gap in the decision log (provenance has no UD)
+================================================================================
+Question: "Is provenance a user-facing feature?" (reader 3, adversarial)
+Path taken: DECISIONS.md alone.
+Expected: either a record or an explicit statement that none exists.
+Actual: nothing. Reader 3: "the absence of a UD for provenance is a genuine gap, not a
+distinction the reader failed to make."
+Failure: PROVENANCE/GAP failure — the absence of a record was indistinguishable from the
+absence of intent.
+Disposition: FIXED BY DOCUMENTING, NOT BY DECIDING. DECISIONS.md gained a "GAPS IN THIS
+LOG" section naming the provenance gap and its unresolved MC §40 caveat. Writing UD-011
+would have silently resolved a question this repository deliberately left to the user —
+so the gap is made visible instead.
+
+================================================================================
+SUMMARY (as of 2026-09-10, after EXP-1 and all EXP-DOC-1 runs — 4 readers)
+================================================================================
+Incidents: 13 recorded: 10 fixed, 1 partially fixed, 2 open (one HIGH — DOC-FRICTION-004,
+unarchived sources, awaiting user authorization; one watch — MR-2 update blocks).
+Classes: currency 5, authority-clarity 4, structural 3, provenance/gap 1.
+No incident was a failure of the topic-per-file organization. Every failure was currency,
+status, provenance or placement discipline — the layer the documentation audit identified
+as missing. Four independent readers now confirm it.
+The most useful measurement in this stage: an identical brief given to four readers
+produced "largely succeeds", "largely but not fully", and "mostly holds, but not for the
+reason it claims". One reader would have produced a false PASS. The second and third
+readers found defects the first and the author had both missed.
 Classes: currency 5, authority-clarity 4, provenance 1.
 No incident was a failure of the topic-per-file organization. Every failure was currency,
 status, or provenance discipline — the layer the documentation audit identified as missing.

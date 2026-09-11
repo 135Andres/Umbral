@@ -48,7 +48,7 @@ Not autonomous background writers of user files. Not a prompt-injecting host (A1
 Nothing at all yet — no implementation is authorized (MC §48).
 
 TOP RISKS (one line each; ranking is Hermes interpretation, full reasoning in
-research/AUDIT-2026-09-10.md §H)
+research/history/AUDIT-2026-09-10.md §H)
 R1 The two-writers problem: filesystem authority + derived state + AI writers + external
    mutation. Highest impact, highest uncertainty. Unresolved (T5, Q1/Q2/Q15).
 R2 Premature scale commitment — largely defused as policy by MC §37; empirical part open.
@@ -76,4 +76,4 @@ Two distinct lines, deliberately separated:
   Authority line (needs the user): 0.7 surface sequence, 0.8 MVP boundary, and
   authorization to archive the S1-S11 report texts (the repository's highest-severity
   provenance defect). These gate the NEXT stage, not the evidence stage — EXP-1 ran
-  without them, correctly. Full statement: research/STAGE-2026-09-10-exp1-dogfood.md.
+  without them, correctly. Full statement: research/history/STAGE-2026-09-10-exp1-dogfood.md.

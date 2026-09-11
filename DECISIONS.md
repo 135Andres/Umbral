@@ -124,6 +124,19 @@ Authority: USER (MC §18). Statement: "The user wants this functionality strongl
 Overrides S11's REJECT verdict (recorded in VISION.md).
 Status: DECIDED (intent); mechanism RESEARCH.
 
+GAPS IN THIS LOG (recorded so a reader does not infer absence of a record means absence
+of intent):
+  - PROVENANCE has no UD. The user's charter states it (MC §40: it should be possible to
+    understand where information came from, who/what changed it, which AI/session produced
+    a result, what context was used), and the repository records it as USER INTENT, but it
+    was never written as a decision record. It is also the one item carrying an unresolved
+    caveat: MC §40's own header calls its section "research inputs, not final
+    requirements". Deliberately NOT resolved here — resolving it would be this repository
+    deciding for the user. See RESEARCH-AGENDA 0.5.
+  - VERSIONING has no UD either, and that is correct: the user stated an intent ("Git
+    without Git", MC §26) and explicitly left the mechanism to research (MC §52). The
+    intent is recorded under NOT DECIDED below and in OPEN-QUESTIONS Q4.
+
 ================================================================================
 NOT DECIDED (explicitly, by the user's own record — MC §52): final name, final
 architecture, database, indexing technology, AI protocol, versioning model, permission

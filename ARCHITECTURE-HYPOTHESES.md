@@ -107,6 +107,8 @@ survives at all. This is the single highest-leverage unknown in the corpus.
 
 -------------------------------------------------------------------------------
 H9 — Versioning: ambient local capture, with Git as a projection
+     (CANDIDATE ONLY — no versioning model is selected; the repository being a git repo
+      is documentation infrastructure, not this decision)
 Claim: continuous local checkpointing independent of the version control system, with
 clean commits projected outward on demand, both implemented with existing primitives.
 Source: S6 §Exec/§Approach D/§Recommendations 1, S11 §17-5 (integrate rather than build).

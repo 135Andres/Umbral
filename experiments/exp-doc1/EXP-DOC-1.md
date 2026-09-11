@@ -62,10 +62,13 @@ and evidence that the remaining cost sits exactly where the documentation audit 
 did: authority, currency, and provenance discipline, not folder layout.
 
 ================================================================================
-T1 / T2 RESULTS — BOTH RUNS COMPLETE
+T1 / T2 RESULTS — FOUR READERS COMPLETE (2 pairs, dispatched independently)
 ================================================================================
-Raw evidence: navigation-run-1.md, authority-run-1.md, navigation-run-2.md,
-authority-run-2.md (all in this directory; delegate reports preserved verbatim there).
+Raw evidence: navigation-run-{1,2,3}.md and authority-run-{1,2,3}.md in this directory
+(delegate reports preserved verbatim; run 3 = the third reader of each kind, dispatched in
+a second independent pair). NOTE ON NUMBERING: runs 2 and 3 were both dispatched before the
+run-1 fixes landed, so each reports defects that were already corrected when it reported;
+every finding is marked inline in its own record.
 Validity note: run 2 was dispatched before the run-1 fixes landed, so a few findings it
 reports were already corrected when it reported; each is marked in its record. Run 2's
 navigation reader self-disclosed a confound (it loaded the project skill first, giving it
@@ -120,14 +123,39 @@ RUN 2 (see navigation-run-2.md, authority-run-2.md)
   Its verdict: "superseded research positions were left standing as live statements in
   otherwise-current files — the same confusion one level down."
 
-VERDICTS (thresholds pre-registered above; both runs considered)
+RUN 3 (see navigation-run-3.md, authority-run-3.md)
+  Navigation: 18 files, 0 unanswerable, mean 3.6/question (MARGINAL again). New structural
+  finding: 22 fixture files could be mistaken for project memory (third report of the class
+  -> trigger met -> fixed). Second report that Q6/Q9/Q10 have no single home.
+  Authority: 0 errors, 10 misled-risk items, verdict PARTIAL SUCCESS. New and valid: the
+  decision log has NO record for provenance, so a reader of DECISIONS.md alone cannot find
+  the answer (fixed by documenting the gap, not by inventing a decision). Its most useful
+  sentence: "the repository's front door is disciplined and its back rooms are not."
+
+CROSS-RUN CONVERGENCE (4 readers)
+  All four reached the correct authority for every probe and made 0 authority errors.
+  All four found the navigation budget marginal (mean 3.5-3.9 files per question vs 3.0).
+  All four converged on the same mechanism-level conclusion: the architecture works when
+  read in order and fails when a single file is read alone, and every such failure was a
+  SUPERSEDED STATEMENT LEFT STANDING IN AN OTHERWISE-CURRENT FILE.
+  Verdicts ranged from "largely succeeds" to "mostly holds, but not for the reason it
+  claims" — i.e. the stricter the reader, the more defects found, which is the argument for
+  the n=2-pairs design.
+
+VERDICTS (thresholds pre-registered above; all four runs considered)
   H-DOC-1: PARTIAL PASS. Comprehension high, nothing unanswerable in 20 questions across
   two readers; the navigation-cost threshold was missed in both runs (marginal), and the
   navigation evidence is weakened by run 2's self-disclosed confound.
   H-DOC-2: PARTIAL PASS, not the PASS run 1 suggested. Zero authority errors were made by
-  either reader, but run 2's stricter standard found three single-file traps — two mine
-  (fixed), one structural (open). The mechanism protected careful readers; it did not yet
-  make being misled impossible. That distinction is the finding.
+  ANY of the four readers, but the stricter standards found single-file traps that run 1
+  missed: two in REQUIREMENTS (fixed), one structural in research/ (fixed), one in the
+  decision log's silence about provenance (fixed by documenting the gap). The mechanism
+  protected careful readers; it did not make being misled impossible.
+  THRESHOLD DEFECT (recorded as a design lesson, not an experiment failure): the
+  pre-registered "zero authority errors" criterion measured the READER, not the repository.
+  All four readers met it while three of them still reported places where an isolated file
+  gives a wrong answer. A better criterion, adopted for future runs: "no single file, read
+  alone, yields a superseded answer to a probe question".
   MECHANISM note (not a verdict): across both runs and both batches, every failure was
   CURRENCY or PROVENANCE, never folder structure. Third independent confirmation of the
   documentation audit's central finding — the missing layer was authority/currency, not
