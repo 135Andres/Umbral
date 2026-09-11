@@ -55,7 +55,7 @@ and INV tests built alongside, not after. The user's confirmation of §8-§9 tar
 arrive during implementation; nothing in §1-§7 depends on it.
 
 ================================================================================
-AMENDMENT 2026-09-11 (same day, user confirmation message)
+AMENDMENTS 2026-09-11 (same day)
 ================================================================================
 The user confirmed V0-IMPLEMENTATION-PLAN.md §9 SC-1..SC-5 as V0 completion criteria and
 §8 benchmarks as experiments producing EVIDENCE only, with the explicit statement that no
@@ -65,3 +65,12 @@ Guarded intact by the same instruction: UD-012 (V0 authorized), UD-013 (stack pr
 V0-scoped), H25 (store is not Project Reality), Q25 (OPEN, must not be closed), and the
 out-of-V0 list (out of scope, not rejected). The plan and README/DIRECTION were updated
 accordingly; no code written.
+
+--- AMENDMENT 2: pre-flight (user mandate, same day) ---
+Environment probe run (experiments/v0-preflight/PREFLIGHT-V0-FEDORA.md): Fedora 44,
+btrfs workspace, tmpfs /tmp, gcc present, libsqlite3 present, symlink/hardlink/atomic
+rename/case sensitivity/nsec mtimes all confirmed. Findings: (1) Rust toolchain NOT
+installed — the single setup step before implementation; (2) portability boundary added
+to the plan (§12) with INV-8 (ambiguity over invented identity, mandate-directed);
+(3) no additional dependencies needed; (4) no blockers otherwise. No decision closed
+(Q25 untouched); environment versions recorded for reproducibility only.

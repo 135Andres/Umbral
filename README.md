@@ -134,9 +134,12 @@ research/PROJECT-REALITY-MINIMUM-MODEL.md
                                       evidence RM-1..RM-18, falsifications, E-MIN-1 next
 V0-IMPLEMENTATION-PLAN.md ......... PROVISIONALLY ADOPTED (UD-012/UD-013): fsp-check
                                     prototype — scope, stack (V0-only), model, invariants
-                                    INV-1..7, red-team classes A/B/C; §8 benchmarks and
+                                    INV-1..8, red-team classes A/B/C; §8 benchmarks and
                                     §9 SC-1..SC-5 CONFIRMED by the user (2026-09-11);
-                                    READY FOR V0 IMPLEMENTATION
+                                    portability boundary §12; READY FOR V0 IMPLEMENTATION
+experiments/v0-preflight/ ......... PREFLIGHT-V0-FEDORA.md: environment probe + portability
+                                    classification (evidence; Rust toolchain absent = the
+                                    one setup step before implementation)
 research/briefs/ .................. seven narrow briefs for external reasoning models
                                     (A shared reality, B coexistence, C handoff, D authority,
                                     E environment intelligence, F minimum self-description,
