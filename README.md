@@ -120,10 +120,18 @@ RESEARCH-AGENDA.md ................ research phases, comparison criteria K1-K9, 
 DOCUMENTATION-ARCHITECTURE.md ..... PROPOSED structure of this repository (not a product doc)
 COEXISTENCE-STRATEGIES.md ......... PROPOSED candidate strategies for the current central
                                     research direction (UD-011); nothing selected
+ENVIRONMENT-INTELLIGENCE.md ....... PROPOSED hypothesis set H15-H23 from the second research
+                                    cycle (self-description, progressive disclosure,
+                                    introspection, stance, maintenance); nothing selected
 research/RESEARCH-INDEX.md ........ source inventory, authority status, gaps
 research/COEXISTENCE-RESEARCH.md .. evidence base for the coexistence strategies (CO-n)
-research/briefs/ .................. four narrow briefs for external reasoning models
-                                    (A shared reality, B coexistence, C handoff, D authority)
+research/ENVIRONMENT-INTELLIGENCE-RESEARCH.md
+                                   .. evidence base EI-n + the 13-question prior-art matrix
+                                      (which existing systems solve what, and what is left)
+research/briefs/ .................. seven narrow briefs for external reasoning models
+                                    (A shared reality, B coexistence, C handoff, D authority,
+                                    E environment intelligence, F minimum self-description,
+                                    H runtime introspection)
 research/DOC-ARCHITECTURE-RESEARCH.md  evidence base for the documentation architecture
 research/history/INGEST-NOTES.md .......... historical: the initial ingestion record
 research/history/AUDIT-2026-09-10.md ...... historical: first project-intelligence audit

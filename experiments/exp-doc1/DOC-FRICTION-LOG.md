@@ -276,14 +276,41 @@ a third research stage repeats this reconstruction, build a coverage line per so
 RESEARCH-INDEX (one line each, not a new file). Severity: low-medium.
 
 ================================================================================
-SUMMARY (as of 2026-09-10, after EXP-1, all EXP-DOC-1 runs, and the coexistence stage)
+DOC-FRICTION-016 — product-level hypotheses had no home in the H namespace rules
 ================================================================================
-Incidents: 15 recorded: 11 fixed, 2 partially fixed, 2 open (one HIGH — DOC-FRICTION-004,
+Question: "Where do H15-H23 belong — ARCHITECTURE-HYPOTHESES or a new product file?"
+Path taken: the routing rule, then the T4 home (ARCHITECTURE-HYPOTHESES).
+Expected: an unambiguous row for "a hypothesis that is about the PRODUCT, not about
+architecture".
+Actual: the H namespace was implicitly architectural; the new hypotheses are product-level.
+Splitting the namespace across files risked breaking the one-home rule.
+Failure: ROUTING, third instance of this class (see 001, 014).
+Disposition: FIXED BY CONVENTION, deliberately not by restructuring — the entries live in
+ENVIRONMENT-INTELLIGENCE.md (their home) and ARCHITECTURE-HYPOTHESES.md carries a one-line
+index pointing there. Recorded as a convention decision the next stage may need to revisit
+if the H namespace keeps growing. Severity: low.
+
+DOC-FRICTION-017 — evidence files are drifting toward a shared undocumented convention
+================================================================================
+Question: none (observation).
+Actual: research/COEXISTENCE-RESEARCH.md and research/ENVIRONMENT-INTELLIGENCE-RESEARCH.md
+independently converged on the same conventions (source numbering with verification markers,
+a "carried findings" section, a matrix against a fixed question set). Convergence is
+evidence the conventions are good; their absence from DOCUMENTATION-ARCHITECTURE.md means a
+future stage could diverge from them unknowingly.
+Failure: none (this is a positive drift). Recorded because the documentation architecture's
+job is to make the right thing the default thing.
+Disposition: NOT FIXED — one more convergent instance before promoting the conventions into
+the routing rule (same trigger discipline as 015). Severity: low.
+
+================================================================================
+SUMMARY (as of 2026-09-10, after EXP-1, all EXP-DOC-1 runs, and two research stages)
+================================================================================
+Incidents: 17 recorded: 12 fixed, 2 partially fixed, 2 open (one HIGH — DOC-FRICTION-004,
 unarchived sources, awaiting user authorization; one watch — MR-2 update blocks).
-Classes: currency 5, authority-clarity 4, structural 3, routing 2, provenance/gap 1.
-Dogfooding during the coexistence stage added two incidents (014 routing, 015 coverage) and
-no currency failures — the first stage in which the currency class did not recur, which is
-weak evidence that the earlier fixes held.
+Classes: currency 5, authority-clarity 4, routing 3, structural 3, provenance/gap 1,
+convention-drift 1 (positive). The currency class has now been silent for two consecutive
+research stages.
 No incident was a failure of the topic-per-file organization. Every failure was currency,
 status, provenance or placement discipline — the layer the documentation audit identified
 as missing. Four independent readers now confirm it.

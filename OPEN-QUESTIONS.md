@@ -86,6 +86,22 @@ NOTE ON SCOPE: these are not the same as the user-decision fork raised in
 COEXISTENCE-STRATEGIES.md §3 (O14) — whether FSP serves developers-with-agents first or
 ordinary users first. That is a product decision, listed in the stage record.
 
+Q19 — DO AI PARTICIPANTS NEED AN EXPLICIT SAFETY FLOOR, OR DO PLATFORM PERMISSION
+      SYSTEMS ALREADY SUPPLY IT?
+   The safety floor (ENVIRONMENT-INTELLIGENCE.md H17) may be redundant with tool-permission
+   prompts that vendors already implement. If platforms cover it, H17's floor is a
+   nice-to-have, not a requirement. Settles by: E-CO-6a (with a platform-permission arm).
+Q20 — IS "THE USER HAS NOT DECIDED" DISTINGUISHABLE FROM "THE USER HAS NO POSITION"?
+   H21 (stance without authority) depends on this distinction being representable and
+   perceived. No evidence found either way. Settles by: E-CO-9 (deferred), or by product
+   research with real users.
+Q21 — DOES THE STANDING DIMENSION ("WHO HAD THE AUTHORITY TO DECIDE") HAVE OPERATIONAL VALUE?
+   Git records authorship, provenance records origin; neither records authority. No evidence
+   was found that any participant or user acts on this distinction today. If it has no
+   operational value, a large part of the standing dimension is decorative. Settles by:
+   E-CO-6b-style probing of whether models/users change behaviour when standing is exposed.
+   OPEN and explicitly unresolved; do not treat the standing dimension as established.
+
 ================================================================================
 (original question list, as written 2026-09-10 before the recovery)
 ================================================================================

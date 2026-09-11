@@ -35,6 +35,14 @@ Known gap in that log: provenance has no record — the charter states it (MC §
 own section header demotes it, and this repository deliberately did not resolve that for
 the user. See DECISIONS.md "GAPS IN THIS LOG".
 
+CANDIDATE HYPOTHESIS SET (2026-09-10b, NOT a direction change)
+The coexistence work produced a candidate broader concept — SHARED ENVIRONMENT REALITY
+(reality / standing / currency), with Shared Validity as its currency dimension — and a
+separate self-description hypothesis for the instrument itself. Eight hypotheses (H15-H23),
+two proposed mechanisms (M9 calibration precondition, M10 read/write recording split) and
+the objections C1-C13 are recorded in ENVIRONMENT-INTELLIGENCE.md. All unratified. The two
+kill-tests are independent: E-CO-1 (currency) and E-CO-6a (safety floor).
+
 CURRENT CENTRAL DIRECTION (UD-011, 2026-09-10)
 Coexistence with a world of AI systems: what must FSP provide so a human and several
 heterogeneous AIs can safely, coherently and continuously share one filesystem without the

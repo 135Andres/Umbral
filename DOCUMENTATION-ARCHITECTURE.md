@@ -338,6 +338,11 @@ New information arrives constantly. The rule, applied in order:
                                                       existing file that owns that subject
   5. Is it a candidate mechanism or an unanswered question?
                                                    -> HYPOTHESIS / OPEN QUESTION (DT4)
+  5a2. Is it a PRODUCT-level hypothesis (about what FSP is/does, not how it is built)?
+                                                   -> its own CANONICAL (T2) hypothesis
+                                                      document if numerous; INDEX entry in
+                                                      ARCHITECTURE-HYPOTHESES.md; never in
+                                                      DECISIONS.md
   5b. Is it a research DIRECTION the user authorized, whose output is candidate
       strategies rather than findings?             -> CANONICAL (T2) strategy document +
                                                       research/ evidence file + the

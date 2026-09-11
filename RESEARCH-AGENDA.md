@@ -150,6 +150,16 @@ COEXISTENCE-STRATEGIES.md. Evidence: research/COEXISTENCE-RESEARCH.md.
   7.5 Test honest attribution, including UNKNOWN (E-CO-5).
   7.6 Only then compare strategies S1-S7 against K1-K9, with coexistence as the reference
       problem. External model briefs (research/briefs/) may inform 7.6 but never decide it.
+  7.7 E-CO-6a — SAFETY-FLOOR COMPREHENSION (the environment-intelligence cycle's highest-
+      information experiment; see ENVIRONMENT-INTELLIGENCE.md §7-§8). Runnable with the
+      EXP-DOC-1 fresh-reader instrument, no prototype, no user authority. Candidate to run
+      in parallel with 7.1: the two dimensions are independent (see objection C13).
+  7.8 E-CO-7 — PROGRESSIVE-DISCLOSURE EFFICIENCY. Needs the E-CO-6a surfaces as arms.
+  7.9 DEFERRED: E-CO-8 (needs a prototype to introspect) and E-CO-9 (needs a stance
+      mechanism to exist; C11 makes paper-rejection cheaper than testing). E-CO-1 remains
+      the kill-test for the currency dimension; E-CO-6a is the kill-test for the
+      self-description dimension. They are independent: either can fail without killing
+      the other.
 
 -------------------------------------------------------------------------------
 PHASE 6 — COMPARISON CRITERIA (how any architecture will be judged)
