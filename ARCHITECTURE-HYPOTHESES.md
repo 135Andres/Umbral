@@ -121,6 +121,10 @@ auto-approval, unattended) with deterministic enforcement outside the model.
 Source: S7 §17.
 Counter: S11 §17-12 rejects fine-grained matrices as fatigue-inducing and recommends two
 modes (read/plan vs. act). Constraint C10 supports the rejection.
+SUPERSEDED AS A COUNTER (2026-09-10): the user's own words require the layered model
+(MC §24, recorded as UD-008; tension T3 resolved by user). C10's evidence still bounds the
+DESIGN — the layers must not become per-action prompting — but it no longer argues against
+the layered intent. What remains open is the mechanism (Q7).
 Would depend on: Q7.
 
 -------------------------------------------------------------------------------

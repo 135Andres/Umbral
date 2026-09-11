@@ -47,6 +47,16 @@ a Git replacement, an AI agent (MC §1). Not a database-with-file-export. Not a 
 Not autonomous background writers of user files. Not a prompt-injecting host (A11).
 Nothing at all yet — no implementation is authorized (MC §48).
 
+TOP RISKS (one line each; ranking is Hermes interpretation, full reasoning in
+research/AUDIT-2026-09-10.md §H)
+R1 The two-writers problem: filesystem authority + derived state + AI writers + external
+   mutation. Highest impact, highest uncertainty. Unresolved (T5, Q1/Q2/Q15).
+R2 Premature scale commitment — largely defused as policy by MC §37; empirical part open.
+R3 Identity under churn (A4 vs. the least intrusive mechanisms).
+R4 The central premise is unvalidated at scale: no evidence yet that semantic projection
+   over arbitrary files works beyond EXP-1's 36-file corpus.
+R5 Failure behaviour when the system is wrong is unspecified in every candidate.
+
 WHAT COULD CHANGE OUR MIND
 - A demonstrated failure of the overlay premise: if semantics cannot be projected over
   arbitrary files coherently under external mutation (Q10/T5), the product thesis needs
