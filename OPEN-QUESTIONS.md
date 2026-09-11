@@ -179,12 +179,20 @@ Settles when: failure behaviour is specified as a first-class part of any archit
 not as a residual category.
 
 -------------------------------------------------------------------------------
-TENSIONS (from ARCHITECTURE-HYPOTHESES.md, kept visible rather than resolved)
-T1 context packaging: product concept versus protocol payload.
-T2 "build only the differentiator": convergent principle, divergent targets.
-T3 permission model: multi-tier versus two-mode.
-T4 view layer: tables/boards/timeline/local graph versus no dashboards, no graph views.
+TENSIONS (canonical list: ARCHITECTURE-HYPOTHESES.md)
+T1 context packaging: product concept versus protocol payload. OPEN.
+T2 "build only the differentiator": convergent principle, divergent targets. OPEN.
+T3 permission model: multi-tier versus two-mode. RESOLVED BY USER (MC §24; UD-008) —
+   the layered model is the intent; the research's two-mode simplification is
+   superseded and retained only as design evidence.
+T4 view layer: dashboards/kanban/graph/timeline versus "no dashboards, no graph views".
+   RESOLVED BY USER (MC §7/§8; UD-009) — the views are wanted; the research's
+   rejection is superseded and retained only as design constraint (C9, C11).
 T5 filesystem authority versus non-derivable state — the corpus recommends the
-   architecture it also documents as having failed.
-Tensions are recorded, not resolved. Resolving one silently would destroy the evidence
-that a real disagreement exists.
+   architecture it also documents as having failed. OPEN, highest risk (R1).
+T6 scale envelope: 10^4-10^6 as design constraint versus "personal corpora need far
+   less". RESOLVED AS POLICY BY USER (MC §37); the empirical question stays open (Q8).
+
+A tension marked RESOLVED records that the USER's own words settled it. It does NOT
+mean the research was wrong: the underlying evidence is preserved as constraint
+material. Do not cite a resolved tension as a live disagreement.

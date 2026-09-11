@@ -46,6 +46,10 @@ UPDATE 2026-09-10: the Project Master Context (MC) was recovered from session hi
       needs it; hosted infrastructure eventually. REMOVED from the user queue.
   0.5 Provenance — ANSWERED as intent (MC §40): user-visible provenance wanted.
       Residual: prominence in UX. REMOVED from the user queue.
+      CAVEAT (found by the EXP-DOC-1 authority test): MC §40 is the user's own section
+      but its header says "These are research inputs, not final requirements." So this
+      is USER INTENT read from the user's words, NOT a recorded requirement. If the
+      distinction ever matters, ask the user.
   0.6 Source archiving — PARTIALLY DONE: MC archived verbatim at
       research/sources/PROJECT-MASTER-CONTEXT.md. S1-S11 full texts exist in this
       session's conversation history and can be archived verbatim on request; they are

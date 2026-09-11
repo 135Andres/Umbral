@@ -120,6 +120,12 @@ research/AUDIT-2026-09-10.md ...... historical: first project-intelligence audit
 research/sources/ ................. verbatim archives (PROJECT-MASTER-CONTEXT.md)
 experiments/ ...................... one directory per experiment: spec + result +
                                     instrument + raw results (EXP-1; EXP-DOC-1)
+experiments/corpus-messy/ ......... SYNTHETIC fixture data for a fictional project
+                                    ("Kestrel"). NOT FSP records: its files are named
+                                    like real project documents (decisions-2024.md,
+                                    ADR-007-*.md, open-questions.md) because that is
+                                    what the experiment needed. Read nothing there as
+                                    a statement about FSP.
 
 -------------------------------------------------------------------------------
 LANGUAGE NOTE

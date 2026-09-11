@@ -1,5 +1,7 @@
 # AGENTS.md
 
+Status: CURRENT — pointer document (no authority of its own; it routes, it does not state).
+
 Entry point for AI agents working in this repository. Five lines, no duplication.
 
 **Read `README.md` first.** It holds the map, the read order, the authority ladder and the
