@@ -1,0 +1,7 @@
+voice memo transcript 2025-03-04
+
+- Ana asked again about the mobile client, I said after the beta
+- someone needs to own the deployment story, it is still a shell script
+- reminder: the polling approach is what we shipped, do not reopen unless
+  the numbers justify it (see decisions-2024)
+- ask Priya about the hosting invoice, it looked higher than expected

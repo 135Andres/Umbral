@@ -1,0 +1,9 @@
+{
+  "window": "2025-02",
+  "requests_per_day": 41200,
+  "p50_ms": 88,
+  "p95_ms": 410,
+  "p99_ms": 1200,
+  "errors_percent": 0.4,
+  "note": "p95 is close to what we promised the pilot; see latency-notes.md"
+}

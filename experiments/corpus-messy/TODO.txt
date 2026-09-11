@@ -1,0 +1,5 @@
+[ ] finish the deploy checklist
+[x] pick a storage layout for the prototype
+[ ] resolve the open question about rate limiting
+[ ] review the vendor comparison before the Q3 planning meeting
+[ ] delete the duplicate spec in archive (nobody remembers which is real)

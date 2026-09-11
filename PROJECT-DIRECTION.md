@@ -33,9 +33,13 @@ survivability; research before implementation; Gemini-first research with Hermes
 cross-verification; layered permission intent; views and proactive intelligence wanted.
 
 WHAT WE ARE CURRENTLY TESTING
-Nothing empirical yet. The corpus S1-S11 is ingested research. The highest-risk open
-problem is the two-writers problem: filesystem authority + derived state + AI/internal
-writers + external mutation (OPEN-QUESTIONS Q1/Q2/Q15; tension T5).
+EXP-1 ran 2026-09-10 (experiments/exp1/): a content-only semantic projection over a
+36-file arbitrary corpus, measured on 8 retrieval classes and 10 filesystem mutations.
+Result: PARTIAL PASS on both hypotheses — retrieval useful without any user taxonomy,
+identity reconciled across every mutation class, but no abstention and vocabulary
+mismatch only weakly mitigated. The highest-risk open problem is unchanged: the
+two-writers problem, filesystem authority + derived state + AI writers + external
+mutation (OPEN-QUESTIONS Q1/Q2/Q15; tension T5).
 
 WHAT WE ARE NOT BUILDING
 A note app, an Obsidian clone, a project manager, an AI chat app, a filesystem browser,
@@ -52,8 +56,12 @@ WHAT COULD CHANGE OUR MIND
 - Any new explicit user decision — user authority always outranks research.
 
 CURRENT NEXT STEP
-Decide the MVP boundary and surface sequence (0.7/0.8 — the only user decisions the
-audit could not recover), then run the smallest experiment that tests the central
-assumption: index a real, messy directory, project semantics from content alone, and
-measure whether external mutation stays coherent (RESEARCH-AGENDA Phase 1). Failure
-there is a result, and a decisive one.
+Two distinct lines, deliberately separated:
+
+  Evidence line (no user authority needed): EXP-2 — rename+edit under the identity
+  tracker, the weakest measured point (EXP-1 XQ-3). Runnable on request.
+  Real-corpus line: re-run EXP-1's protocol against a directory the user authorizes,
+  because every EXP-1 result is bounded by a Hermes-authored 36-file corpus (L1/L3).
+
+  Authority line (needs the user): 0.7 surface sequence and 0.8 MVP boundary. These gate
+  the NEXT stage, not the evidence stage — EXP-1 ran without them, correctly.

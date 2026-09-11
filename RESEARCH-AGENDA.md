@@ -78,9 +78,11 @@ Single most important open technical question: can a semantic layer be projected
 arbitrary, unclassified file tree without the user performing classification, and remain
 coherent under external mutation?
 
-  1.1 Prototype the smallest possible instance: index an existing real directory (not a
-      synthetic corpus), attribute semantics from content and structure only, expose
-      retrieval to a model, and measure whether the result is useful without user filing.
+  1.1 [PARTIALLY RUN 2026-09-10 as EXP-1 — see experiments/exp1/EXP-1.md] Indexed a
+      36-file arbitrary corpus with content-only semantics; measured 8 retrieval classes
+      against fixed accept lists and 10 mutation classes. Result: PARTIAL PASS on both
+      hypotheses. NOT YET DONE: the real user directory (EXP-1 used a Hermes-authored
+      corpus — limitation L3), and exposure of retrieval to a model.
   1.2 Test the coherence boundary: mutate files externally (rename, move, duplicate,
       delete, checkout) while the system is running, and record what breaks and why.
   1.3 Measure the real question from Q6: does useful retrieval require multi-hop

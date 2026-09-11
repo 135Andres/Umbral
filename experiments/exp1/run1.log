@@ -1,0 +1,57 @@
+CORPUS 36 files, 10730 bytes, 6 directories
+PROJECTION {'docs_with_links': 0, 'typed_edges': 4, 'superseded_docs': ['decisions-2024.md'], 'questions_found': 3, 'dates_found': 6, 'authors_found': 2}
+
+id   class                  B0        B1        B2       
+Q1   exact-name             retrieved retrieved retrieved
+Q2   vocabulary-mismatch    not-found retrieved retrieved
+Q3   conceptual             retrieved retrieved retrieved
+Q4   relationship           retrieved retrieved retrieved
+Q5   multi-hop              retrieved retrieved retrieved
+Q6   irrelevant             spurious- spurious- spurious-
+Q7   missing-information    retrieved retrieved retrieved
+Q8   provenance             retrieved retrieved retrieved
+
+Q1 | deploy checklist
+   B0 retrieved-correctly    [('deploy-checklist.md', 6.589, 'lexical'), ('misc/random-links.md', 4.948, 'lexical'), ('TODO.txt', 3.929, 'lexical')]
+   B1 retrieved-correctly    [('deploy-checklist.md', 6.589, 'lexical'), ('misc/random-links.md', 4.948, 'lexical'), ('TODO.txt', 3.929, 'lexical')]
+   B2 retrieved-correctly    [('deploy-checklist.md', 6.589, 'lexical'), ('misc/random-links.md', 4.948, 'lexical'), ('TODO.txt', 3.929, 'lexical')]
+Q2 | how long do users wait for the screen to update
+   B0 not-found              [('open-questions.md', 5.978, 'lexical'), ('ADR-007-realtime-updates.md', 4.417, 'lexical'), ('misc/bug-1421.md', 3.656, 'lexical')]
+   B1 retrieved-below-top3   [('open-questions.md', 5.978, 'lexical'), ('ADR-007-realtime-updates.md', 4.417, 'lexical'), ('misc/bug-1421.md', 3.656, 'lexical')]
+   B2 retrieved-below-top3   [('open-questions.md', 5.978, 'lexical'), ('ADR-007-realtime-updates.md', 4.417, 'lexical'), ('misc/bug-1421.md', 3.656, 'lexical')]
+Q3 | what would hosting cost us
+   B0 retrieved-correctly    [('vendor-comparison-nimbus-stratus.md', 4.94, 'lexical'), ('notes.txt', 3.735, 'lexical'), ('cost-model.csv', 3.713, 'lexical')]
+   B1 retrieved-correctly    [('vendor-comparison-nimbus-stratus.md', 4.94, 'lexical'), ('notes.txt', 3.735, 'lexical'), ('cost-model.csv', 3.713, 'lexical')]
+   B2 retrieved-correctly    [('vendor-comparison-nimbus-stratus.md', 4.94, 'lexical'), ('notes.txt', 3.735, 'lexical'), ('cost-model.csv', 3.713, 'lexical')]
+Q4 | which work is blocked by unresolved questions
+   B0 retrieved-correctly    [('deploy-checklist.md', 5.222, 'lexical'), ('ADR-007-realtime-updates.md', 5.193, 'lexical'), ('open-questions.md', 4.047, 'lexical')]
+   B1 retrieved-correctly    [('deploy-checklist.md', 5.222, 'lexical'), ('ADR-007-realtime-updates.md', 5.193, 'lexical'), ('open-questions.md', 4.047, 'lexical')]
+   B2 retrieved-correctly    [('deploy-checklist.md', 5.222, 'lexical'), ('ADR-007-realtime-updates.md', 5.193, 'lexical'), ('open-questions.md', 4.047, 'lexical')]
+Q5 | if we choose Nimbus what else is affected
+   B0 retrieved-correctly    [('research/latency-notes.md', 4.709, 'lexical'), ('vendor-comparison-nimbus-stratus.md', 4.171, 'lexical'), ('api-draft.md', 3.859, 'lexical')]
+   B1 retrieved-correctly    [('research/latency-notes.md', 4.709, 'lexical'), ('vendor-comparison-nimbus-stratus.md', 4.171, 'lexical'), ('api-draft.md', 3.859, 'lexical')]
+   B2 retrieved-correctly    [('research/latency-notes.md', 4.709, 'lexical'), ('vendor-comparison-nimbus-stratus.md', 4.171, 'lexical'), ('api-draft.md', 3.859, 'lexical')]
+Q6 | chocolate cake recipe with butter
+   B0 spurious-results       [('archive/meeting-2022.md', 2.362, 'lexical'), ('misc/scratch.md', 2.106, 'lexical'), ('onboarding.html', 2.015, 'lexical')]
+   B1 spurious-results       [('archive/meeting-2022.md', 2.362, 'lexical'), ('misc/scratch.md', 2.106, 'lexical'), ('onboarding.html', 2.015, 'lexical')]
+   B2 spurious-results       [('archive/meeting-2022.md', 2.362, 'lexical'), ('misc/scratch.md', 2.106, 'lexical'), ('onboarding.html', 2.015, 'lexical')]
+Q7 | what is our GDPR data retention policy
+   B0 retrieved-correctly    [('open-questions.md', 6.13, 'lexical'), ('call-notes-delta-corp-2025-03-11.md', 3.199, 'lexical'), ('docs/api.md', 2.436, 'lexical')]
+   B1 retrieved-correctly    [('open-questions.md', 6.13, 'lexical'), ('call-notes-delta-corp-2025-03-11.md', 3.199, 'lexical'), ('docs/api.md', 2.436, 'lexical')]
+   B2 retrieved-correctly    [('open-questions.md', 6.13, 'lexical'), ('call-notes-delta-corp-2025-03-11.md', 3.199, 'lexical'), ('docs/api.md', 2.436, 'lexical')]
+Q8 | who decided the polling approach and when
+   B0 retrieved-correctly    [('decisions-2024.md', 4.541, 'lexical'), ('notes.txt', 4.153, 'lexical'), ('q3-planning.md', 3.779, 'lexical')]
+   B1 retrieved-correctly    [('decisions-2024.md', 4.541, 'lexical'), ('notes.txt', 4.153, 'lexical'), ('q3-planning.md', 3.779, 'lexical')]
+   B2 retrieved-below-top3   [('notes.txt', 4.153, 'lexical'), ('q3-planning.md', 3.779, 'lexical'), ('research/caching.md', 2.987, 'lexical')]
+
+M1-rename        identity_preserved=False actions=2 stale_links=0 events=['duplicate-content', 'rename-or-move']
+M2-move          identity_preserved=False actions=2 stale_links=0 events=['duplicate-content', 'rename-or-move']
+M3-dir-move      identity_preserved=False actions=5 stale_links=0 events=['duplicate-content', 'rename-or-move', 'rename-or-move', 'rename-or-move']
+M4-duplicate     identity_preserved=False actions=2 stale_links=0 events=['duplicate-content', 'duplicate-content']
+M5-delete        identity_preserved=False actions=3 stale_links=0 events=['duplicate-content', 'duplicate-content', 'deleted-or-unknown']
+M6-restore       identity_preserved=False actions=2 stale_links=0 events=['duplicate-content', 'duplicate-content']
+M7-external-edit identity_preserved=False actions=2 stale_links=0 events=['duplicate-content', 'duplicate-content']
+M8-atomic-save   identity_preserved=False actions=2 stale_links=0 events=['duplicate-content', 'duplicate-content']
+M9-vcs-checkout  identity_preserved=False actions=2 stale_links=0 events=['duplicate-content', 'duplicate-content']
+
+wrote /home/<user>/FSP/experiments/exp1/results.json
