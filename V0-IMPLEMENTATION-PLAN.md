@@ -217,6 +217,13 @@ dev+ino = observed on Linux AND rename(2)-documented, filesystem-family-local, N
 universal law; inode-reuse behaviour = filesystem-dependent; the Ambiguous verdicts and
 the path-is-not-identity rule = portable model properties (pure, tested without a
 filesystem).
+Hash evidence (increment 3): guard = size+ns-mtime+dev/ino before/after; retry policy
+MAX_GUARD_ATTEMPTS=2 is a V0 instrument policy, NOT an FSP architecture decision; a
+stat-guard cannot see a rewrite that restores size and exact mtime inside the read
+window (documented residual risk; hash-comparison across observations partially
+backstops); content equality NEVER implies identity equality (two objects, same bytes =
+duplicate content, different identities). INV-1 both halves tested: stable observation
+yields exactly-the-read-bytes hash; unstable/errored observation yields NO hash.
 Environment of record: Fedora 44, kernel 7.1.13, btrfs workspace, tmpfs /tmp — recorded
 for reproducibility only, NOT a project requirement.
 

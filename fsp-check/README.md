@@ -9,8 +9,22 @@ Increment 1 — SCAN: **implemented, tested** (2026-09-11).
 
 Increment 2 — IDENTITY (physical evidence): **implemented, tested** (2026-09-11).
 
-- `cargo check` clean · `cargo test` 19/19 pass (11 identity + 8 scan) ·
+Increment 3 — HASH (content evidence + re-read guard): **implemented, tested**
+(2026-09-11).
+
+- `cargo check` clean · `cargo test` 34/34 pass (15 hash + 11 identity + 8 scan) ·
   `cargo clippy --all-targets` clean · `cargo fmt` applied.
+
+Hash module (`src/hash_obs.rs`): `observe_content(path) -> ContentObservation` —
+streaming BLAKE3 (64 KiB buffer, never whole-file), guarded stat-before / read /
+stat-after over size + ns-mtime + dev/ino. Policy: on a detected change, retry once
+(`MAX_GUARD_ATTEMPTS = 2`, explicit documented constant); still changing → `Unstable`
+with `hash: None` and the `deltas` that fired. `valid_hash()` returns a hash ONLY for
+Stable observations (INV-1's two halves). Symlinks/dirs/specials: `NotARegularFile`,
+never resolved to target content. Errors (`NotFound`, `PermissionDenied`, `ReadError`)
+never become fake hashes — no magic values. Residual limitation, documented: a rewrite
+that restores size AND exact mtime within the read window is invisible to any
+stat-guard; content hash comparison across observations is the partial backstop later.
 
 Identity module (`src/identity.rs`): `PhysicalId {dev, ino}` as physical evidence —
 NEVER semantic identity, never eternal (inode reuse). `compare_same_path` /
