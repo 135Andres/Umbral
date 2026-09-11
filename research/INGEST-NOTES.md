@@ -1,6 +1,6 @@
 # INGEST NOTES
 
-Status: HISTORICAL RECORD (T7), frozen 2026-09-10. This is the ingestion record of the
+Status: HISTORICAL RECORD, frozen 2026-09-10. This is the ingestion record of the
 first bootstrap session: what was extracted from the research corpus, what was deliberately
 not persisted, and why. It is kept because the reasoning behind a discarded item is
 evidence, not because it describes current state. Do not update it; supersede it with a
@@ -9,9 +9,9 @@ file wins — this one records what was believed at ingestion time.
 
 Known drift in this file, left in place as history: it was written before the Master
 Context was recovered, so §1 counts A1-A10 (now A1-A11), it describes 11 files (now more),
-and its §4 tension list (T1-T7) predates the canonical list. T1-T5 are canonical in
-ARCHITECTURE-HYPOTHESES.md; T6 was added there during the documentation audit; T7 is folded
-into T1 (both concern "context package" being used as product concept and as schema).
+and its §4 tension list (seven entries) predates the canonical list. The canonical list is
+T1-T6 in ARCHITECTURE-HYPOTHESES.md / OPEN-QUESTIONS.md; the seventh entry here is folded into
+T1 (both concern "context package" being used as a product concept and as a schema).
 
 Record of what was extracted from the corpus, what was deliberately not persisted, and
 why. This file exists so that a future session does not re-derive these classification
@@ -161,7 +161,7 @@ T5  Filesystem authority (S1, S5, S9) vs. non-derivable state (S5, S9) — the c
     recommends the architecture it also documents as having failed (Logseq).
 T6  Scale envelope: 10^4-10^6 files treated as the design constraint (S2, S5) vs.
     arguments that personal corpora need an order of magnitude less (S11).
-T7  Context Packages: S2 describes them as the mechanism; S11 §17 rejects bespoke
+7.  Context Packages: S2 describes them as the mechanism; S11 §17 rejects bespoke
     formats. Also, the same term is treated as product concept and as schema — the two
     claims must not be merged.
 
@@ -199,8 +199,8 @@ Performed against the four-phase mandate (Phase 4 audit questions).
    file and repeated in the report.
 4  Example converted into requirement? No. See §3.4.
 5  Important idea lost? Two accepted losses: (a) the competitive comparison matrices,
-   intentionally left to be re-derived (§3.3); (b) H14, an architect-side synthesis, was
-   written and then removed because it had no source. All source-derived concepts are
+   intentionally left to be re-derived (§3.3); (b) an architect-side synthesis was
+   written and then removed because it had no source (§1). All source-derived concepts are
    landed. Highest-value items verified present: filesystem authority, no mandated
    taxonomy, rebuildable index, identity under churn, provenance and epistemic state,
    authority of automation, context economy, provider neutrality, external-mutation

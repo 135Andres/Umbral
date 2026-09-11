@@ -105,19 +105,19 @@ not differ, the documents are the same type in the same file.
 Legend: A = authority, L = lifecycle, W = who may create, AI = may an AI treat it as
 authoritative.
 
-T1 CHARTER (source of user intent)
+DT1 CHARTER (source of user intent)
    Purpose: the user's own founding statements. A: USER. L: immutable (verbatim archive).
    W: user only. AI: yes, as USER INTENT — never as an architecture decision.
    Home: research/sources/. Current instance: PROJECT-MASTER-CONTEXT.md (MC §n).
 
-T2 CANONICAL KNOWLEDGE (current truth about the product)
+DT2 CANONICAL KNOWLEDGE (current truth about the product)
    Purpose: the smallest set of documents that state what FSP is, must hold, needs, and
    cannot violate. A: project (derived from charter + decisions; never from research).
    L: living — edited in place, no changelog inside. W: Hermes proposes, user ratifies
    anything that changes meaning. AI: yes, as current — but check the status line.
    Homes: PROJECT-DIRECTION, VISION, INVARIANTS, PRINCIPLES, REQUIREMENTS, CONSTRAINTS.
 
-T3 DECISION RECORD
+DT3 DECISION RECORD
    Purpose: a commitment made by the user, with its basis and consequences. A: USER.
    L: immutable once recorded; superseded by a later record, never rewritten.
    W: user (Hermes may draft a candidate record; it is not a decision until accepted).
@@ -125,38 +125,38 @@ T3 DECISION RECORD
    Home: DECISIONS.md (split into one file per decision when supersession starts or the
    log passes ~20 entries — threshold stated so the split is not a judgement call).
 
-T4 HYPOTHESIS / OPEN QUESTION
+DT4 HYPOTHESIS / OPEN QUESTION
    Purpose: candidate mechanisms not validated; questions whose answers change the
    architecture. A: project (research-derived, unratified). L: living.
    W: Hermes. AI: yes, but must never present one as chosen or settled.
    Homes: ARCHITECTURE-HYPOTHESES, OPEN-QUESTIONS.
 
-T5 RESEARCH ARTIFACT (external evidence, unratified)
+DT5 RESEARCH ARTIFACT (external evidence, unratified)
    Purpose: what external sources or other AIs claim, and how it was verified.
    A: source (attributed, never adopted). L: immutable once ingested; corrected only by
    an explicit amendment note. W: Hermes. AI: may cite; must not treat as FSP position.
    Homes: research/reports/ (S1-S11 when archived), research/*-RESEARCH.md,
    research/RESEARCH-INDEX.md, research/INGEST-NOTES.md.
 
-T6 EXPERIMENT (specification and result)
+DT6 EXPERIMENT (specification and result)
    Purpose: a question answered by measurement. A: project; result is EVIDENCE, not a
    decision. L: spec frozen before running; result appended; both immutable afterwards.
    W: Hermes drafts, user approves the run. AI: may cite the result as evidence.
    Home: experiments/EXP-<n>-<slug>.md — directory created when the first experiment
    exists, not before.
 
-T7 AUDIT / PROCESS RECORD
+DT7 AUDIT / PROCESS RECORD
    Purpose: a dated review of the project's own state (what was wrong, what changed).
    A: Hermes, as a record — findings inside it carry their own authorities.
    L: immutable, dated, historical. W: Hermes. AI: yes, as history.
    Home: research/AUDIT-<date>.md.
 
-T8 INDEX / DERIVED VIEW
+DT8 INDEX / DERIVED VIEW
    Purpose: navigation aid over other documents. A: none (derived). L: disposable,
    rebuildable. W: anyone. AI: yes, for orientation only — never as the fact itself.
    Homes: README (entry router), research/RESEARCH-INDEX.md.
 
-T9 AGENT ROUTER
+DT9 AGENT ROUTER
    Purpose: the conventional entry point for AI agents that expect one. A: none
    (pointer). L: kept minimal. Home: AGENTS.md.
 
@@ -173,12 +173,12 @@ The ladder (highest first). Conflicts resolve downward; a lower level never over
 higher one:
 
   1. Explicit current user instruction
-  2. Decision record (T3, UD-nnn)
-  3. Charter (T1, MC §n) — user intent, not architecture
-  4. Canonical knowledge (T2) — derived from 2-3, current-state
-  5. Experiment result (T6) — evidence
-  6. Research artifact (T5) — external claim, attributed
-  7. Interpretation / hypothesis (T4) — Hermes
+  2. Decision record (DT3, UD-nnn)
+  3. Charter (DT1, MC §n) — user intent, not architecture
+  4. Canonical knowledge (DT2) — derived from 2-3, current-state
+  5. Experiment result (DT6) — evidence
+  6. Research artifact (DT5) — external claim, attributed
+  7. Interpretation / hypothesis (DT4) — Hermes
   8. Session history, agent memory, model inference
 
 The two confusions this must prevent, and the mechanism for each:
@@ -200,17 +200,17 @@ until an observed failure demands one.
 ================================================================================
 Two lifecycles, because one size does not fit:
 
-LIVING documents (T2 canonical, T4 hypotheses/questions, T8 indexes)
+LIVING documents (DT2 canonical, DT4 hypotheses/questions, DT8 indexes)
   DRAFT -> CURRENT -> (rewritten in place | SUPERSEDED-BY-POINTER | ARCHIVED)
   A rewrite in place is allowed only while the document still describes current truth.
   If the change is a reversal of a recorded commitment, it is a DECISION, not an edit:
   record UD-n, then update the living document to reference it.
   Who: Hermes may edit; the user must ratify any change of meaning.
 
-FROZEN documents (T1 charter, T3 decisions, T5 research, T6 experiments, T7 audits)
+FROZEN documents (DT1 charter, DT3 decisions, DT5 research, DT6 experiments, DT7 audits)
   CREATED -> (ACTIVE | SUPERSEDED) -> ARCHIVED
   Frozen documents are never edited except to add a supersession line at the top:
-      Status: SUPERSEDED BY UD-014 (2026-10-02) — see that record.
+      Status: SUPERSEDED BY UD-<nnn> (date) — see that record.  [illustrative format only]
   Who: the user may supersede a decision; Hermes may mark research or audits superseded
   by a later artifact. No one may rewrite a frozen record's content.
 
@@ -325,15 +325,15 @@ task requires more than a handful of reads — see EXP-DOC-1.
 ================================================================================
 New information arrives constantly. The rule, applied in order:
 
-  1. Is it a user commitment?                      -> DECISION RECORD (T3, UD-n)
+  1. Is it a user commitment?                      -> DECISION RECORD (DT3, UD-n)
   2. Does it come from outside FSP (source, report, other AI)?
-                                                   -> RESEARCH ARTIFACT (T5), with S-n
-  3. Is it the result of a measurement?            -> EXPERIMENT (T6, EXP-n)
+                                                   -> RESEARCH ARTIFACT (DT5), with S-n
+  3. Is it the result of a measurement?            -> EXPERIMENT (DT6, EXP-n)
   4. Does it change what is currently true about the product?
-                                                   -> CANONICAL KNOWLEDGE (T2), in the
+                                                   -> CANONICAL KNOWLEDGE (DT2), in the
                                                       existing file that owns that subject
   5. Is it a candidate mechanism or an unanswered question?
-                                                   -> HYPOTHESIS / OPEN QUESTION (T4)
+                                                   -> HYPOTHESIS / OPEN QUESTION (DT4)
   6. Is it process (how we work on FSP)?           -> the Hermes skill, not the repo
   7. Is it none of the above?                      -> do not write it down.
 
@@ -343,7 +343,7 @@ map in the same change.
 
 Duplication checks performed at write time:
   - Does another file already state this? Then reference it by ID instead of restating.
-  - Is this a summary of something? Then it is an INDEX (T8) and must say it is derived.
+  - Is this a summary of something? Then it is an INDEX (DT8) and must say it is derived.
   - Is this the same fact in two places? One of them is wrong by definition; fix both in
     the same change.
 
