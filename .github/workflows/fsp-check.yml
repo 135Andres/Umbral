@@ -3,9 +3,12 @@
 # Scope is deliberately minimal: detect basic regressions in the prototype. No release
 # automation, packaging, coverage, dependency bots, containers, benchmarks or artifacts.
 #
-# Assumption documented per the project's rules: there is no Cargo workspace at the
-# repository root, so cargo must run inside fsp-check/. That is why every step sets
-# working-directory rather than adding a root manifest, which would change the layout.
+# Layout note: a Cargo workspace DOES exist at the repository root since v0.1 (2026-09-12),
+# and it deliberately EXCLUDES fsp-check/ so this crate keeps its own lockfile and target
+# directory and builds exactly as it did when it was frozen. Every step still sets
+# working-directory, because that is what keeps the two crates' builds independent.
+# The exclusion is load-bearing: if fsp-check/ were a workspace member, this build would
+# change. See the root Cargo.toml.
 
 name: fsp-check
 

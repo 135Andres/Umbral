@@ -1,0 +1,54 @@
+# CI for the v0.1 development crate (umbral/).
+#
+# Scope is deliberately minimal, matching the V0 workflow: fmt, clippy, tests. No release
+# automation, packaging, coverage, dependency bots, containers, benchmarks or artifacts.
+#
+# This job runs on ubuntu-latest, whose ext4 filesystem is the third environment the suite is
+# exercised on (tmpfs and btrfs are covered locally). That is not incidental: the frozen V0
+# experiment's only deterministic CI failure came from a test that had encoded an assumption
+# about filesystem behaviour, and running somewhere other than the development machine is how
+# that class of defect is found. Assertions must hold on all three.
+
+name: umbral
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - 'umbral/**'
+      - 'Cargo.toml'
+      - '.github/workflows/umbral.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: umbral
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt,clippy
+          rustup default stable
+          rustc --version
+
+      - name: Cache cargo registry and build output
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-umbral-${{ hashFiles('umbral/Cargo.lock') }}
+
+      - name: cargo fmt --check
+        run: cargo fmt --check
+
+      - name: cargo clippy --all-targets
+        run: cargo clippy --all-targets
+
+      - name: cargo test
+        run: cargo test
