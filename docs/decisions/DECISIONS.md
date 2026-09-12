@@ -198,12 +198,34 @@ versioning, etc.). Home of the working plan: V0-IMPLEMENTATION-PLAN.md.
 Reversibility: high by design.
 Status: DECIDED (scoped adoption).
 
+UD-014 — v0.1 stack adopted, v0.1 scope only, explicitly non-irreversible
+Authority: USER (2026-09-12 v0.1 implementation mandate, decision D1): Rust, rusqlite,
+walkdir, blake3, proptest, tempfile for the v0.1 development crate `umbral/`.
+Statement: the same provisional set the V0 mandate named, adopted again for a DIFFERENT
+scope. This is a new adoption, not an inheritance: UD-013 covers the frozen experiment
+`fsp-check/` and nothing else, and this record covers `umbral/` and nothing else. Neither
+extends the other, and neither is a technology decision for the product.
+Alternatives: none evaluated in this mandate. RATIONALE UNKNOWN beyond "the user named this
+set for this version".
+Evidence: none supplied with the mandate. The provenance caveat recorded under UD-013
+applies unchanged — the research that would justify a stack choice exists in research
+sessions and is NOT archived in this corpus (research/RESEARCH-INDEX.md GAPS item 4). The
+adoption rests on user authority, which suffices; the evidence base is missing until
+archived.
+Consequences: `fsp-check/` remains independent, frozen, excluded from the Cargo workspace,
+and unmodified. Any change to a v0.1 dependency updates this record.
+Scope guard: this record does NOT settle Q25 (SQLite-only vs SQLite + external log), does
+not select a persistence model, and does not decide anything MC §52 leaves open.
+Reversibility: high by design.
+Status: DECIDED (scoped adoption, v0.1 only).
+
 ================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
   DECIDED (scoped)     — committed for a named, limited scope; explicitly reversible and
-                         explicitly NOT a project-wide or architectural choice (UD-013).
+                         explicitly NOT a project-wide or architectural choice
+                         (UD-013 for the V0 experiment, UD-014 for v0.1).
   DECIDED (intent)     — the intent is committed; the mechanism is still research.
   DECIDED (process)    — a commitment about how the project works, not about the product.
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
@@ -226,5 +248,6 @@ SUPERSESSION POINTERS (records are immutable; this is where replacement is recor
 ================================================================================
 NOT DECIDED (explicitly, by the user's own record — MC §52): final name, final
 architecture, database, indexing technology, AI protocol, versioning model, permission
-mechanism, UI architecture, semantic model. Also undecided: surface sequence (0.7), MVP
+mechanism, UI architecture, semantic model. The v0.1 crate uses SQLite; that is a scoped
+implementation choice under UD-014, and it settles none of these. Also undecided: surface sequence (0.7), MVP
 boundary (0.8), licence, governance, first target user sequence.
