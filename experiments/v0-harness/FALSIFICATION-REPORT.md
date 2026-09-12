@@ -47,6 +47,28 @@ this was the reverse case, adapting the harness to reality).
   database file (324 KB) — expected without a checkpoint; WAL checkpointing is not
   implemented in V0 (class B, revisit if store growth matters).
 
+### F-5 (class B — coverage gap, found during publication preparation)
+
+Symptom: `cargo clippy --all-targets` reports `variant \`DeleteDir\` is never constructed`
+and `method \`p_of\` is never used` in `tests/harness_falsification.rs`.
+
+Cause and significance: `Op::DeleteDir` exists as a variant with an apply arm and a
+precondition, but **the property-test strategy never generates it**. Directory deletion was
+therefore never exercised by the generated sequences, and no other test removes a directory
+end-to-end. This also means the increment-6 report's list of generated operations
+("delete file / directory") was inaccurate: directory deletion was specified but not
+generated.
+
+Disposition: **recorded, not patched.** V0 is frozen; adding the generator case would
+change the evidence rather than describe it. The gap is a limitation of V0's falsification
+coverage, not a falsified property — nothing in the results is retracted, but SC-1's claim
+of coverage must be read with this qualification. Carried to the V1 handoff.
+
+Secondary note (methodology): the earlier "clippy clean" check during increment 6 read a
+cached build and reported zero warnings. Re-checked with a forced rebuild during
+publication preparation, which is how this gap surfaced. Lesson: a tool result read from a
+cache is not a verification.
+
 ### Class A (V0 must fix): none outstanding
 All defects found were in the harness/oracle, not in fsp-check. No falsification of the
 V0 implementation was produced by this increment; the properties below hold.

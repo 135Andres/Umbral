@@ -2,6 +2,12 @@
 /fsp-check/target/
 target/
 
+# PRIVATE — must never be published.
+# The project owner's founding charter is a private document. It is deliberately
+# untracked; see PUBLICATION-PROPOSAL.md R-1 and README.md ("Naming and sources").
+# Do not remove this rule, and do not re-add the file.
+/research/sources/PROJECT-MASTER-CONTEXT.md
+
 # Editor / IDE
 .vscode/
 .idea/

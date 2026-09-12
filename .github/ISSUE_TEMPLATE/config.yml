@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/OWNER/REPO/security/policy
-    about: Do not open a public issue for a vulnerability. See SECURITY.md.
+    url: https://github.com/135Andres/Umbral/security/advisories/new
+    about: Report privately — do not open a public issue. See SECURITY.md.
+  - name: Read the project's status first
+    url: https://github.com/135Andres/Umbral/blob/master/PROJECT-DIRECTION.md
+    about: Where Umbral stands right now, and what is being worked on.

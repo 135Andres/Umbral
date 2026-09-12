@@ -10,6 +10,16 @@ body:
         currently believes. Please read CONTRIBUTING.md first: this project keeps
         decisions, proposals, hypotheses and evidence strictly separate, and a proposal is
         not a decision.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of proposal is this?
+      options:
+        - Feature proposal — a capability or behaviour Umbral should have
+        - Architectural proposal — how the system should be structured or built
+        - Research proposal — a question to investigate, with a way to settle it
+    validations:
+      required: true
   - type: textarea
     id: what
     attributes:
