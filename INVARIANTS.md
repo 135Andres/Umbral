@@ -5,9 +5,10 @@ Status: CURRENT (living) — canonical knowledge (T2).
 Category A only: properties that must remain true regardless of implementation.
 Nothing here is CONFIRMED — no implementation exists to confirm anything.
 
-AUTHORITY UPGRADE (2026-09-10 audit): the Project Master Context (MC, archived at
-research/sources/PROJECT-MASTER-CONTEXT.md) was recovered from session history. It is
-the user's own founding document, and it directly states most of these invariants.
+AUTHORITY UPGRADE (2026-09-10 audit): the Project Master Context (MC) was recovered from
+the project's original working session. It is the owner's founding charter — a private
+document, not part of this repository, so its `MC §n` citations cannot be checked here —
+and it directly states most of these invariants.
 Statuses below now read USER INTENT with an MC section reference wherever MC states the
 property. Still no architecture follows from any of them.
 

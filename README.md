@@ -184,6 +184,12 @@ The founding charter is the project owner's own document. It is cited throughout
 documents above carry its load-bearing content, each with its `MC §n` citation preserved.
 Where a citation cannot be checked publicly, that is stated rather than hidden.
 
+This repository's history was rewritten once, before its first public release, to remove a
+document that is not part of the public edition. That is why no commit hash is cited
+anywhere in this repository: the rewrite changed all of them, and a hash written down
+afterwards would have been wrong. The development trail — what was done, in what order,
+with what evidence — is preserved.
+
 ## How this project is developed
 
 Umbral is developed by its owner together with AI agents, and the commit history says so:

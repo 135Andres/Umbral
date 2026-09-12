@@ -37,9 +37,13 @@ absent contradicting evidence.
   existence/content/aliasing directly, never calls fsp-check's reconcile), generated
   op sequences with explicit precondition gating, 512 proptest cases, crash-during-
   sequence, hard-link group survival, path-swap-as-property, out-of-order semantics.
-- Four findings, ALL class D (harness/oracle defects, none in fsp-check) — including
-  the second occurrence of the `Path::starts_with("dir/")` trap and an oracle that
-  failed to model hard-link aliasing (the implementation was right, the oracle wrong).
+- Findings: four class D (harness/oracle defects, none in fsp-check) — including the
+  second occurrence of the `Path::starts_with("dir/")` trap and an oracle that failed to
+  model hard-link aliasing (the implementation was right, the oracle wrong) — **plus one
+  class B coverage gap (F-5): the generator never emitted `Op::DeleteDir`, so directory
+  deletion was not falsified by V0.** The three-way distinction between operations
+  modelled, operations generated, and operations exercised is stated in
+  `../experiments/v0-harness/FALSIFICATION-REPORT.md`.
 
 Reconcile (`src/reconcile.rs`): pure function over two ObservationSets (entries +
 valid-hash evidence + completeness flag). Matching rule, in priority order:

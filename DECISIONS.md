@@ -56,16 +56,23 @@ Reversibility: treat as irreversible (trust property).
 Status: DECIDED.
 
 UD-004 — Sonora is not an architectural authority for FSP
-Authority: USER (MC header, §2). Statement: "Sonora ... must NOT be architecturally
-constrained by [or constrain] ... The new tool"; "Sonora's domain ontology is NOT
-automatically the ontology of the new tool." Sonora is the first intended consumer/use
-case; its lessons (authority, provenance, uncertainty, sovereignty) are inputs.
+Authority: USER. Statement: the project keeps architectural independence from the
+applications that consume it. A consumer may influence it through use cases, requirements
+and feedback; no individual consumer determines its architecture, and its architecture does
+not constrain its consumers. The project's first intended consumer is one such application,
+not an authority over it.
 Alternatives: not discussed.
-Evidence: the Sonora governance corpus confirms the same boundary from the other side.
-Consequences: no Sonora concept may enter FSP without passing the Lesson-vs-Invariant-
-vs-Implementation test (MC §2).
+Evidence: the boundary is asserted from both sides — the consuming project's own governance
+records state the same independence.
+Consequences: no concept originating in a consuming application enters the project without
+passing the Lesson / Invariant / Implementation test: a lesson learned elsewhere is an
+input; an invariant must be justified on this project's own terms; an existing
+implementation is never evidence that an architecture is right.
 Reversibility: durable by design.
-Status: DECIDED.
+Status: DECIDED. Rationale restated 2026-09-11 in the project's own terms: the private
+source document this decision was derived from is not published, and its wording is not
+reproduced here. The decision is unchanged; only the citation form changed. The record's
+title is left as written (see the NAMING note above).
 
 UD-005 — Local-first with file survivability
 Authority: USER (MC §3, §29). Statement: "The application should work fully locally";

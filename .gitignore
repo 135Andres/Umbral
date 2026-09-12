@@ -2,6 +2,12 @@
 /fsp-check/target/
 target/
 
+# PRIVATE — must never be published. Contains the private charter; delete before publishing.
+/.sanitization-backup/
+
+# Internal working record — the owner's publication checklist. Kept on disk, not published.
+/PUBLICATION-PROPOSAL.md
+
 # PRIVATE — must never be published.
 # The project owner's founding charter is a private document. It is deliberately
 # untracked; see PUBLICATION-PROPOSAL.md R-1 and README.md ("Naming and sources").

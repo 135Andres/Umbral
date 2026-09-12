@@ -31,8 +31,9 @@ Track order is NOT prescribed by the user. The phases below are ordered by block
 -------------------------------------------------------------------------------
 PHASE 0 — ESTABLISH THE PREMISES (user decisions, not research)
 ================================================================================
-UPDATE 2026-09-10: the Project Master Context (MC) was recovered from session history
-(research/sources/PROJECT-MASTER-CONTEXT.md) and answers most of Phase 0. Revised:
+UPDATE 2026-09-10: the Project Master Context (MC) — the owner's founding charter, private
+and not part of this repository — was recovered from the project's original working session
+and answers most of Phase 0. Revised:
 
   0.1 Scale/hardware — ANSWERED as policy (MC §37): no premature optimization; no
       choices that unnecessarily prevent scaling. Residual is empirical (Phase 3), not a
@@ -50,8 +51,8 @@ UPDATE 2026-09-10: the Project Master Context (MC) was recovered from session hi
       but its header says "These are research inputs, not final requirements." So this
       is USER INTENT read from the user's words, NOT a recorded requirement. If the
       distinction ever matters, ask the user.
-  0.6 Source archiving — PARTIALLY DONE: MC archived verbatim at
-      research/sources/PROJECT-MASTER-CONTEXT.md. S1-S11 full texts exist in this
+  0.6 Source archiving — PARTIALLY DONE: MC is archived verbatim in the owner's private
+      records, deliberately not part of this repository. S1-S11 full texts exist in this
       session's conversation history and can be archived verbatim on request; they are
       NOT yet in the repository. Still open, one command away.
 

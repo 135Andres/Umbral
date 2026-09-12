@@ -14,9 +14,10 @@ position in the file reflects when a question was added.
 ================================================================================
 UPDATE 2026-09-10 — MASTER CONTEXT RECOVERY (audit outcome)
 ================================================================================
-The Project Master Context (MC) was recovered from session history and archived at
-research/sources/PROJECT-MASTER-CONTEXT.md. It answers several questions that were
-previously classified open. Per-item status changes (original entries below, unchanged):
+The Project Master Context (MC) — the owner's founding charter, a private document that is
+not part of this repository — was recovered from the project's original working session. It
+answers several questions that were previously classified open. Its `MC §n` citations cannot
+be checked here. Per-item status changes (original entries below, unchanged):
 
   Q3  TARGET USER — LARGELY RESOLVED at intent level. MC §1: useful to ordinary users
       while powerful for serious technical projects and AI-assisted development. MC §37:

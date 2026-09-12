@@ -2,11 +2,12 @@
 
 Status: CURRENT (living) — canonical knowledge (T2).
 
-Category B. Status rule for this file: USER INTENT where the Master Context (MC,
-archived at research/sources/PROJECT-MASTER-CONTEXT.md) states the item; STRONG
-HYPOTHESIS where it is a convergent research position. MC is the user's own founding
-document — its statements carry user authority, but its architecture-level items remain
-hypotheses by its own declaration (MC §16, §42, §52).
+Category B. Status rule for this file: USER INTENT where the Master Context (MC) states
+the item; STRONG HYPOTHESIS where it is a convergent research position. MC is the owner's
+founding charter — a private document that is not part of this repository, so its `MC §n`
+citations cannot be checked here; the canonical documents below are its public statement.
+Its statements carry user authority, but its architecture-level items remain hypotheses by
+its own declaration (MC §16, §42, §52).
 
 -------------------------------------------------------------------------------
 PRODUCT THESIS
