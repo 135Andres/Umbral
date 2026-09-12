@@ -6,6 +6,11 @@ Created 2026-09-10 by the project-intelligence audit, after user decisions were
 recovered from session history. Before that date no decision record existed because no
 decision existed.
 
+NAMING: this file predates the project's public name. Records are quoted as written and
+retain the earlier working name (FSP / "File System Pro"); the project is now **Umbral**.
+Records are not rewritten for a rename. The transition is documented in README.md
+("Naming and sources").
+
 SCOPE OF THIS FILE: product commitments the user has actually made — stated as
 absolutes ("must", "will", "is NOT") in the Project Master Context (MC) or in session
 history. MC's own header says no final ARCHITECTURE is adopted; these are product
@@ -185,6 +190,31 @@ Scope guard: this record does NOT settle any MC §52 item (final architecture, d
 versioning, etc.). Home of the working plan: V0-IMPLEMENTATION-PLAN.md.
 Reversibility: high by design.
 Status: DECIDED (scoped adoption).
+
+================================================================================
+STATUS VOCABULARY (so no reader has to infer a record's state)
+================================================================================
+  DECIDED              — the user has committed; the record stands.
+  DECIDED (scoped)     — committed for a named, limited scope; explicitly reversible and
+                         explicitly NOT a project-wide or architectural choice (UD-013).
+  DECIDED (intent)     — the intent is committed; the mechanism is still research.
+  DECIDED (process)    — a commitment about how the project works, not about the product.
+  SUPERSEDED           — replaced by a later record; the record itself is never edited,
+                         a pointer is added here instead.
+
+================================================================================
+SUPERSESSION POINTERS (records are immutable; this is where replacement is recorded)
+================================================================================
+  UD-006 ("research before implementation; no code yet")
+      superseded in part by UD-012 (2026-09-11), which authorized the scoped V0
+      prototype fsp-check. UD-006's rule still governs the product: no implementation
+      before an accepted architecture. The "no code yet" condition applied to the state
+      of the project on 2026-09-10 and is preserved as written; it is no longer a
+      description of the current tree.
+  UD-007 ("research method: Gemini Deep Research first, Hermes as independent verifier")
+      status unchanged (DECIDED, process), still carrying its original flag: it was
+      inferred from observed behaviour rather than stated, and was awaiting one
+      confirmation (recorded as D8). Still awaiting it.
 
 ================================================================================
 NOT DECIDED (explicitly, by the user's own record — MC §52): final name, final

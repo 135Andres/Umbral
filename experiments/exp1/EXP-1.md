@@ -10,6 +10,21 @@ re-running the instrument and diffing: retrieval, projection and mutations ident
 only machine timings differ). 36 files, 6 top-level dirs,
 10.7 KB — deliberately heterogeneous: decisions, ADRs, bugs, vendor comparison, CSV
 numbers, code, HTML mockup, empty file, binary, duplicate specs, stale archive).
+
+---
+
+| | |
+|---|---|
+| **Purpose** | test whether a semantic projection can be derived over an arbitrary, unorganized filesystem without the user reorganizing anything |
+| **Question** | can structure be recovered well enough to retrieve and reconcile, using only content and paths? |
+| **Hypotheses** | H-EXP1-A (retrieval useful without any user taxonomy) · H-EXP1-B (identity survives mutation) |
+| **Method** | 36-file heterogeneous synthetic corpus; three modes B0 (lexical) / B1 (+links) / B2 (+typed edges, supersession demotion); 8 pre-registered retrieval queries; 10 mutation classes |
+| **Evidence** | `results.json` (raw output), `run1.log`–`run5.log` (re-runs; identical results after the corpus rename) |
+| **Result** | PARTIAL PASS on both hypotheses — retrieval useful without a taxonomy; identity reconciled across every mutation class; but no abstention, and vocabulary mismatch only weakly mitigated |
+| **Limitations** | a Hermes-authored 36-file synthetic corpus; no real user material; sqlite3/FTS5 used as the cheapest stdlib instrument and NOT a technology choice |
+| **Conclusion** | the projection premise is not falsified at this scale, and is not validated beyond it |
+| **Status** | RESULT RECORDED (2026-09-10) |
+
 Classification per mandate §18: every statement below is labeled.
 
 ========================================================================

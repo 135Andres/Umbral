@@ -17,6 +17,58 @@ a reconstruction surface for a new reader and lies outside this V0's functional 
 This is neither "prototype incomplete" nor "production ready".
 
 --------------------------------------------------------------------------------
+## 0b. V0 IN PLAIN QUESTIONS (added 2026-09-11 for the public edition)
+
+**What question did V0 investigate?**
+Whether a filesystem can be observed, identified, content-verified, reconciled and
+persisted deterministically and safely — without pretending to know what the files mean.
+
+**What was implemented?**
+A small Rust prototype (`fsp-check/`): a deterministic read-only scanner; physical
+identity evidence (`dev`+`ino`, treated as evidence and never as semantic identity); a
+guarded streaming BLAKE3 content observation; a pure reconciliation step that classifies
+transitions between two observation sets; and an append-only SQLite history with a
+rebuildable projection.
+
+**How was it tested?**
+68 tests; 512 generated property-test cases over real filesystem trees; real process-kill
+crash trials at instrumented points in separate processes; benchmarks recorded as
+evidence with no thresholds.
+
+**How was it falsified?**
+An independent oracle (`ReferenceState`) modelled reality directly — existence, content,
+physical identity, hard-link aliasing — and never reused the prototype's reconciliation
+logic. Any disagreement was treated as a defect in one of the two, to be decided against
+reality.
+
+**What passed?**
+All eleven candidate properties held (A–K in FALSIFICATION-REPORT.md), including the
+invariants INV-1..INV-8 within the tested scope, crash consistency, rebuildability, and
+"absence of evidence is not evidence of absence".
+
+**What failed?**
+Nothing in the implementation. Four defects were found — all in the harness or the
+oracle: invalid operations generated without preconditions; an atomic-replace temp file
+created outside the target directory; a directory-rename prefix bug (the second occurrence
+of the same `Path::starts_with` trap in this project); and an oracle that did not model
+hard-link aliasing, where the implementation was right and the oracle wrong.
+
+**What was learned?**
+A methodology rule worth keeping: when the oracle and the implementation disagree, do not
+adapt the implementation to the oracle — first determine which of the two is wrong against
+reality. And a design consequence: duplicate content must never be treated as identity.
+
+**What remains open?**
+Q25 (SQLite-only vs SQLite plus an external log) stays OPEN; multi-writer concurrency,
+power-loss durability and the reader-facing surface are handed to V1 (see §8).
+
+**What does V0 NOT prove?**
+That Umbral's architecture is decided; that the product is viable; that this design is
+suitable at any production scale; that it behaves correctly under power loss, multiple
+writers, or device synchronisation; or anything at all about semantics, authority,
+provenance policy or multi-agent use.
+
+--------------------------------------------------------------------------------
 ## 1. FINAL EVIDENCE AUDIT (SC-1..SC-5)
 
 | Criterion | State | Evidence | Limitation |

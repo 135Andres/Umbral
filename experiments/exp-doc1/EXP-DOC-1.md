@@ -6,6 +6,21 @@ actual project work — NOT to prove DOCUMENTATION-ARCHITECTURE.md universally c
 Subject of the experiment: DOCUMENTATION-ARCHITECTURE.md (status: PROPOSED) and the
 repository it describes.
 
+---
+
+| | |
+|---|---|
+| **Purpose** | evaluate whether this repository's own documentation mechanisms work in real project work |
+| **Question** | can a reader (human or agent) answer project questions from the documents, without an authority error? |
+| **Hypotheses** | H-DOC-1 (a simple topic-oriented repository can support comprehension) · H-DOC-2 (explicit authority ordering prevents research being read as decision) |
+| **Method** | fresh readers (separate agent contexts) given navigation and authority tasks; eight criteria DQ-1..DQ-8; four reader runs |
+| **Evidence** | `navigation-run-1..3.md`, `authority-run-1..3.md`, `DOC-FRICTION-LOG.md` |
+| **Result** | both hypotheses PARTIAL PASS (the first run said PASS; the revision is itself a finding). Zero authority errors; three single-file traps; failures were currency, status and provenance — never folder structure |
+| **Limitations** | readers are agents, not people; the repository is small; the pre-registered criterion "zero authority errors" measured the reader, not the repository, and was corrected during the experiment |
+| **Conclusion** | the flat topic-per-file structure survived; the real defect was invisible authority ordering, which the repository now states explicitly |
+| **Status** | COMPLETE (2026-09-10), findings carried into DOC-FRICTION-LOG.md |
+
+
 Classification per mandate §18 applies to every statement below.
 
 ================================================================================
