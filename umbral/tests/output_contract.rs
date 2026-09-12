@@ -8,7 +8,9 @@ mod common;
 
 use common::{assert_all_labelled, labels_used, lines, Sandbox};
 use umbral::report::{
-    contract_violations, first_banned_word, unlabelled_lines, Line, BANNED_LEXICON,
+    contract_violations, fields_in, first_banned_word, label_contract_violations,
+    label_contract_violations_in_text, unlabelled_lines, Line, BANNED_LEXICON, DERIVED_ONLY_FIELDS,
+    OBSERVED_FIELDS,
 };
 
 /// Every line of every command declares exactly one of the four labels.
@@ -151,14 +153,18 @@ fn unobservable_metadata_is_reported_as_absent_not_invented() {
         "the incompleteness must be stated:\n{stdout}"
     );
 
+    // The count of unobservable paths is an aggregate the tool computed, so it is `derived`.
+    // The unknowns themselves are reported per path, by `show`.
     let status = s.run_ok(&["status", r.as_str()]);
     assert!(
         status.contains("unobservable-paths=1"),
         "status must count the unobserved path:\n{status}"
     );
     assert!(
-        status.contains("unknown"),
-        "the unobserved path must be labelled unknown:\n{status}"
+        !status
+            .lines()
+            .any(|l| l.starts_with("observed") && l.contains("unobservable-paths=")),
+        "a computed count must not be labelled observed:\n{status}"
     );
 
     let show = s.run_ok(&["show", r.as_str(), "blocked"]);
@@ -237,4 +243,135 @@ fn all_four_labels_are_actually_used() {
     assert!(used.contains("observed"), "labels used: {used:?}");
     assert!(used.contains("derived"), "labels used: {used:?}");
     assert!(used.contains("unknown"), "labels used: {used:?}");
+}
+
+// ---------------------------------------------------------------------------------------
+// The observed/derived distinction, made enforceable.
+//
+// This is the defect the reader protocol found (F-V01-2): a value the tool computed was
+// labelled `observed`. A reader has to be able to tell, from the output alone, whether a value
+// came from their filesystem or was produced by the tool. The check below is exhaustive on
+// purpose — `observed` lines may carry only the fields in `OBSERVED_FIELDS` — so that adding a
+// new one is a deliberate act rather than an oversight.
+// ---------------------------------------------------------------------------------------
+
+/// No command's output labels a computed value as observed.
+#[test]
+fn no_command_labels_a_computed_value_as_observed() {
+    let s = Sandbox::new();
+    s.write("a.txt", "alpha");
+    s.write("sub/b.txt", "beta");
+    s.write("dup1.txt", "same bytes");
+    s.write("dup2.txt", "same bytes");
+    #[cfg(unix)]
+    std::os::unix::fs::symlink("a.txt", s.root().join("link.txt")).unwrap();
+
+    s.init_and_observe();
+    s.write("a.txt", "alpha changed");
+    s.write("new.txt", "new");
+    s.run_ok(&["observe", &s.root().to_string_lossy()]);
+
+    let r = s.root().to_string_lossy().to_string();
+    for args in [
+        vec!["init", r.as_str()],
+        vec!["observe", r.as_str()],
+        vec!["status", r.as_str()],
+        vec!["changes", r.as_str()],
+        vec!["show", r.as_str(), "a.txt"],
+        vec!["show", r.as_str(), "sub"],
+        vec!["check", r.as_str()],
+        vec!["workspaces"],
+    ] {
+        let out = s.run(&args);
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        let violations = label_contract_violations_in_text(&stdout);
+        assert!(
+            violations.is_empty(),
+            "label contract violated by {args:?}:\n  {}\nfull output:\n{stdout}",
+            violations.join("\n  ")
+        );
+    }
+}
+
+/// The check is not vacuous: it catches a computed value labelled observed, and a field that
+/// is not an observed field at all.
+#[test]
+fn the_label_check_rejects_doctored_lines() {
+    // Conforming.
+    assert!(label_contract_violations(&[
+        Line::observed("canonical=/tmp/x"),
+        Line::observed("kind=file  size=6  mtime=2026-01-01T00:00:00.000Z"),
+        Line::derived("entries=3"),
+    ])
+    .is_empty());
+
+    // A computed field on an observed line — the F-V01-2 defect, in the exact form the reader
+    // found it.
+    let doctored = vec![Line::observed("workspace-id=deadbeefdeadbeef")];
+    assert!(
+        !label_contract_violations(&doctored).is_empty(),
+        "the check must reject a computed identifier labelled observed"
+    );
+
+    // Every field the reader's report named.
+    for field in [
+        "workspace-id=x",
+        "state-dir=/tmp/x",
+        "entries=3",
+        "files=2",
+        "dirs=1",
+        "symlinks=0",
+        "other=0",
+        "content-verified=2",
+        "content-not-verified=0",
+        "unobservable-paths=0",
+        "log-runs=1",
+        "log-observations=5",
+    ] {
+        let lines = vec![Line::observed(field.to_string())];
+        assert!(
+            !label_contract_violations(&lines).is_empty(),
+            "the check must reject `{field}` on an observed line"
+        );
+    }
+
+    // An unknown field on an observed line is caught by the allowlist half, not the denylist.
+    let unknown_field = vec![Line::observed("something-new=1")];
+    assert!(
+        !label_contract_violations(&unknown_field).is_empty(),
+        "the allowlist must reject a field that is not an observed field"
+    );
+
+    // And the field parser actually parses.
+    assert_eq!(
+        fields_in("run=1  kind=file  size=6"),
+        vec!["run=", "kind=", "size="]
+    );
+    assert!(DERIVED_ONLY_FIELDS.contains(&"hash="));
+    assert!(!OBSERVED_FIELDS.contains(&"hash="));
+}
+
+/// Every command that emits an `observed` line emits at least one, so the category is not
+/// merely theoretical: the tool really does read facts from the filesystem.
+#[test]
+fn observed_lines_carry_only_filesystem_facts() {
+    let s = Sandbox::new();
+    s.write("a.txt", "alpha");
+    s.init_and_observe();
+    let r = s.root().to_string_lossy().to_string();
+
+    let show = s.run_ok(&["show", r.as_str(), "a.txt"]);
+    let observed: Vec<&str> = show.lines().filter(|l| l.starts_with("observed")).collect();
+    assert!(
+        !observed.is_empty(),
+        "show must report observed facts:\n{show}"
+    );
+    for line in observed {
+        for field in fields_in(line) {
+            assert!(
+                OBSERVED_FIELDS.contains(&field.as_str()),
+                "observed line carries `{field}`: {line}"
+            );
+        }
+    }
 }

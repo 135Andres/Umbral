@@ -44,11 +44,15 @@ fn state_lives_outside_the_root_and_can_be_deleted_safely() {
     let r = s.root().to_string_lossy().to_string();
 
     let init_out = s.run_ok(&["init", r.as_str()]);
+    // Parse by field, not by label padding: the label of this line is part of the output
+    // contract and may legitimately change, while the field name identifies it.
     let state_dir = init_out
         .lines()
-        .find_map(|l| l.strip_prefix("observed  state-dir="))
-        .expect("init must report where the state lives")
-        .to_string();
+        .find_map(|l| {
+            l.split_once("state-dir=")
+                .map(|(_, v)| v.trim().to_string())
+        })
+        .expect("init must report where the state lives");
 
     assert!(
         !std::path::Path::new(&state_dir).starts_with(s.root()),
