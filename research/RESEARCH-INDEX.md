@@ -23,7 +23,7 @@ S0  Project mandate + workspace bootstrap brief + PROJECT MASTER CONTEXT
     founding product charter.
     RECOVERY (2026-09-10 audit): the full PROJECT MASTER CONTEXT was found in Hermes
     session history and archived verbatim at research/sources/PROJECT-MASTER-CONTEXT.md
-    (recovered from the project's original working session). The earlier note that it
+    (recovered from the project's original working session (2026-09-10); the raw agent session identifier is deliberately not published). The earlier note that it
     existed only as a theme index is obsolete. MC is now the primary user-intent source
     for this repository (cited as "MC §n" throughout the project files).
     Status: USER INTENT for the product framing and epistemic rules; MC statements are
