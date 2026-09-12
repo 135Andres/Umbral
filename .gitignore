@@ -1,6 +1,11 @@
-# Build output (Rust). The V0 prototype lives in fsp-check/.
+# Build output (Rust). The V0 prototype lives in fsp-check/, the v0.x development crate in
+# umbral/. Each keeps its own target directory: fsp-check/ is deliberately excluded from the
+# Cargo workspace so its frozen build is unchanged.
 /fsp-check/target/
 target/
+
+# Local scratch directories used to run the test suite on a second filesystem.
+/.umbral-fsmatrix-tmp/
 
 # PRIVATE — guard rule. A bundle of the pre-rewrite history would contain the private
 # charter; if such a backup is ever created here, it must never be committed. The backup

@@ -1,0 +1,17 @@
+# Umbral — Cargo workspace root.
+#
+# MEMBERS: `umbral/` only — the v0.1 development crate.
+#
+# `fsp-check/` is DELIBERATELY EXCLUDED, and the exclusion is load-bearing, not cosmetic:
+# it is the frozen V0 experiment (see experiments/v0-harness/V0-CLOSEOUT.md). Listing it as
+# a member would change how it builds (shared target dir, root Cargo.lock) and would let a
+# workspace-wide command touch it. Excluding it keeps the experiment building exactly as
+# it did when it was frozen, with its own lockfile and its own target directory.
+#
+# This manifest is build infrastructure. It is NOT an architecture decision, and it does
+# not make `umbral/` the product: see umbral/README.md.
+
+[workspace]
+resolver = "2"
+members = ["umbral"]
+exclude = ["fsp-check"]
