@@ -86,7 +86,41 @@ Open it as a research proposal in the issue tracker. If you then run it, the res
 under [`experiments/`](experiments) with its method, result and limitations — including
 negative results, which are kept.
 
-## 6. The V0 prototype is frozen
+## 6a. The development crate (`umbral/`)
+
+`umbral/` holds the version-by-version development of Umbral. It is new code and does not
+depend on `fsp-check/`.
+
+```
+cd umbral
+cargo test
+cargo clippy --all-targets
+cargo fmt --check
+```
+
+It is a Cargo workspace member declared in the root `Cargo.toml`. `fsp-check/` is
+deliberately **excluded** from that workspace so it keeps its own lockfile and target
+directory — do not add it as a member.
+
+Rules that apply to changes here:
+
+- **One version at a time.** A version is defined in [`docs/versions/`](docs/versions/README.md)
+  with its goal, non-goals and acceptance criteria. Work outside that scope is a separate
+  proposal, not a pull request.
+- **Assertions must not depend on filesystem behaviour.** The suite runs on tmpfs, btrfs and
+  ext4. Where behaviour is environment-dependent (inode reuse is the known case), *record*
+  what happened and put the deterministic assertion against observation sets built by hand.
+  A test that only passes on the filesystem it was written on is the defect class this rule
+  exists to prevent.
+- **A test that cannot fail proves nothing.** When a check asserts a contract, show that the
+  check rejects a violation of it.
+- **Never adapt the implementation to make a test pass.** When the implementation and an
+  independent model disagree, decide which of the two is wrong against reality and fix that
+  one.
+- **Documented limits stay documented.** A known limitation is not removed by making it
+  quieter.
+
+## 6b. The V0 prototype is frozen
 
 `fsp-check/` is **closed and frozen**. It is kept as evidence of what was tested, not as
 a foundation. New product code is not accepted before the project has an accepted
