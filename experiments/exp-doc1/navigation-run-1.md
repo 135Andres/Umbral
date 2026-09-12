@@ -16,7 +16,7 @@ Files per question (from the reported paths): Q1 3, Q2 2, Q3 3, Q4 2, Q5 4, Q6 5
 Q8 8, Q9 5, Q10 4. Mean 3.9, median 3.5. Excluding Q8 (the anomaly): mean 3.2.
 
 Unanswerable questions: none.
-Routing failure: the agent attempted /home/<user>/FSP/RESEARCH-INDEX.md, which does not
+Routing failure: the agent attempted <repo>/RESEARCH-INDEX.md, which does not
 exist (it lives at research/RESEARCH-INDEX.md). Recorded as a routing trap.
 
 ## FINDINGS (the agent's own words, condensed; full JSON in the batch report)

@@ -54,4 +54,4 @@ M7-external-edit identity_preserved=True  actions=0 stale_links=0 events=[]
 M8-atomic-save   identity_preserved=True  actions=0 stale_links=0 events=[]
 M9-vcs-checkout  identity_preserved=True  actions=0 stale_links=0 events=[]
 
-wrote /home/<user>/FSP/experiments/exp1/results.json
+wrote <repo>/experiments/exp1/results.json

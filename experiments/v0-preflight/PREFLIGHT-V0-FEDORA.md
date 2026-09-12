@@ -10,7 +10,7 @@ project requirement.
 ================================================================================
   OS          Fedora release 44 (Forty Four)
   Kernel      7.1.13-200.fc44.x86_64 · x86_64 · Intel i7-8850H
-  Workspace   /home/<user>/FSP on btrfs (nvme0n1p3), dev_id 51 at probe time
+  Workspace   <repo> on btrfs (nvme0n1p3), dev_id 51 at probe time
   /tmp        tmpfs (dev_id 52) — DIFFERENT filesystem from the workspace
   gcc         16.2.1 (present — rusqlite bundled-feature C build is viable)
   libsqlite3  libsqlite3.so.0 present (system); rusqlite `bundled` remains the safer
