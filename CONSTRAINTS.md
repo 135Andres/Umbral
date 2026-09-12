@@ -85,7 +85,7 @@ CONSTRAINT NOT YET ESTABLISHED
 -------------------------------------------------------------------------------
 Scale target. The corpus treats 10^4 to 10^6 files as the design envelope, but the
 figures are borrowed from benchmark suites (Linux kernel, Chromium 489,684 files) rather
-than from the intended use case. Whether FSP must operate at 10^6 files is unconfirmed
+than from the intended use case. Whether Umbral must operate at 10^6 files is unconfirmed
 and determines which of the candidate mechanisms are even relevant. See Q8. Treating
 10^6 as a requirement would pre-commit the architecture (see CONSTRAINTS-NOTE in
 ARCHITECTURE-HYPOTHESES.md, risk R2).

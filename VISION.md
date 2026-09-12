@@ -1,4 +1,4 @@
-# VISION — FSP
+# VISION — Umbral
 
 Status: CURRENT (living) — canonical knowledge (T2).
 

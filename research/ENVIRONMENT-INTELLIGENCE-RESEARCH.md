@@ -12,7 +12,7 @@ Verification markers, same convention as research/COEXISTENCE-RESEARCH.md:
 
 Scope limit: this file records what exists and what it already solves. It does not select
 anything. Where a claim below says "solved", it means solved FOR PARTICIPANTS WHO COOPERATE,
-which is the constraint that matters for FSP (see EI-19, EI-20).
+which is the constraint that matters for Umbral (see EI-19, EI-20).
 
 ================================================================================
 A. SELF-DESCRIPTION AND CAPABILITY DISCOVERY — PRIOR ART
@@ -58,7 +58,7 @@ EI-5  JMX / MBeans. VERIFIED. "The Java VM includes a platform MBean server and 
 EI-6  /proc and sysfs. VERIFIED (kernel documentation, man 5 sysfs). "The proc file system
       acts as an interface to internal data structures in the kernel... used to obtain
       information about the system and to change certain kernel parameters at runtime."
-      -> A canonical instance of the exact design FSP contemplates: runtime truth exposed
+      -> A canonical instance of the exact design Umbral contemplates: runtime truth exposed
       AS ORDINARY FILES, readable by anything, with no SDK and no cooperation required.
       This is the single most important precedent in this file (see EI-20).
       URL: https://kernel.org/doc/html/latest/filesystems/proc.html , man7.org/linux/man-pages/man5/sysfs.5.html
@@ -86,7 +86,7 @@ EI-9  Agent Skills and progressive disclosure. VERIFIED (Anthropic engineering p
       Claude loads information in stages as needed, rather than consuming context upfront.
       Skills can contain three types of content, each loaded at a different [stage]."
       -> Progressive disclosure is the DESIGNED behaviour of a shipped, first-party agent
-      platform, and it is filesystem-based. FSP's progressive-disclosure hypothesis is
+      platform, and it is filesystem-based. Umbral's progressive-disclosure hypothesis is
       therefore an ADAPTATION, not a discovery (see the novelty table).
       URL: https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills
 
@@ -107,7 +107,7 @@ EI-11 Progressive disclosure as a UX principle. VERIFIED (Nielsen, 2006-12-03). 
       applications easier to learn and less error-prone. Initially, show users only a few of
       the most important options. Offer a larger set of specialized options upon request."
       -> The term and the principle are 20 years old and were formulated for HUMAN
-      interfaces, not for agents. FSP applying it to AI participants is an ADAPTATION of an
+      interfaces, not for agents. Umbral applying it to AI participants is an ADAPTATION of an
       established pattern. Nielsen also documents the failure mode: complexity deferred is
       still complexity, and dialogs that hide too much become unusable — directly relevant
       to objection OBJ-10.
@@ -136,7 +136,7 @@ EI-13 Kubernetes controllers / reconciliation. VERIFIED. "controllers are contro
       -> The canonical architecture for "a process that continuously maintains environment
       state". CRITICAL STRUCTURAL CONDITION: reconciliation presupposes a DECLARED DESIRED
       STATE (the .spec) that the controller is allowed to enforce. This is the sharpest
-      constraint on FSP's Maintenance hypothesis: a user's filesystem has no desired state,
+      constraint on Umbral's Maintenance hypothesis: a user's filesystem has no desired state,
       so a maintenance role has no objective function unless one is supplied. See
       ENVIRONMENT-INTELLIGENCE.md H23 and tension T7 (ARCHITECTURE-HYPOTHESES.md).
       URL: https://kubernetes.io/docs/concepts/architecture/controller/
@@ -157,7 +157,7 @@ EI-15 Health probes and management endpoints. VERIFIED. Kubernetes liveness/read
       Actuator exposes health, info, metrics, and separate liveness/readiness groups.
       -> The Basic tier of introspection is an established, standardised pattern with an
       established distinction: "is it alive" (liveness) vs "is it able to serve" (readiness)
-      — a distinction FSP's three-tier model does not yet make, and probably needs.
+      — a distinction Umbral's three-tier model does not yet make, and probably needs.
       URL: https://kubernetes.io/docs/concepts/workloads/pods/probes/
 
 EI-16 Self-diagnosis commands. VERIFIED. `git fsck` ("Verifies the connectivity and validity
@@ -179,7 +179,7 @@ EI-17 Truth maintenance systems. KNOWN-THEORY (Doyle, "A Truth Maintenance Syste
       contradict [them]". A TMS records justifications linking beliefs to their dependencies
       so that retracting a premise retracts everything that depended on it, and so that
       contradictions are detected rather than silently overwritten.
-      -> The exact machinery FSP's epistemic-state and disagreement hypotheses describe has
+      -> The exact machinery Umbral's epistemic-state and disagreement hypotheses describe has
       existed since 1979, including the dependency-tracking that makes "what would this
       invalidate?" answerable.
       URL: https://dspace.mit.edu/handle/1721.1/5733
@@ -190,7 +190,7 @@ EI-18 Belief revision and argumentation. KNOWN-THEORY. AGM postulates (Alchourr�
       attack relation and semantics (grounded, preferred, stable) for deciding which
       arguments can stand together.
       -> A rigorous theory of "two claims that attack each other, with no decision yet" is
-      available. FSP does not need to invent it; it needs to decide whether it wants it.
+      available. Umbral does not need to invent it; it needs to decide whether it wants it.
       NOTE: not re-fetched this cycle (KNOWN-THEORY); flag before citing in a decision.
 
 EI-19 Uncertain knowledge graphs. VERIFIED (AAAI 2019 "Embedding Uncertain Knowledge Graphs";
@@ -209,7 +209,7 @@ EI-20 Dispute handling in a public knowledge corpus. VERIFIED (Wikipedia NPOV po
       far as possible, without editorial bias, all the significant views that have been
       published by reliable sources"; disputed statements are marked in place and the
       warning must not be removed without addressing the dispute.
-      -> A working, 20-year-old social mechanism for exactly FSP's requirement: hold
+      -> A working, 20-year-old social mechanism for exactly Umbral's requirement: hold
       competing claims without collapsing them, and mark contested state visibly at the
       point of the claim. It is a MODEL TO COPY, and its known failure (maintenance debt;
       dispute templates that persist for years) is directly relevant to OBJ-12.
@@ -224,7 +224,7 @@ EI-21 W3C PROV and in-toto. KNOWN-THEORY (already recorded in the coexistence st
       make verifiable claims about how an artefact was produced. Established constraint from
       that earlier work: an attestation proves ORIGIN, not TRUTH.
       -> Attribution vocabulary exists. It assumes the actor IDENTIFIES itself, which is the
-      assumption FSP's UNKNOWN-actor hypothesis (H18) explicitly refuses to make.
+      assumption Umbral's UNKNOWN-actor hypothesis (H18) explicitly refuses to make.
 
 EI-22 Agent identity and delegated authorization. VERIFIED (Google Cloud Agent Identity
       overview; IETF draft KAIF; Ping Identity). Agents get strongly attested cryptographic
@@ -240,7 +240,7 @@ EI-23 Capability-based security and least authority. VERIFIED (object-capability
       Control"). A capability is "a transferable right to perform one (or more) operations
       on a given object"; access-control systems are evaluated in part on how well they
       support the Principle of Least Authority.
-      -> The separation FSP requires — capability ≠ authorization — is the founding
+      -> The separation Umbral requires — capability ≠ authorization — is the founding
       distinction of this entire field, not a new idea. Macaroons (Google) add attenuable,
       contextually-caveated credentials, which is a candidate mechanism for H22's
       "delegation" question.
@@ -251,7 +251,7 @@ EI-24 Consent and confirmation in shipped products. KNOWN-THEORY / SNIPPET-LEVEL
       mechanism for narrowing delegated access; Linux capabilities(7) split root privilege
       into discrete named capabilities so a process holds only what it needs.
       -> Confirmation-required operations and per-capability grants are EXISTING PATTERN.
-      FSP's contribution can only be in what the confirmation SHOWS (the preview), not in
+      Umbral's contribution can only be in what the confirmation SHOWS (the preview), not in
       the existence of confirmation.
 
 ================================================================================
@@ -270,7 +270,7 @@ EI-25 Tool-interface quality is a measured bottleneck. VERIFIED (arXiv:2602.2042
       interface description is not a detail; it is a first-order determinant of whether an
       agent succeeds, and its importance GROWS with the number of candidates. It also says
       descriptions written for humans are systematically inadequate for agents — which is
-      precisely the failure mode of documenting FSP for humans and expecting AIs to cope.
+      precisely the failure mode of documenting Umbral for humans and expecting AIs to cope.
       URL: https://arxiv.org/abs/2602.20426
 
 EI-26 Tool selection fails predictably and is diagnosable. VERIFIED (arXiv:2607.04686
@@ -279,7 +279,7 @@ EI-26 Tool selection fails predictably and is diagnosable. VERIFIED (arXiv:2607.
       canary tools: "Agent evaluations tell us that a model picked the wrong tool, but rarely
       why"); SNIPPET-LEVEL (EMNLP 2025, "Tool Preferences in Agentic LLMs are Unreliable":
       "LLMs rely entirely on the text des[criptions]").
-      -> There is a measurement methodology for exactly the failure FSP's self-description
+      -> There is a measurement methodology for exactly the failure Umbral's self-description
       layer is meant to prevent (wrong capability chosen, right capability ignored). E-CO-7
       can be built on it rather than invented.
       URL: https://doi.org/10.48550/arxiv.2607.04686 ; https://arxiv.org/html/2608.04719v1
@@ -290,7 +290,7 @@ EI-27 Explanation and trust calibration. SNIPPET-LEVEL (C-XAI conceptual framewo
       is "aligning user trust judgment with model capability"; exposing limitations changes
       lay users' trust.
       -> Relevant to the stance hypothesis (H17) and to objection OBJ-11: an explanation is
-      not neutral. What FSP discloses about its own confidence changes how much it is
+      not neutral. What Umbral discloses about its own confidence changes how much it is
       believed, independently of whether the disclosure is accurate.
       URL: https://discovery.ucl.ac.uk/id/eprint/10189099/1/1-s2.0-S2666659624000027-main.pdf
 

@@ -41,7 +41,7 @@ The candidate insight of this stage (labelled HYPOTHESIS, tested in §4):
 ================================================================================
 1. SEVEN CANDIDATE STRATEGIES
 ================================================================================
-Each: core idea / what FSP owns / what stays external / strengths / weaknesses / failure
+Each: core idea / what Umbral owns / what stays external / strengths / weaknesses / failure
 modes / implementation implications / UX / interoperability / privacy / provenance /
 concurrency / reversibility / complexity / enables / prevents.
 Mechanical fields are compressed; the ones that decide the strategy are in prose.
@@ -67,10 +67,10 @@ Complexity: minimal. Enables: nothing that requires a live mechanism. Prevents: 
 that requires coordination in real time.
 
 --------------------------------------------------------------------------------
-S2 — CONTEXT BROKER (FSP assembles what each AI should see)
+S2 — CONTEXT BROKER (Umbral assembles what each AI should see)
 --------------------------------------------------------------------------------
 LAYER: architectural hypothesis. (This is the S2/S3 thesis, restated.)
-Core idea: FSP's job is to give each participant the smallest sufficient context, and to
+Core idea: Umbral's job is to give each participant the smallest sufficient context, and to
 control what leaves the machine.
 Owns: retrieval, ranking, budget, egress control.
 External: state ownership, authority, concurrency.
@@ -87,13 +87,13 @@ Concurrency: none. Reversibility: high. Complexity: high. Enables: cheaper AI wo
 Prevents: nothing, but solves only a third of the problem.
 
 --------------------------------------------------------------------------------
-S3 — AUTHORITY AND PROVENANCE LEDGER (FSP owns the epistemic layer)
+S3 — AUTHORITY AND PROVENANCE LEDGER (Umbral owns the epistemic layer)
 --------------------------------------------------------------------------------
 LAYER: architectural hypothesis. (The S4/S6 thesis.)
-Core idea: FSP records decisions, proposals, provenance and epistemic state; AI output
+Core idea: Umbral records decisions, proposals, provenance and epistemic state; AI output
 enters as a proposal; only a human act graduates it to accepted truth.
 Owns: the epistemic record — who claimed what, on what evidence, with what authority.
-External: the files themselves and every writer that is not FSP.
+External: the files themselves and every writer that is not Umbral.
 Strengths: directly addresses F3, the failure with the highest trust cost; the corpus
 already has the vocabulary (epistemic/lifecycle/authority axes, S4); aligns with A5.
 Weaknesses: needs participation (or must infer, which is unreliable); risks hidden state
@@ -108,18 +108,18 @@ Enables: defensible answers to "why is this here" and "who decided this". Preven
 nothing by itself.
 
 --------------------------------------------------------------------------------
-S4 — COORDINATION SUBSTRATE (FSP mediates; it does not dispatch)
+S4 — COORDINATION SUBSTRATE (Umbral mediates; it does not dispatch)
 --------------------------------------------------------------------------------
 LAYER: architectural hypothesis (the most coexistence-specific one).
-Core idea: FSP provides the primitives that make concurrent participation safe: claims on
+Core idea: Umbral provides the primitives that make concurrent participation safe: claims on
 paths, a reality version, validity signals, and attributed change records. AIs remain
-peers that the USER chooses; FSP never orchestrates them.
+peers that the USER chooses; Umbral never orchestrates them.
 Owns: coordination primitives and their integrity.
 External: which AIs exist, what they do, how they are invoked.
 Strengths: addresses F1+F2+F3 in one place; matches the closest prior art's finding that
-atomic ownership claims are what make concurrent agents safe (CO-9); does not require FSP
+atomic ownership claims are what make concurrent agents safe (CO-9); does not require Umbral
 to win the orchestration market (CO-10 warns against orchestration).
-Weaknesses: FSP becomes a dependency for the very thing it promises (if the mediator is
+Weaknesses: Umbral becomes a dependency for the very thing it promises (if the mediator is
 down, do AIs stop?); participants must call it (adoption); the primitives are only useful
 if more than one participant exists — the same "nobody needs it alone" problem as
 versioning; plain-file constraint may conflict with atomic claims (see M3 and Q17).
@@ -131,7 +131,7 @@ UX: needs a human view of "who is doing what" or it is invisible machinery.
 Interop: an MCP server + a CLI are the adoption paths. Privacy: local by default.
 Provenance: by construction. Concurrency: its whole point. Reversibility: high if claims
 are advisory. Complexity: high. Enables: safe parallel work by independently chosen AIs.
-Prevents: nothing, but it commits FSP to being a live process (see the counterargument).
+Prevents: nothing, but it commits Umbral to being a live process (see the counterargument).
 
 --------------------------------------------------------------------------------
 S5 — FILESYSTEM-MEDIATED ISOLATION (use what version control already does)
@@ -152,7 +152,7 @@ Failure modes: merge conflicts dumped on a user who does not know what a conflic
 divergent branches nobody reconciles; the isolation hides work from the other participants
 so F1 gets worse, not better.
 Implementation: low (orchestrate existing tools). UX: the hard part, and it is the same
-hard part as FSP's versioning question (Q4). Interop: high for dev tools, low otherwise.
+hard part as Umbral's versioning question (Q4). Interop: high for dev tools, low otherwise.
 Privacy: high. Provenance: git's, which is linear attribution only. Concurrency: solved by
 isolation, at the cost of visibility. Reversibility: excellent. Complexity: low.
 Enables: safe parallel agent work for developers today. Prevents: any solution for
@@ -162,7 +162,7 @@ non-text assets and for users who will not reason about branches.
 S6 — REALITY PROJECTION WITH VALIDITY SIGNALS
 --------------------------------------------------------------------------------
 LAYER: architectural hypothesis (the candidate differentiator).
-Core idea: FSP maintains a cheap, rebuildable projection of the folder that answers one
+Core idea: Umbral maintains a cheap, rebuildable projection of the folder that answers one
 question well: "is what you believe still true, and what changed since you looked?" — via
 a reality version plus per-path change records, exposed to any participant.
 Owns: the projection and the validity signal. Not the AIs, not the files, not authority.
@@ -186,17 +186,17 @@ Complexity: moderate. Enables: safe delegation to a stale-prone participant; hon
 handoffs; knowing when to re-read. Prevents: nothing.
 
 --------------------------------------------------------------------------------
-S7 — INTEROPERABILITY HUB (FSP translates protocols; owns no state)
+S7 — INTEROPERABILITY HUB (Umbral translates protocols; owns no state)
 --------------------------------------------------------------------------------
 LAYER: implementation mechanism.
-Core idea: FSP is a gateway: an MCP server, an A2A client, an ACP bridge — whatever the
-ecosystem speaks, FSP speaks it and routes.
+Core idea: Umbral is a gateway: an MCP server, an A2A client, an ACP bridge — whatever the
+ecosystem speaks, Umbral speaks it and routes.
 Owns: translation.
 External: everything meaningful.
 Strengths: rides ecosystem convergence (CO-3, CO-4) instead of competing with it; low
 conceptual risk; immediately useful to power users.
 Weaknesses: no differentiation — every gateway does this; it inherits every protocol's
-churn (MCP deprecated three primitives in one revision, CO-1); it puts FSP on the
+churn (MCP deprecated three primitives in one revision, CO-1); it puts Umbral on the
 critical path of calls it does not understand.
 Failure modes: protocol churn forces continuous rework; the hub becomes the single point
 of failure the counterargument warns about; security surface grows.
@@ -397,10 +397,10 @@ O3. Could Git solve enough of it?
     strongest competitor and the reason S5 is a real strategy rather than a straw man.
 O4. Could MCP solve enough of it?
     MCP standardises access to tools and resources; it has no project state, no versions of
-    reality, and it just deprecated its only boundary primitive (CO-1). FSP could BE an MCP
+    reality, and it just deprecated its only boundary primitive (CO-1). Umbral could BE an MCP
     server, but MCP is the channel, not the answer. Not fatal — and it is the adoption path.
 O5. Could a shared database solve it?
-    Yes, technically — and that is the architecture the FSP corpus documents as failing
+    Yes, technically — and that is the architecture the Umbral corpus documents as failing
     (Logseq; S9 Evidence 1) and which breaks A1/A2. A database solves coordination by
     removing the filesystem's authority. Fatal for anyone who wants the filesystem to stay
     the truth.
@@ -421,13 +421,13 @@ O8. Does it create a new authority problem?
     version is canonical, has become the authority the charter reserves for the user (A5,
     A6). Mitigation is design-level, not evidential: the substrate must be a
     reporter (visible, advisory), never an arbiter. Damages S4 if implemented carelessly.
-O9. Does this make FSP a dangerous single point of failure?
+O9. Does this make Umbral a dangerous single point of failure?
     Any live mediator does (S4, S7). Mitigation: the conventions must remain usable — and
-    the project must remain workable — with FSP switched off; degradation, not dependency.
+    the project must remain workable — with Umbral switched off; degradation, not dependency.
     This is a hard constraint on S4, and it is testable (E-CO-2 includes "turn the engine
     off; does the project still work?").
-O10. Does it force users into FSP?
-    Only if state lives exclusively in FSP. M1/M2/M7 are plain files by construction, so no.
+O10. Does it force users into Umbral?
+    Only if state lives exclusively in Umbral. M1/M2/M7 are plain files by construction, so no.
     But a claim/lease that exists only in a running process is a soft lock-in; that is an
     argument for the plain-file form of M3 even though it is weaker mechanically.
 O11. Does it violate local-first?
@@ -450,7 +450,7 @@ O14. Does it work with future unknown AIs?
 
 COUNTER-INSIGHT worth recording: the strongest case against this stage is not that the
 problem is fake — CO-7 shows it is studied, CO-9 shows it breaks systems — but that the
-problem is currently felt by DEVELOPERS RUNNING CONCURRENT AGENTS, while FSP's charter puts
+problem is currently felt by DEVELOPERS RUNNING CONCURRENT AGENTS, while Umbral's charter puts
 ordinary users first (MC §1). If coexistence is a developer problem, then S5 (Git-mediated)
 may be sufficient and the elegant substrate may be unnecessary. That is a product-level
 fork the user must decide, not a research question. See UD-012.

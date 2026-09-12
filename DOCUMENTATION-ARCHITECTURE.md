@@ -1,4 +1,4 @@
-# DOCUMENTATION ARCHITECTURE — FSP
+# DOCUMENTATION ARCHITECTURE — Umbral
 
 Status: **PROPOSED** (2026-09-10), being applied as an experiment (see §14). This document
 governs the STRUCTURE of the repository, not its content, and it is not authority over
@@ -8,12 +8,12 @@ decision.
 Evidence base: research/DOC-ARCHITECTURE-RESEARCH.md (external sources, with what they
 support and what they do not). This file is the design that follows from that evidence.
 
-SCOPE BOUNDARY (§19 of the mandate): the FSP repository is a LABORATORY for documentation
-ideas, not a proof of FSP's product architecture. A choice made here — flat folders, IDs,
-git — implies nothing about how FSP itself should store or organize a user's knowledge.
+SCOPE BOUNDARY (§19 of the mandate): the Umbral repository is a LABORATORY for documentation
+ideas, not a proof of Umbral's product architecture. A choice made here — flat folders, IDs,
+git — implies nothing about how Umbral itself should store or organize a user's knowledge.
 Two risks follow and are accepted explicitly:
-  X1. Drift pressure: "we organize our repo this way, so FSP should too."
-  X2. Reverse drift pressure: "our repo is fine without X, so FSP doesn't need X."
+  X1. Drift pressure: "we organize our repo this way, so Umbral should too."
+  X2. Reverse drift pressure: "our repo is fine without X, so Umbral doesn't need X."
 Both are invalid. Repository structure is an experiment with its own constraints
 (one project, one user, no performance limits, no external users).
 
@@ -40,7 +40,7 @@ DP-3  Rationale is first-class and travels with the claim.
       "Why we believe this" is as important as "what we believe". Every non-obvious
       statement carries its source and, where relevant, the alternative it beat.
       Source: ISO/IEC/IEEE 42010 (rationale as part of an architecture description);
-      the FSP charter itself (MC §40 provenance lesson).
+      the Umbral charter itself (MC §40 provenance lesson).
       Forbids: bare assertions; conclusions without their evidence trail.
 
 DP-4  Every kind of information has exactly one home.
@@ -54,13 +54,13 @@ DP-5  Status and authority are visible at the point of entry, not buried.
       A reader must be able to tell whether a statement is user-decided, canonical,
       research, interpretation, or exploration without opening every document.
       Source: information foraging theory (Pirolli & Card 1999) — navigation depends on
-      "information scent"; the FSP charter's authority concern (MC §40).
+      "information scent"; the Umbral charter's authority concern (MC §40).
       Forbids: unlabeled content; a status line that only says "active".
 
 DP-6  Single source of truth; everything else is a pointer or a derived view.
       A fact lives in one file. Indexes, summaries and read orders are derived and
       disposable. Copying a fact is allowed only when it is a verbatim source archive.
-      Source: DITA reuse; docs-as-code practice; FSP's own invariant A10 (derived state
+      Source: DITA reuse; docs-as-code practice; Umbral's own invariant A10 (derived state
       is rebuildable) — applied to the repository, not inferred from it.
       Forbids: two files describing the same current state; "convenience copies".
 
@@ -74,10 +74,10 @@ DP-7  Separate current truth from history explicitly.
       files.
 
 DP-8  Research evidence and interpretation are different documents.
-      A source says X; Hermes interprets Y; FSP decides Z. These are three artifacts with
+      A source says X; Hermes interprets Y; Umbral decides Z. These are three artifacts with
       three authorities, and the chain from one to the next must be traceable by ID.
       Source: research provenance practice (electronic lab notebooks; data-provenance
-      documentation) and the FSP charter's explicit Gemini/Hermes cross-verification
+      documentation) and the Umbral charter's explicit Gemini/Hermes cross-verification
       protocol (MC §46).
       Forbids: a research report that reads as a specification; an interpretation
       presented as a finding.
@@ -85,14 +85,14 @@ DP-8  Research evidence and interpretation are different documents.
 DP-9  Documentation must survive the tool.
       Plain Markdown, ordinary folders, no hidden state required to understand the
       content, no dependency on Hermes or any specific AI.
-      Source: FSP invariant A2 (Sunset Test) applied to the repository; MC §29.
+      Source: Umbral invariant A2 (Sunset Test) applied to the repository; MC §29.
       Forbids: tool-specific formats as the only readable form; content that exists only
       in an agent's memory.
 
 DP-10 Minimum structure that works.
       Every structural element (folder, document type, metadata field, index) must justify
       its maintenance cost. Add structure only when an observed failure requires it.
-      Source: this mandate (§17); the FSP charter's frustration priority #1 (excessive
+      Source: this mandate (§17); the Umbral charter's frustration priority #1 (excessive
       maintenance complexity, MC §38).
       Forbids: templates, schemas, indexes and generated files created in advance of need.
 
@@ -111,7 +111,7 @@ DT1 CHARTER (source of user intent)
    Home: research/sources/. Current instance: PROJECT-MASTER-CONTEXT.md (MC §n).
 
 DT2 CANONICAL KNOWLEDGE (current truth about the product)
-   Purpose: the smallest set of documents that state what FSP is, must hold, needs, and
+   Purpose: the smallest set of documents that state what Umbral is, must hold, needs, and
    cannot violate. A: project (derived from charter + decisions; never from research).
    L: living — edited in place, no changelog inside. W: Hermes proposes, user ratifies
    anything that changes meaning. AI: yes, as current — but check the status line.
@@ -134,7 +134,7 @@ DT4 HYPOTHESIS / OPEN QUESTION
 DT5 RESEARCH ARTIFACT (external evidence, unratified)
    Purpose: what external sources or other AIs claim, and how it was verified.
    A: source (attributed, never adopted). L: immutable once ingested; corrected only by
-   an explicit amendment note. W: Hermes. AI: may cite; must not treat as FSP position.
+   an explicit amendment note. W: Hermes. AI: may cite; must not treat as Umbral position.
    Homes: research/reports/ (S1-S11 when archived), research/*-RESEARCH.md,
    research/RESEARCH-INDEX.md, research/history/INGEST-NOTES.md.
 
@@ -185,7 +185,7 @@ The two confusions this must prevent, and the mechanism for each:
   C-A  "Hermes thinks this" mistaken for "the project decided this".
        Mechanism: decision records are the ONLY place a commitment lives; they carry
        UD-IDs and a user-authority line. Everything else carries a status line.
-  C-B  "A source says X" mistaken for "FSP has adopted X".
+  C-B  "A source says X" mistaken for "Umbral has adopted X".
        Mechanism: research artifacts carry a source ID and the words "unratified"; the
        technology inventory in ARCHITECTURE-HYPOTHESES.md is marked "not selected"; no
        research artifact may use decision language.
@@ -266,7 +266,7 @@ Three mechanisms, no more:
   H-3 Version control. The repository is a git repository, so every change has a diff, an
       author and a time, without any of that appearing inside the documents.
       Applied 2026-09-10 (see §12, DM1). Reversible: removing .git loses history only.
-      EXPLICIT NON-INFERENCE: using git for this repository is not a decision about FSP's
+      EXPLICIT NON-INFERENCE: using git for this repository is not a decision about Umbral's
       versioning architecture (MC §26 requires that to be researched independently).
       This is the single largest drift risk introduced by this document; it is recorded
       here so it cannot be quietly forgotten.
@@ -278,7 +278,7 @@ documents stop referring to it.
 ================================================================================
 8. RESEARCH / EVIDENCE / EXPERIMENT CHAIN
 ================================================================================
-SOURCE -> CLAIM -> VERIFICATION -> INTERPRETATION -> FSP RELEVANCE -> HYPOTHESIS ->
+SOURCE -> CLAIM -> VERIFICATION -> INTERPRETATION -> Umbral RELEVANCE -> HYPOTHESIS ->
 EXPERIMENT -> RESULT -> DECISION
 
 Where each step lives:
@@ -288,7 +288,7 @@ Where each step lives:
   VERIFICATION    same artifact: agreement, disagreement, missing information; a claim
                   from another AI is never adopted on the strength of its confidence
   INTERPRETATION  same artifact, explicitly labeled as Hermes
-  FSP RELEVANCE   same artifact, or a line in ARCHITECTURE-HYPOTHESES if it creates one
+  Umbral RELEVANCE   same artifact, or a line in ARCHITECTURE-HYPOTHESES if it creates one
   HYPOTHESIS      ARCHITECTURE-HYPOTHESES (H-n)
   EXPERIMENT      experiments/EXP-n (spec frozen before the run)
   RESULT          same file, appended after the run; negative results kept
@@ -326,7 +326,7 @@ task requires more than a handful of reads — see EXP-DOC-1.
 New information arrives constantly. The rule, applied in order:
 
   1. Is it a user commitment?                      -> DECISION RECORD (DT3, UD-n)
-  2. Does it come from outside FSP (source, report, other AI)?
+  2. Does it come from outside Umbral (source, report, other AI)?
                                                    -> RESEARCH ARTIFACT (DT5), with S-n
   3. Is it the result of a measurement?            -> EXPERIMENT (T6, EXP-n)
   3b. Is it a proposed experiment not yet specified? -> EXPERIMENT (T6, EXP-n) in
@@ -338,7 +338,7 @@ New information arrives constantly. The rule, applied in order:
                                                       existing file that owns that subject
   5. Is it a candidate mechanism or an unanswered question?
                                                    -> HYPOTHESIS / OPEN QUESTION (DT4)
-  5a2. Is it a PRODUCT-level hypothesis (about what FSP is/does, not how it is built)?
+  5a2. Is it a PRODUCT-level hypothesis (about what Umbral is/does, not how it is built)?
                                                    -> its own CANONICAL (T2) hypothesis
                                                       document if numerous; INDEX entry in
                                                       ARCHITECTURE-HYPOTHESES.md; never in
@@ -348,7 +348,7 @@ New information arrives constantly. The rule, applied in order:
                                                       research/ evidence file + the
                                                       direction recorded as a decision
                                                       record if the user authorized it
-  6. Is it process (how we work on FSP)?           -> the Hermes skill, not the repo
+  6. Is it process (how we work on Umbral)?           -> the Hermes skill, not the repo
   7. Is it none of the above?                      -> do not write it down.
 
 If the answer is "canonical knowledge" and no file owns the subject, that is the only
@@ -381,7 +381,7 @@ research/history/  FROZEN records only (dated, never edited except for a superse
               the status line is the backstop.
 research/   external evidence and process records
   RESEARCH-INDEX.md        index of sources (derived + per-source authority notes)
-  <TOPIC>-RESEARCH.md      a research report produced for FSP — the naming convention
+  <TOPIC>-RESEARCH.md      a research report produced for Umbral — the naming convention
                            the user already specified in MC §47 (RESEARCH-<TOPIC>.md);
                            used verbatim there, prefixed by directory here
   INGEST-NOTES.md          historical: the initial ingestion record
@@ -484,7 +484,7 @@ Worse / newly introduced:
 ================================================================================
 14. THIS IS AN EXPERIMENT
 ================================================================================
-The documentation architecture is itself FSP experiment EXP-DOC-1, and it is expected to
+The documentation architecture is itself Umbral experiment EXP-DOC-1, and it is expected to
 be wrong somewhere. Per the mandate (§18), it evolves from observed failure, not from
 theory.
 
@@ -504,7 +504,7 @@ Specification:
   Failure: any authority error (a research claim read as a decision), or >= 4 files per
             question, or >= 2 drift incidents — each of which triggers a targeted fix to
             the structure rather than a redesign.
-  The ten questions: what is FSP; why does it exist; who is it for; what has been decided;
+  The ten questions: what is Umbral; why does it exist; who is it for; what has been decided;
             what is explicitly NOT decided; what is uncertain; what is being researched;
             what has been tested; what are the top risks; what happens next.
   Recorded: this file; results appended to experiments/EXP-DOC-1 when run.
@@ -544,7 +544,7 @@ DQ-3  Should frozen research artifacts live under research/reports/ (S1-S11) or 
       corpus is archived verbatim.
 DQ-4  Does the repository need a glossary? Not yet — no term is used with two meanings
       except "context package" (T1), which is tracked as a tension instead.
-DQ-5  When FSP's own product documentation begins, does it live here or in a separate
+DQ-5  When Umbral's own product documentation begins, does it live here or in a separate
       repository? Deferred; likely separate, and this repository should not grow into it.
 
 ================================================================================
@@ -559,4 +559,4 @@ DQ-5  When FSP's own product documentation begins, does it live here or in a sep
 - No restructuring of the corpus beyond verbatim archiving.
 - No product-facing documentation (README for users, install docs, tutorials) — the
   product does not exist, and MC §48 forbids implementation-phase artifacts.
-- No conflation of this architecture with FSP's product architecture (§19).
+- No conflation of this architecture with Umbral's product architecture (§19).
