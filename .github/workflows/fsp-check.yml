@@ -11,7 +11,7 @@ name: fsp-check
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
     paths:
       - 'fsp-check/**'
