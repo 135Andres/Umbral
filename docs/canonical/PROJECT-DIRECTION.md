@@ -91,8 +91,10 @@ CURRENT NEXT STEP (updated 2026-09-12b: v0.1 EVIDENCE COMPLETE EXCEPT THE READER
 Development proceeds by incremental versions (v0.1, v0.2, ...) rather than jumping to V1.
 v0.1 exists as the development crate `umbral/` — a local, read-only observation instrument
 whose reader-facing surface closes V0's SC-5 gap. Its evidence is registered in
-docs/versions/v0.1.md, which also lists what is NOT verified: the formal reader protocol,
-which requires a person who did not write the code. v0.1 is therefore **not declared
+docs/versions/v0.1.md. The reader protocol has since been executed by the project owner and
+**its acceptance criterion A1 was not satisfied**: three of eight questions could not be
+answered from the output alone, and two findings from that run — mislabelled output lines, and
+limits expressed only reactively — await an owner decision. v0.1 is therefore **not declared
 complete**. V1 remains reserved for a version that has passed a separate AUDIT READINESS
 REVIEW and an external audit; no version is designated as the audit candidate in advance.
 
