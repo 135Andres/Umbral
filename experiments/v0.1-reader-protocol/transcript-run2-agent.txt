@@ -1,0 +1,340 @@
+================================================================================
+UMBRAL v0.1 — READER PROTOCOL v2 — RAW TRANSCRIPT
+================================================================================
+Reader: subagent acting as the reader in a usability test of the command-line
+tool at /tmp/umbral-reader-v2/bin/umbral.
+Fixture directory (the "<dir>" of the operational sheet):
+    /tmp/umbral-reader-v2/subject
+Isolation prefix used on every tool command:
+    XDG_DATA_HOME=/tmp/umbral-reader-v2/data
+Everything below is copied verbatim. Nothing cleaned, summarised, reformatted
+or reordered. Where a command produced no output, that is stated explicitly.
+
+--------------------------------------------------------------------------------
+SECTION 0 — FIXTURE BUILD: exact commands used
+--------------------------------------------------------------------------------
+
+Command 0.1:
+    mkdir -p /tmp/umbral-reader-v2/subject/data && cd /tmp/umbral-reader-v2/subject && printf 'hello world\n' > alpha.txt && printf 'hello world\n' > beta.txt && printf 'notes line one\nnotes line two\n' > notes.md && printf 'inner file contents\n' > data/inner.txt && printf 'top secret\n' > secret.txt && chmod 000 secret.txt && ln -s alpha.txt link-to-alpha && ln -s does/not/exist broken-link && printf 'non utf8 name\n' > "$(printf 'weird-\xff\xfe.txt')" && ls -la
+
+Exit status: 0
+stdout:
+total 20
+drwxr-xr-x. 3 andres andres 200 Sep 12 16:43 .
+drwxr-xr-x. 5 andres andres 100 Sep 12 16:43 ..
+-rw-r--r--. 1 andres andres  12 Sep 12 16:43 alpha.txt
+-rw-r--r--. 1 andres andres  12 Sep 12 16:43 beta.txt
+lrwxrwxrwx. 1 andres andres  14 Sep 12 16:43 broken-link -> does/not/exist
+drwxr-xr-x. 2 andres andres  60 Sep 12 16:43 data
+lrwxrwxrwx. 1 andres andres   9 Sep 12 16:43 link-to-alpha -> alpha.txt
+-rw-r--r--. 1 andres andres  30 Sep 12 16:43 notes.md
+----------. 1 andres andres  11 Sep 12 16:43 secret.txt
+-rw-r--r--. 1 andres andres  14 Sep 12 16:43 weird-<0xFF 0xFE>.txt
+stderr: (none)
+
+Command 0.2:
+    ls -la /tmp/umbral-reader-v2/ && ls -la /tmp/umbral-reader-v2/bin/
+
+Exit status: 0
+stdout:
+total 0
+drwxr-xr-x.   5 andres andres   100 Sep 12 16:43 .
+drwxrwxrwt. 115 root   root   16840 Sep 12 16:43 ..
+drwxr-xr-x.   2 andres andres    60 Sep 12 16:43 bin
+drwxr-xr-x.   2 andres andres    40 Sep 12 16:43 data
+drwxr-xr-x.   3 andres andres   200 Sep 12 16:43 subject
+total 15684
+drwxr-xr-x. 2 andres andres       60 Sep 12 16:43 .
+drwxr-xr-x. 5 andres andres      100 Sep 12 16:43 ..
+-rwxr-xr-x. 1 andres andres 16057128 Sep 12 16:43 umbral
+stderr: (none)
+
+Notes on fixture contents:
+ - ordinary files: alpha.txt, beta.txt, notes.md, data/inner.txt, secret.txt
+ - byte-identical pair: alpha.txt and beta.txt (both "hello world\n", 12 bytes)
+ - subdirectory: data/ (containing inner.txt)
+ - symlinks: link-to-alpha -> alpha.txt (valid); broken-link -> does/not/exist
+   (target does not exist)
+ - unreadable file: secret.txt (permissions 000)
+ - non-UTF-8 name: weird-<0xFF 0xFE>.txt (bytes 0xFF 0xFE in the name)
+
+--------------------------------------------------------------------------------
+SECTION 1 — STEP 1: init
+--------------------------------------------------------------------------------
+
+Command 1:
+    cd /tmp/umbral-reader-v2/subject; XDG_DATA_HOME=/tmp/umbral-reader-v2/data /tmp/umbral-reader-v2/bin/umbral init /tmp/umbral-reader-v2/subject >/tmp/s1.out 2>/tmp/s1.err; echo "EXIT=$?"; echo "---STDOUT---"; cat /tmp/s1.out; echo "---STDERR---"; cat /tmp/s1.err; echo "---END---"
+
+Exit status: 0
+stdout:
+observed  canonical=/tmp/umbral-reader-v2/subject
+derived   root=/tmp/umbral-reader-v2/subject
+derived   workspace-id=7cdfef079d3102e8
+derived   state-dir=/tmp/umbral-reader-v2/data/umbral/ws-7cdfef079d3102e8
+derived   initialised=true
+
+stderr: (none)
+
+--------------------------------------------------------------------------------
+SECTION 2 — STEP 2: observe (first observation)
+--------------------------------------------------------------------------------
+
+Command 2:
+    cd /tmp/umbral-reader-v2/subject; XDG_DATA_HOME=/tmp/umbral-reader-v2/data /tmp/umbral-reader-v2/bin/umbral observe /tmp/umbral-reader-v2/subject >/tmp/s2.out 2>/tmp/s2.err; echo "EXIT=$?"; echo "---STDOUT---"; cat /tmp/s2.out; echo "---STDERR---"; cat /tmp/s2.err; echo "---END---"
+
+Exit status: 0
+stdout:
+observed  canonical=/tmp/umbral-reader-v2/subject
+derived   run=1  root=/tmp/umbral-reader-v2/subject
+derived   run=1  entries=9
+derived   run=1  content-verified=5
+derived   run=1  content-not-verified=1  reason=unstable-or-unreadable
+derived   run=1  started=2026-09-12T23:43:48.073Z  finished=2026-09-12T23:43:48.074Z
+derived   run=1  complete=true
+
+stderr: (none)
+
+--------------------------------------------------------------------------------
+SECTION 3 — STEP 3: three/four changes made by the reader inside <dir>
+--------------------------------------------------------------------------------
+
+Command 3.1:
+    cd /tmp/umbral-reader-v2/subject; printf 'brand new file\n' > newfile.txt; printf 'notes line three appended\n' >> notes.md; mv beta.txt beta2.txt; rm data/inner.txt; ls -la; echo "---"; ls -la data
+
+Exit status: 0
+stdout:
+total 24
+drwxr-xr-x. 3 andres andres 220 Sep 12 16:43 .
+drwxr-xr-x. 5 andres andres 100 Sep 12 16:43 ..
+-rw-r--r--. 1 andres andres  12 Sep 12 16:43 alpha.txt
+-rw-r--r--. 1 andres andres  12 Sep 12 16:43 beta2.txt
+lrwxrwxrwx. 1 andres andres  14 Sep 12 16:43 broken-link -> does/not/exist
+drwxr-xr-x. 2 andres andres  40 Sep 12 16:43 data
+lrwxrwxrwx. 1 andres andres   9 Sep 12 16:43 link-to-alpha -> alpha.txt
+-rw-r--r--. 1 andres andres  15 Sep 12 16:43 newfile.txt
+-rw-r--r--. 1 andres andres  56 Sep 12 16:43 notes.md
+----------. 1 andres andres  11 Sep 12 16:43 secret.txt
+-rw-r--r--. 1 andres andres  14 Sep 12 16:43 weird-<0xFF 0xFE>.txt
+---
+total 0
+drwxr-xr-x. 2 andres andres  40 Sep 12 16:43 .
+drwxr-xr-x. 3 andres andres 220 Sep 12 16:43 ..
+stderr: (none)
+
+The four changes made (reader's own choice):
+  1. create: newfile.txt (contents "brand new file\n")
+  2. edit:   notes.md appended with "notes line three appended\n" (30 -> 56 bytes)
+  3. rename: beta.txt -> beta2.txt
+  4. delete: data/inner.txt
+
+--------------------------------------------------------------------------------
+SECTION 4 — STEP 4: observe (second observation)
+--------------------------------------------------------------------------------
+
+Command 4:
+    cd /tmp/umbral-reader-v2/subject; XDG_DATA_HOME=/tmp/umbral-reader-v2/data /tmp/umbral-reader-v2/bin/umbral observe /tmp/umbral-reader-v2/subject >/tmp/s4.out 2>/tmp/s4.err; echo "EXIT=$?"; echo "---STDOUT---"; cat /tmp/s4.out; echo "---STDERR---"; cat /tmp/s4.err; echo "---END---"
+
+Exit status: 0
+stdout:
+observed  canonical=/tmp/umbral-reader-v2/subject
+derived   run=2  root=/tmp/umbral-reader-v2/subject
+derived   run=2  entries=9
+derived   run=2  content-verified=5
+derived   run=2  content-not-verified=1  reason=unstable-or-unreadable
+derived   run=2  started=2026-09-12T23:43:53.968Z  finished=2026-09-12T23:43:53.969Z
+derived   run=2  complete=true
+
+stderr: (none)
+
+--------------------------------------------------------------------------------
+SECTION 5 — STEP 5: status
+--------------------------------------------------------------------------------
+
+Command 5:
+    cd /tmp/umbral-reader-v2/subject; XDG_DATA_HOME=/tmp/umbral-reader-v2/data /tmp/umbral-reader-v2/bin/umbral status /tmp/umbral-reader-v2/subject >/tmp/s5.out 2>/tmp/s5.err; echo "EXIT=$?"; echo "---STDOUT---"; cat /tmp/s5.out; echo "---STDERR---"; cat /tmp/s5.err; echo "---END---"
+
+Exit status: 0
+stdout:
+observed  canonical=/tmp/umbral-reader-v2/subject
+derived   root=/tmp/umbral-reader-v2/subject
+derived   workspace-id=7cdfef079d3102e8
+derived   last-run=2  started=2026-09-12T23:43:53.968Z  entries=9
+derived   last-run=2  complete=true
+derived   entries=9  files=6  dirs=1  symlinks=2  other=0
+derived   content-verified=5
+derived   content-not-verified=1  reason=unstable-or-unreadable
+derived   content-verification-not-applicable=3  reason=not-a-regular-file
+derived   unobservable-paths=0  reason=not-observed-at-observation-time
+derived   log-runs=2  log-observations=18
+
+stderr: (none)
+
+--------------------------------------------------------------------------------
+SECTION 6 — STEP 6: changes
+--------------------------------------------------------------------------------
+
+Command 6:
+    cd /tmp/umbral-reader-v2/subject; XDG_DATA_HOME=/tmp/umbral-reader-v2/data /tmp/umbral-reader-v2/bin/umbral changes /tmp/umbral-reader-v2/subject >/tmp/s6.out 2>/tmp/s6.err; echo "EXIT=$?"; echo "---STDOUT---"; cat /tmp/s6.out; echo "---STDERR---"; cat /tmp/s6.err; echo "---END---"
+
+Exit status: 0
+stdout:
+derived   compared  from-run=1  to-run=2  complete=true
+derived   count  unchanged=6
+derived   count  modified=1
+derived   count  created=1
+derived   count  deleted=1
+derived   count  unobserved=0
+derived   count  renamed-or-moved=1
+derived   count  recreated=0
+derived   count  ambiguous=0
+derived   renamed-or-moved  path=beta2.txt  old-path=beta.txt  scan-complete=true
+derived   deleted  path=data/inner.txt  object-survives=false  scan-complete=true
+derived   created  path=newfile.txt  scan-complete=true
+derived   modified  path=notes.md  content-changed=true  scan-complete=true
+
+stderr: (none)
+
+--------------------------------------------------------------------------------
+SECTION 7 — STEP 7: show (reader-chosen path: beta2.txt)
+--------------------------------------------------------------------------------
+
+Command 7:
+    cd /tmp/umbral-reader-v2/subject; XDG_DATA_HOME=/tmp/umbral-reader-v2/data /tmp/umbral-reader-v2/bin/umbral show /tmp/umbral-reader-v2/subject beta2.txt >/tmp/s7.out 2>/tmp/s7.err; echo "EXIT=$?"; echo "---STDOUT---"; cat /tmp/s7.out; echo "---STDERR---"; cat /tmp/s7.err; echo "---END---"
+
+Exit status: 0
+stdout:
+derived   run=2  hash=dc5a4edb8240  stability=stable
+observed  kind=file  size=12  mtime=2026-09-12T23:43:40.948Z
+
+stderr: (none)
+
+--------------------------------------------------------------------------------
+SECTION 8 — EXTRA reader probes using the same `show` command
+(not part of the seven required steps; recorded because they were run)
+--------------------------------------------------------------------------------
+
+Command 8.1 (single shell command running `show` on several chosen paths):
+    cd /tmp/umbral-reader-v2/subject; export XDG_DATA_HOME=/tmp/umbral-reader-v2/data; B=/tmp/umbral-reader-v2/bin/umbral; D=/tmp/umbral-reader-v2/subject; for p in alpha.txt notes.md secret.txt link-to-alpha broken-link data data/inner.txt newfile.txt; do echo "=== show $p ==="; $B show $D "$p"; echo "EXIT=$?"; done; echo "=== show <non-utf8> ==="; NF=$(printf 'weird-\xff\xfe.txt'); $B show $D "$NF"; echo "EXIT=$?"
+
+NOTE: in this command stdout and stderr were NOT separated, so the panic text
+below (which the tool writes to stderr) appears inline. The non-UTF-8 case was
+re-run separately in Command 8.2 with the streams separated.
+
+Exit status of the shell command: 0 (the loop's last echo)
+Output (stdout+stderr combined):
+
+=== show alpha.txt ===
+derived   run=1  hash=dc5a4edb8240  stability=stable
+observed  kind=file  size=12  mtime=2026-09-12T23:43:40.948Z
+derived   run=2  hash=dc5a4edb8240  stability=stable
+observed  kind=file  size=12  mtime=2026-09-12T23:43:40.948Z
+derived   run=1 -> 2  unchanged  path=alpha.txt  scan-complete=true
+
+EXIT=0
+=== show notes.md ===
+derived   run=1  hash=0208ded62d4b  stability=stable
+observed  kind=file  size=30  mtime=2026-09-12T23:43:40.948Z
+derived   run=2  hash=076d5fc1d208  stability=stable
+observed  kind=file  size=56  mtime=2026-09-12T23:43:51.513Z
+derived   run=1 -> 2  modified  path=notes.md  content-changed=true  scan-complete=true
+
+EXIT=0
+=== show secret.txt ===
+derived   run=1  hash=none  stability=none
+observed  kind=file  size=11  mtime=2026-09-12T23:43:40.948Z
+derived   run=2  hash=none  stability=none
+observed  kind=file  size=11  mtime=2026-09-12T23:43:40.948Z
+derived   run=1 -> 2  unchanged  path=secret.txt  scan-complete=true
+
+EXIT=0
+=== show link-to-alpha ===
+derived   run=1  hash=none  stability=none
+observed  kind=symlink  size=9  mtime=2026-09-12T23:43:40.950Z
+derived   run=2  hash=none  stability=none
+observed  kind=symlink  size=9  mtime=2026-09-12T23:43:40.950Z
+derived   run=1 -> 2  unchanged  path=link-to-alpha  scan-complete=true
+
+EXIT=0
+=== show broken-link ===
+derived   run=1  hash=none  stability=none
+observed  kind=symlink  size=14  mtime=2026-09-12T23:43:40.951Z
+derived   run=2  hash=none  stability=none
+observed  kind=symlink  size=14  mtime=2026-09-12T23:43:40.951Z
+derived   run=1 -> 2  unchanged  path=broken-link  scan-complete=true
+
+EXIT=0
+=== show data ===
+derived   run=1  hash=none  stability=none
+observed  kind=dir  size=60  mtime=2026-09-12T23:43:40.948Z
+derived   run=2  hash=none  stability=none
+observed  kind=dir  size=40  mtime=2026-09-12T23:43:51.515Z
+derived   run=1 -> 2  unchanged  path=data  scan-complete=true
+
+EXIT=0
+=== show data/inner.txt ===
+derived   run=1  hash=52e89bb4474b  stability=stable
+observed  kind=file  size=20  mtime=2026-09-12T23:43:40.948Z
+
+EXIT=0
+=== show newfile.txt ===
+derived   run=2  hash=606c2525825b  stability=stable
+observed  kind=file  size=15  mtime=2026-09-12T23:43:51.513Z
+
+EXIT=0
+=== show <non-utf8> ===
+
+thread 'main' (381637) panicked at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/env.rs:878:51:
+called `Result::unwrap()` on an `Err` value: "weird-\xFF\xFE.txt"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+EXIT=101
+
+Command 8.2 (non-UTF-8 path, stdout/stderr separated):
+    cd /tmp/umbral-reader-v2/subject; export XDG_DATA_HOME=/tmp/umbral-reader-v2/data; B=/tmp/umbral-reader-v2/bin/umbral; D=/tmp/umbral-reader-v2/subject; NF=$(printf 'weird-\xff\xfe.txt'); $B show "$D" "$NF" >/tmp/nf.out 2>/tmp/nf.err; echo "EXIT=$?"; echo "---STDOUT---"; cat /tmp/nf.out; echo "---STDERR---"; cat /tmp/nf.err; echo "---END---"
+
+Exit status: 101
+stdout: (empty — no output on stdout)
+stderr:
+
+thread 'main' (381679) panicked at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/env.rs:878:51:
+called `Result::unwrap()` on an `Err` value: "weird-\xFF\xFE.txt"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+--------------------------------------------------------------------------------
+SECTION 9 — FINAL DIRECTORY LISTING AFTER ALL COMMANDS
+--------------------------------------------------------------------------------
+
+Command 9.1:
+    cd /tmp/umbral-reader-v2/subject; export XDG_DATA_HOME=/tmp/umbral-reader-v2/data; B=/tmp/umbral-reader-v2/bin/umbral; D=/tmp/umbral-reader-v2/subject; NF=$(printf 'weird-\xff\xfe.txt'); $B show "$D" "$NF" >/tmp/nf.out 2>/tmp/nf.err; echo "EXIT=$?"; echo "---STDOUT---"; cat /tmp/nf.out; echo "---STDERR---"; cat /tmp/nf.err; echo "---END---"; echo "=====FINAL LS====="; ls -la "$D"; echo "=====FINAL LS data====="; ls -la "$D/data"
+
+Exit status: 0
+stdout:
+EXIT=101
+---STDOUT---
+---STDERR---
+
+thread 'main' (381679) panicked at /rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/std/src/env.rs:878:51:
+called `Result::unwrap()` on an `Err` value: "weird-\xFF\xFE.txt"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+---END---
+=====FINAL LS=====
+total 24
+drwxr-xr-x. 3 andres andres 220 Sep 12 16:43 .
+drwxr-xr-x. 5 andres andres 100 Sep 12 16:43 ..
+-rw-r--r--. 1 andres andres  12 Sep 12 16:43 alpha.txt
+-rw-r--r--. 1 andres andres  12 Sep 12 16:43 beta2.txt
+lrwxrwxrwx. 1 andres andres  14 Sep 12 16:43 broken-link -> does/not/exist
+drwxr-xr-x. 2 andres andres  40 Sep 12 16:43 data
+lrwxrwxrwx. 1 andres andres   9 Sep 12 16:43 link-to-alpha -> alpha.txt
+-rw-r--r--. 1 andres andres  15 Sep 12 16:43 newfile.txt
+-rw-r--r--. 1 andres andres  56 Sep 12 16:43 notes.md
+----------. 1 andres andres  11 Sep 12 16:43 secret.txt
+-rw-r--r--. 1 andres andres  14 Sep 12 16:43 weird-<0xFF 0xFE>.txt
+=====FINAL LS data=====
+total 0
+drwxr-xr-x. 2 andres andres  40 Sep 12 16:43 .
+drwxr-xr-x. 3 andres andres 220 Sep 12 16:43 ..
+stderr: (none)
+
+================================================================================
+END OF RAW TRANSCRIPT
+================================================================================

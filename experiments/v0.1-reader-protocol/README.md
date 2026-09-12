@@ -466,8 +466,17 @@ owner stands; the first run's fallback — the owner, with the weakness declared
 ### 6.5 Status of the first run
 
 The first run is not retracted. It is evidence about the version as it stood, and it produced
-F-V01-2, which was real and has since been corrected. A second run under this protocol would test
-the corrected output, and would be a **new** experiment record rather than a revision of this one.
+F-V01-2, which was real and has since been corrected. A second run under this protocol tests the
+corrected output and is a **new** experiment record rather than a revision of this one.
+
+**Second run executed 2026-09-12**, by a subagent with isolated context, under the classification
+**EVIDENCIA-B — READER PROTOCOL / AGENT ISOLATED CONTEXT**. It answered **8 of 8** questions, and
+its dispositions are in [`EVIDENCE-B.md`](EVIDENCE-B.md); the raw transcript is
+[`transcript-run2-agent.txt`](transcript-run2-agent.txt) and the sheet it received is
+[`protocol-v2-operational-sheet.md`](protocol-v2-operational-sheet.md). It found nine issues,
+including a crash (`show` panics on a non-UTF-8 path) and a test that claims coverage of exactly
+that case without exercising it. **It does not satisfy A1**: it is an agent, not an independent
+human reader, and it does not repair the first run's D4 weakness.
 
 ---
 
