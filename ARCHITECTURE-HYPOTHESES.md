@@ -15,7 +15,7 @@ HOW TO READ THIS FILE
 - A hypothesis with no counter-evidence still has no validation.
 
 -------------------------------------------------------------------------------
-H15-H23 — ENVIRONMENT INTELLIGENCE SET (2026-09-10b cycle)
+ENVIRONMENT INTELLIGENCE SET (hypotheses H15-H23)
 Product-level hypotheses with full entries in ENVIRONMENT-INTELLIGENCE.md (their home).
 Listed here for index completeness only; these are PRODUCT hypotheses, not architecture.
   H15 — environment intelligence as a product-level concept (SPECULATIVE)
@@ -26,7 +26,7 @@ Listed here for index completeness only; these are PRODUCT hypotheses, not archi
       knowledge (REASONED)
   H20 — machine-first output; categorical epistemic labels; numeric confidence only where
       calibrated (M9) (REASONED)
-  H21 — FSP may hold a stance without authority — probably reject; OBJ-11 (implicit authority)
+  H21 — Umbral may hold a stance without authority — probably reject; OBJ-11 (implicit authority)
       stands (SPECULATIVE)
   H22 — AI activity history; default recording CONTRADICTED for reads (M10 split) (SPECULATIVE)
   H23 — maintenance role: no desired state exists, so no objective function without the user;

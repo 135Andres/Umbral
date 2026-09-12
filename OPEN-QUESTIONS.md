@@ -6,6 +6,11 @@ Category G (architecture-blocking) and H-adjacent. These are NOT answerable by o
 Each names what would settle it. The research agenda (RESEARCH-AGENDA.md) turns a subset
 of these into work.
 
+READING ORDER: the file is maintained newest-first at the top. Q1-Q15 are the original
+question list (below the dated update blocks); Q16-Q25 were added by later research
+cycles and appear before them. The numbering is stable and never reordered; only the
+position in the file reflects when a question was added.
+
 ================================================================================
 UPDATE 2026-09-10 — MASTER CONTEXT RECOVERY (audit outcome)
 ================================================================================
@@ -78,12 +83,12 @@ Q17 — CAN COORDINATION PRIMITIVES LIVE IN PLAIN FILES, OR DO THEY REQUIRE A LI
    Advisory claims in plain files are weak; atomic claims normally need a process. The
    plain-file constraint (A1/A2) and real coordination may be in tension. Settles by:
    E-CO-2 (with the engine switched off) and E-CO-3.
-Q18 — DOES FSP MEDIATE COEXISTENCE, OR DEFER TO EXISTING MECHANISMS (GIT, ISOLATION)?
+Q18 — DOES Umbral MEDIATE COEXISTENCE, OR DEFER TO EXISTING MECHANISMS (GIT, ISOLATION)?
    The strongest competitor to every candidate strategy is "use worktrees/branches and let
    the human merge" (strategy S5). Settles by: E-CO-2 and E-CO-3, comparing mediated and
    isolated conditions on the same task.
 NOTE ON SCOPE: these are not the same as the user-decision fork raised in
-COEXISTENCE-STRATEGIES.md §3 (O14) — whether FSP serves developers-with-agents first or
+COEXISTENCE-STRATEGIES.md §3 (O14) — whether Umbral serves developers-with-agents first or
 ordinary users first. That is a product decision, listed in the stage record.
 
 Q19 — DO AI PARTICIPANTS NEED AN EXPLICIT SAFETY FLOOR, OR DO PLATFORM PERMISSION
@@ -101,18 +106,18 @@ Q21 — DOES THE STANDING DIMENSION ("WHO HAD THE AUTHORITY TO DECIDE") HAVE OPE
    operational value, a large part of the standing dimension is decorative. Settles by:
    E-CO-6b-style probing of whether models/users change behaviour when standing is exposed.
    OPEN and explicitly unresolved; do not treat the standing dimension as established.
-Q22 — DOES THE RECORD MODEL SURVIVE AS PLAIN FILES READABLE WITHOUT FSP?
+Q22 — DOES THE RECORD MODEL SURVIVE AS PLAIN FILES READABLE WITHOUT Umbral?
    The minimum-model research (research/PROJECT-REALITY-MINIMUM-MODEL.md §9, UNKNOWN-1)
    found no primary source verifying that self-contained plain-file records stay fully
-   interpretable after FSP's disappearance; nanopublications are the closest prior art.
+   interpretable after Umbral's disappearance; nanopublications are the closest prior art.
    Settles by: E-MIN-1 variant or a dedicated portability test.
 Q23 — DO MULTI-AI CONCURRENT WRITES NEED PER-RECORD VERSION VECTORS, OR DO SINGLE-WRITER
       CAUSAL MARKERS SUFFICE?
    Pass finding UNKNOWN-2: record topology already preserves concurrency as coexisting
    records; the question affects derived merging only. Settles by: E-CO-3 (concurrent
    writer collision test), not before it.
-Q24 — DOES FSP NEED A UNIVERSAL STATUS VOCABULARY, PER-SCOPE VOCABULARIES, OR NONE?
-   Surveyed status sets are domain-closed (USLM legal set, ADR set); FSP's own governance
+Q24 — DOES Umbral NEED A UNIVERSAL STATUS VOCABULARY, PER-SCOPE VOCABULARIES, OR NONE?
+   Surveyed status sets are domain-closed (USLM legal set, ADR set); Umbral's own governance
    of a recorded vocabulary is untested and has a known drift risk (DOC-FRICTION-018
    precedent). Settles by: product research, only if the record model is ever carried
    toward design.
@@ -211,7 +216,7 @@ and A8 (S9 §Recommendations 10, S11 §8).
 Settles when: the user ranks surfaces.
 
 -------------------------------------------------------------------------------
-Q12 — Does the FSP client need to be a single artifact or a suite of processes?
+Q12 — Does the Umbral client need to be a single artifact or a suite of processes?
 The corpus argues both ways (S10 §16 microkernel; S11 §9 failures of multi-process
 daemons; S9 §8 single process). This is an engineering and packaging question with real
 consequences for install and failure modes, and it is not a technology choice.

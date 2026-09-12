@@ -22,7 +22,7 @@ consumer (MC §2).
 
 WHY IT MATTERS
 Today, humans organize files but AI has to ingest them wholesale; knowledge tools
-demand taxonomies or swallow files into proprietary databases. FSP's bet: keep the
+demand taxonomies or swallow files into proprietary databases. Umbral's bet: keep the
 filesystem sovereign and make the semantic layer a derived, rebuildable, user-governed
 projection (MC §12, §28, §39).
 
@@ -44,7 +44,7 @@ the objections C1-C13 (OBJ-1..13 in that file) are recorded in ENVIRONMENT-INTEL
 kill-tests are independent: E-CO-1 (currency) and E-CO-6a (safety floor).
 
 CURRENT CENTRAL DIRECTION (UD-011, 2026-09-10)
-Coexistence with a world of AI systems: what must FSP provide so a human and several
+Coexistence with a world of AI systems: what must Umbral provide so a human and several
 heterogeneous AIs can safely, coherently and continuously share one filesystem without the
 human reorganizing around any one AI's assumptions. This does NOT replace the semantic-
 projection thesis (MC §4-§6), which remains fundamental. Seven candidate strategies and
@@ -65,7 +65,7 @@ A note app, an Obsidian clone, a project manager, an AI chat app, a filesystem b
 a Git replacement, an AI agent (MC §1). Not a database-with-file-export. Not a taxonomy.
 Not autonomous background writers of user files. Not a prompt-injecting host (A11).
 No product. Since 2026-09-11 the minimal technical prototype fsp-check IS authorized
-(UD-012) — an experimental observation/reconciliation base, explicitly not FSP and not a
+(UD-012) — an experimental observation/reconciliation base, explicitly not Umbral and not a
 product surface; scope and limits in V0-IMPLEMENTATION-PLAN.md.
 
 TOP RISKS (one line each; ranking is Hermes interpretation, full reasoning in
@@ -86,11 +86,15 @@ WHAT COULD CHANGE OUR MIND
 - A candidate architecture scoring K1-K9 so decisively that scope assumptions change.
 - Any new explicit user decision — user authority always outranks research.
 
-CURRENT NEXT STEP (updated 2026-09-11b: READY FOR V0 IMPLEMENTATION)
-Primary line: BEGIN V0 (fsp-check) per V0-IMPLEMENTATION-PLAN.md. The user confirmed
-(2026-09-11) plan §9 SC-1..SC-5 as V0 completion criteria and §8 benchmarks as
-experiments producing EVIDENCE only — no numeric performance thresholds exist as product
-requirements. Documentation stage closed; nothing blocks implementation start.
+CURRENT NEXT STEP (updated 2026-09-11c: V0 CLOSED — status PARTIAL)
+V0 is closed and frozen (closeout: experiments/v0-harness/V0-CLOSEOUT.md). V1 is NOT
+started and is not authorized. The prototype's core was falsified through an independent
+oracle without producing an implementation failure inside the tested scope; the PARTIAL
+status comes only from SC-5, the missing reader-facing surface, which was outside V0's
+mandate. What V0 did not demonstrate, and what it leaves open, is listed in the closeout
+record's V1 handoff section — Q25 (SQLite-only vs SQLite + JSONL) remains OPEN.
+
+Current work is publication preparation (PUBLICATION-PROPOSAL.md), not product work.
 Unchanged evidence lines (open, not cancelled, runnable independently):
 E-CO-1 (coexistence kill-test), E-CO-6a (safety floor), E-MIN-1 (field ablation with
 readers). Prior next-step text preserved below for continuity.
