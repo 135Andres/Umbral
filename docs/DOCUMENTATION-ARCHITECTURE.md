@@ -415,6 +415,19 @@ frozen; do not "correct" it. Experiment-local namespaces are scoped and declared
 mutation classes M1-M10 and the EXP-DOC-1 readers' finding labels M1-M5 are LOCAL to their
 experiment files and are not project IDs.
 
+DM5 — APPLIED 2026-09-12 (v0.1 version records):
+     A new document type was needed and did not exist in the taxonomy above:
+       DT11 — VERSION RECORD. Home: docs/versions/. One file per version (v0.1.md, ...)
+              plus docs/versions/README.md as the derived index (DT8). A version record
+              carries the version's goal, capabilities, non-goals, dependencies, acceptance
+              criteria, evidence, known limitations, exit condition and completion record.
+              It is a FROZEN record once the version closes: superseded by a later version's
+              record, never rewritten. It is NOT a decision record (DT3) and NOT canonical
+              knowledge (DT2): it states what one version did, not what the project holds.
+     Release notes are the completion record inside each version file; no separate
+     release-note tree is created. Known limitations live in the version they belong to.
+     This amends §10's routing rule by adding one destination, and changes nothing else.
+
 DM4 — APPLIED 2026-09-12 (owner-directed presentation refactor, post-publication):
      The 14 canonical root documents moved under docs/, grouped by the document types this
      file already defines:
