@@ -22,6 +22,19 @@ tested** (2026-09-11).
   11 identity + 8 scan + crash worker) · `cargo clippy --all-targets` clean ·
   `cargo fmt` applied.
 
+Increment 6 — HARNESS (independent oracle, generated sequences, falsification,
+benchmarks): **done** (2026-09-11). See `../experiments/v0-harness/`.
+
+- `cargo test` 68/68 pass · clippy clean · fmt clean.
+- `examples/bench.rs`: benchmarks (evidence only, no thresholds);
+  `tests/harness_falsification.rs`: independent ReferenceState oracle (models
+  existence/content/aliasing directly, never calls fsp-check's reconcile), generated
+  op sequences with explicit precondition gating, 512 proptest cases, crash-during-
+  sequence, hard-link group survival, path-swap-as-property, out-of-order semantics.
+- Four findings, ALL class D (harness/oracle defects, none in fsp-check) — including
+  the second occurrence of the `Path::starts_with("dir/")` trap and an oracle that
+  failed to model hard-link aliasing (the implementation was right, the oracle wrong).
+
 Reconcile (`src/reconcile.rs`): pure function over two ObservationSets (entries +
 valid-hash evidence + completeness flag). Matching rule, in priority order:
 1. same-path + equal dev+ino -> Unchanged/Modified (size/mtime, refined by hash);

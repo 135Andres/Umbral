@@ -140,6 +140,9 @@ V0-IMPLEMENTATION-PLAN.md ......... PROVISIONALLY ADOPTED (UD-012/UD-013): fsp-c
 experiments/v0-preflight/ ......... PREFLIGHT-V0-FEDORA.md: environment probe + portability
                                     classification (evidence; toolchain installed 2026-09-11,
                                     rustup user-level, stable 1.98)
+experiments/v0-harness/ ........... BENCHMARKS.md (evidence, no thresholds) +
+                                    FALSIFICATION-REPORT.md (findings classified, properties
+                                    proved, SC evaluation)
 fsp-check/ ........................ V0 prototype crate (UD-012): increment 1 SCAN done —
                                     deterministic read-only scanner + observation-record
                                     seam; tests 8/8 (see fsp-check/README.md)
