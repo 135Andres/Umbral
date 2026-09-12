@@ -1,7 +1,7 @@
 {
   "_disclaimer": "EXP-1 instrument output. sqlite3/FTS5 was used because it is the cheapest stdlib option. This file is NOT evidence that FSP has selected SQLite, an index technology, a retrieval technique or an identity mechanism; FSP has selected none of these.",
   "corpus": {
-    "root": "/home/<user>/FSP/experiments/exp1/fixture-corpus-synthetic",
+    "root": "<repo>/experiments/exp1/fixture-corpus-synthetic",
     "files": 36,
     "text_files": 35,
     "binary_files": 1,
@@ -1018,5 +1018,6 @@
       "bytes": 536506
     }
   ],
-  "workdir": "/tmp/exp1-t6tqz2vv"
+  "workdir": "/tmp/exp1-t6tqz2vv",
+  "_publication_note": "Path prefixes were normalized to '<repo>' on 2026-09-11 when the repository was prepared for public release. No measurement, count or result was altered; only the absolute local path string was replaced."
 }

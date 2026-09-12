@@ -1,6 +1,7 @@
 # SCRATCH — scenarios for the minimum-model cycle (working notes, not canonical)
 
-Status: WORKING NOTES (temporary exploration, L-class). Kept because the report cites the
+Status: WORKING NOTES (temporary exploration, L-class) — INTERNAL-WORKING.
+NOT part of the public edition: this is development scratch, not project knowledge. Kept because the report cites the
 scenarios by ID (S1-S13). Not canonical; not part of the map; do not cite as authority.
 
 Method per scenario: what exists in files? in Git? what cannot be reconstructed?

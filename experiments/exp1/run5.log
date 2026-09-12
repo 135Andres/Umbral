@@ -61,4 +61,4 @@ copies  files    scan_s    cold_idx_s query_ms  reindex1_s
 10      360      0.0389    0.0769     0.172     0.028       
 50      1800     0.1274    0.3003     0.341     0.1242      
 
-wrote /home/<user>/FSP/experiments/exp1/results.json
+wrote <repo>/experiments/exp1/results.json
