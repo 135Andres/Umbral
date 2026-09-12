@@ -31,7 +31,10 @@ recorded gap, handed to V1. Formal scope statement and freeze:
 `../experiments/v0-harness/V0-CLOSEOUT.md`. No further functional changes to this crate
 absent contradicting evidence.
 
-- `cargo test` 68/68 pass · clippy clean · fmt clean.
+- `cargo test` 68/68 pass on the development environment (Fedora, tmpfs) · clippy clean
+  · fmt clean. On ext4 the same suite was 67/68 plus one test that encoded an unstated
+  assumption about inode reuse; that assertion was corrected (finding F-6) and the suite is
+  now 68/68 on both filesystems. See `../experiments/v0-harness/FALSIFICATION-REPORT.md`.
 - `examples/bench.rs`: benchmarks (evidence only, no thresholds);
   `tests/harness_falsification.rs`: independent ReferenceState oracle (models
   existence/content/aliasing directly, never calls fsp-check's reconcile), generated
@@ -39,11 +42,12 @@ absent contradicting evidence.
   sequence, hard-link group survival, path-swap-as-property, out-of-order semantics.
 - Findings: four class D (harness/oracle defects, none in fsp-check) — including the
   second occurrence of the `Path::starts_with("dir/")` trap and an oracle that failed to
-  model hard-link aliasing (the implementation was right, the oracle wrong) — **plus one
-  class B coverage gap (F-5): the generator never emitted `Op::DeleteDir`, so directory
-  deletion was not falsified by V0.** The three-way distinction between operations
-  modelled, operations generated, and operations exercised is stated in
-  `../experiments/v0-harness/FALSIFICATION-REPORT.md`.
+  model hard-link aliasing (the implementation was right, the oracle wrong) — **plus two
+  class B findings: F-5, a coverage gap (the generator never emitted `Op::DeleteDir`, so
+  directory deletion was not falsified by V0), and F-6, a defective test assertion that
+  required one of two equally valid readings where the filesystem decides which one
+  applies.** The three-way distinction between operations modelled, operations generated,
+  and operations exercised is stated in `../experiments/v0-harness/FALSIFICATION-REPORT.md`.
 
 Reconcile (`src/reconcile.rs`): pure function over two ObservationSets (entries +
 valid-hash evidence + completeness flag). Matching rule, in priority order:

@@ -83,6 +83,60 @@ cached build and reported zero warnings. Re-checked with a forced rebuild during
 publication preparation, which is how this gap surfaced. Lesson: a tool result read from a
 cache is not a verification.
 
+### F-6 (class B — defective test assertion, found by the CI runner on ext4)
+
+Symptom: `tests/reconcile_mutations.rs::full_cycle_scan_reconcile_store` failed
+deterministically on the GitHub Actions runner (ubuntu-latest, ext4), twice in a row, at the
+assertion `kinds(&r, MutationKind::Deleted).iter().any(|m| m.path == *"bye.txt")`. The same
+suite passed 68/68 on the development machine (Fedora, tmpfs `/tmp`).
+
+Cause: the fixture deletes `bye.txt` and creates `new.txt` in the same instant, then asserted
+`Deleted(bye.txt)` AND `Created(new.txt)`. That pair of verdicts holds **only if the
+filesystem does not hand the freed `dev+ino` to the new file**. On tmpfs (a monotonically
+increasing inode counter) it never does; on ext4 the freed inode is reused immediately, and
+`reconcile` then pairs the two paths into a single `RenamedOrMoved(new.txt, old=bye.txt)` —
+which is the correct reading of that evidence, not a defect. The test had an implicit,
+unstated assumption about the filesystem baked into it.
+
+Three distinct things, kept apart:
+
+  - **The implementation of `reconcile`:** not implicated. Its output followed its
+    documented rules in both environments. dev+ino is defined as *evidence*, not as eternal
+    identity, and reuse after delete is documented in `src/identity.rs` ("it is NOT eternal
+    (inodes are reused after delete)"). `identity_physical.rs` already contains a test that
+    records observed inode reuse as a documented limitation.
+  - **The assertion:** defective — it required one of two equally valid readings.
+  - **Filesystem-dependent behaviour:** the source of the difference between environments.
+    This is a property of the substrate, not of V0.
+
+Independent reproduction (outside the repository, no V0 code changed): a standalone crate
+driving the public API with synthetic observation sets showed that a fresh inode yields
+`Deleted(bye.txt) + Created(new.txt)`, while a reused inode yields
+`RenamedOrMoved(new.txt, old=bye.txt)` and no `Deleted` — exactly the CI failure. On the
+development machine, inode reuse could not be provoked (btrfs and tmpfs: 0 reuses in 40
+immediate and 750-of-1500 churned cases), which is why the gap survived local verification
+and was found by an independent environment.
+
+Resolution: the assertion now states the property that holds in **both** environments — the
+disappearance of `bye.txt` is accounted for **exactly once** (a `Deleted` XOR a
+`RenamedOrMoved` whose `old_path` is `bye.txt`), and the accompanying mutation must agree
+with whichever reading was taken (no identity reuse ⇒ `Created(new.txt)`; reuse ⇒ no separate
+`Created`). This is stronger than the original assertion, not weaker: it fails if the
+reconciler loses the mutation *or* double-reports it, and it still fails if the path is merely
+`Unobserved`. No source file, no semantics and no behaviour of `reconcile` was changed; only
+the test's expectation.
+
+Corrected coverage statement (supersedes the unqualified "68/68 tests green" recorded in the
+increment-6 report, `V0-CLOSEOUT.md` and `fsp-check/README.md`):
+
+  - **68/68 on the development environment** (Fedora 44, tmpfs `/tmp`).
+  - **67/68 + 1 filesystem-dependent test** on ext4 before this correction: the failing test
+    was not detecting a V0 defect, it was encoding a substrate assumption.
+  - **After the correction: 68/68 on both environments.** Verified locally (fresh run, no
+    cache) and in CI on the runner's ext4, which is the environment that exposed the gap.
+
+Class: B. Not a falsification of V0, and not evidence of incorrect `reconcile` behaviour.
+
 ### Class A (V0 must fix): none outstanding
 All defects found were in the harness/oracle, not in fsp-check. No falsification of the
 V0 implementation was produced by this increment; the properties below hold.
