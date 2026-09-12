@@ -51,8 +51,13 @@ Four commitments define the shape of the project:
 | Product | **does not exist.** There is no usable application to install |
 | Architecture | **not selected.** No database, protocol, versioning engine, UI or semantic model has been chosen |
 | Prototype | **V0 exists and is frozen**, status `PARTIAL` — see below |
+| Development | **v0.1 exists** as a local, read-only observation instrument under [`umbral/`](umbral/); its evidence is registered, and it is **not declared complete** |
 | Phase | DISCOVERY → RESEARCH → ARCHITECTURE |
 | Next | V1 is **not started** and is not authorized |
+
+Two names that look alike and are not. **V0** is the frozen experiment `fsp-check/`. **v0.1**
+is the first development version, in new code that does not depend on it. V0 is evidence for
+v0.x; it is never a dependency of it.
 
 ## V0 — the first experiment
 
@@ -101,6 +106,7 @@ decided. Each file has one role; nothing duplicates another.
 | [`docs/decisions/DECISIONS.md`](docs/decisions/DECISIONS.md) | **the only place commitments live** (`UD-nnn`) |
 | [`docs/candidates/`](docs/candidates/ARCHITECTURE-HYPOTHESES.md) | candidate architectures, open questions, research agenda — all explicitly *not selected* |
 | [`docs/v0/`](docs/v0/V0-IMPLEMENTATION-PLAN.md) | the V0 plan, invariants and criteria |
+| [`docs/versions/`](docs/versions/README.md) | what each development version did, with its evidence and its known limitations |
 | [`research/`](research/) | evidence: research artifacts, external briefs, frozen history |
 | [`experiments/`](experiments/) | experiments and their results, including V0 |
 

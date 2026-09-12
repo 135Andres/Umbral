@@ -86,7 +86,20 @@ WHAT COULD CHANGE OUR MIND
 - A candidate architecture scoring K1-K9 so decisively that scope assumptions change.
 - Any new explicit user decision — user authority always outranks research.
 
-CURRENT NEXT STEP (updated 2026-09-11c: V0 CLOSED — status PARTIAL)
+CURRENT NEXT STEP (updated 2026-09-12b: v0.1 EVIDENCE COMPLETE EXCEPT THE READER PROTOCOL)
+
+Development proceeds by incremental versions (v0.1, v0.2, ...) rather than jumping to V1.
+v0.1 exists as the development crate `umbral/` — a local, read-only observation instrument
+whose reader-facing surface closes V0's SC-5 gap. Its evidence is registered in
+docs/versions/v0.1.md, which also lists what is NOT verified: the formal reader protocol,
+which requires a person who did not write the code. v0.1 is therefore **not declared
+complete**. V1 remains reserved for a version that has passed a separate AUDIT READINESS
+REVIEW and an external audit; no version is designated as the audit candidate in advance.
+
+`fsp-check/` is unchanged and remains frozen at PARTIAL. The two are separate: V0 is
+evidence for v0.x, never a dependency of it.
+
+PRIOR NEXT STEP (2026-09-11c: V0 CLOSED — status PARTIAL) — preserved for continuity
 V0 is closed and frozen (closeout: experiments/v0-harness/V0-CLOSEOUT.md). V1 is NOT
 started and is not authorized. The prototype's core was falsified through an independent
 oracle without producing an implementation failure inside the tested scope; the PARTIAL

@@ -12,6 +12,7 @@ authority ladder and reading rules live in the [root README](../README.md).
 | [Candidates and open questions](candidates/) | [`ARCHITECTURE-HYPOTHESES`](candidates/ARCHITECTURE-HYPOTHESES.md) · [`OPEN-QUESTIONS`](candidates/OPEN-QUESTIONS.md) · [`RESEARCH-AGENDA`](candidates/RESEARCH-AGENDA.md) | candidate mechanisms — all explicitly *not selected*; what is unresolved; what must be investigated |
 | [Product-level hypotheses](candidates/) | [`COEXISTENCE-STRATEGIES`](candidates/COEXISTENCE-STRATEGIES.md) · [`ENVIRONMENT-INTELLIGENCE`](candidates/ENVIRONMENT-INTELLIGENCE.md) | proposed, unratified hypothesis sets from the research cycles |
 | [V0](v0/) | [`V0-IMPLEMENTATION-PLAN`](v0/V0-IMPLEMENTATION-PLAN.md) | the frozen prototype's plan, invariants, criteria |
+| [Versions](versions/) | [`versions/README`](versions/README.md) | what each development version did — goal, evidence, known limitations. Frozen once the version closes |
 
 Elsewhere in the repository:
 
