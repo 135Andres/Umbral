@@ -94,7 +94,10 @@ nothing else in this repository is a decision.
 - **Falsification:** an oracle that models reality directly and never reuses the
   prototype's own reconciliation logic.
 - **Result:** no implementation failure was produced inside the tested scope. Four defects
-  were found, all in the harness or the oracle.
+  were found, all in the harness or the oracle, **plus one coverage gap**: the property-test
+  strategy never generated directory deletion, so that operation was modelled but never
+  exercised. The three are distinguished explicitly in the falsification report — operations
+  modelled, operations actually generated, operations exercised end to end.
 - **Frozen state:** `PARTIAL`. The only gap is a reader-facing surface that would let a
   new reader reconstruct what the prototype recorded and when — deliberately outside V0's
   mandate.
