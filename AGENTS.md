@@ -1,24 +1,56 @@
 # AGENTS.md
 
-Status: CURRENT — pointer document (no authority of its own; it routes, it does not state).
+Entry point for AI agents working in this repository. Deliberately short — it routes, it
+does not explain. **Read [`README.md`](README.md) first**; it holds the orientation, the
+authority ladder and the rules for reading claims, and it is canonical for this repository.
 
-Entry point for AI agents working in this repository. Five lines, no duplication.
+This repository is the project's durable memory. Agent memory, session history and skills
+are operational tooling only. If they disagree with the files here, the files win — and a
+fact that exists only inside an agent does not exist.
 
-**Read `README.md` first.** It holds the map, the read order, the authority ladder and the
-epistemic contract; that file is canonical for this repository.
+## Authority, in one line
 
-**This repository is the canonical project memory. Hermes memory and skills are operational
-memory only.** If the two ever disagree, the repository wins. Never let a fact live only
-inside an agent.
+An explicit instruction from the project owner > a decision record (`DECISIONS.md`,
+`UD-nnn`) > the canonical documents > experiment results > research artifacts >
+hypotheses > your own inference. **Never promote a lower level into a higher one.**
 
-**Highest authority in this repository:** a decision record (`DECISIONS.md`, UD-nnn),
-followed by the user charter (`research/sources/PROJECT-MASTER-CONTEXT.md`, cited as MC §n).
-Research reports (S0-S11), audits and Hermes interpretations are NOT authority — never
-treat them as decisions, and never present an unratified mechanism as chosen.
+## Read before acting
 
-**Before creating any file, apply the routing rule** in `DOCUMENTATION-ARCHITECTURE.md` §10.
-Most new information belongs in an existing file, not a new one.
+| Need | File |
+|---|---|
+| where the project stands | [`PROJECT-DIRECTION.md`](PROJECT-DIRECTION.md) |
+| what has been committed to | [`DECISIONS.md`](DECISIONS.md) |
+| what must stay true | [`INVARIANTS.md`](INVARIANTS.md) · [`PRINCIPLES.md`](PRINCIPLES.md) · [`CONSTRAINTS.md`](CONSTRAINTS.md) |
+| what is only a candidate | [`ARCHITECTURE-HYPOTHESES.md`](ARCHITECTURE-HYPOTHESES.md) — **nothing here is selected** |
+| what is unresolved | [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) |
+| what was measured | [`experiments/`](experiments/) · [`experiments/v0-harness/V0-CLOSEOUT.md`](experiments/v0-harness/V0-CLOSEOUT.md) |
+| how this repository is organized | [`DOCUMENTATION-ARCHITECTURE.md`](DOCUMENTATION-ARCHITECTURE.md) — before creating any file, apply its routing rule (§10) |
+| how to contribute | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 
-**Process** (how to reason about FSP: authority handling, research intake, experiment
-discipline, hard boundaries) lives in the Hermes skill `fsp-project-intelligence`, not here.
-That skill is tooling; this repository is the record.
+## Rules
+
+- **Do not invent.** No fabricated files, measurements, decisions, requirements or
+  architecture. If something is unknown, write `UNKNOWN`; if suspected, write it as a
+  hypothesis; if disputed, preserve the dispute.
+- **Do not decide.** Decisions belong to the project owner. Record, research, question,
+  propose, verify — never ratify.
+- **Classify every claim** by its source (`MC §n`, `UD-nnn`, `Hn`, `Qn`, experiment,
+  external source) and keep observed / recorded / derived / inferred / assumed / unknown
+  distinct.
+- **One home per fact.** Before adding a file, check whether the fact already has one.
+- **Never rewrite history.** Decision records and frozen records in
+  [`research/history/`](research/history/) are immutable; supersede with a pointer.
+- **No architecture selection**, no schema, no protocol, no technology choice presented as
+  settled. The V0 prototype's stack is scoped, provisional and reversible
+  (`UD-012`, `UD-013`), and **V0 is not Umbral's architecture**.
+- **Preserve the boundary.** `research/sources/` may contain material that is not part of
+  the public edition of this repository; see
+  [`PUBLICATION-PROPOSAL.md`](PUBLICATION-PROPOSAL.md). Do not quote, copy or republish
+  anything from a non-public source into a public document.
+
+## Process
+
+The working process for this project — authority handling, research intake, experiment
+discipline, hard boundaries — is documented in the `fsp-project-intelligence` skill of the
+agent environment that maintains this repository. That skill is tooling; **this repository
+is the record.**

@@ -1,0 +1,23 @@
+name: Question
+description: Ask about the project, its documents, or its evidence
+title: "[question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If your question is "what does this project claim, and how sure is it?", the
+        README's section *How to read claims here* may answer it faster than an issue.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Which document prompted it
+      description: File name or link, if any.
+    validations:
+      required: false

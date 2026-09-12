@@ -1,0 +1,30 @@
+# Build output (Rust). The V0 prototype lives in fsp-check/.
+/fsp-check/target/
+target/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating system noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local logs and scratch output that must never be committed
+*.local.log
+*.tmp
+/tmp/
+
+# Local environment and secrets. The repository must never contain credentials;
+# these patterns exist so an accidental local file cannot be committed.
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+credentials*
+secrets*
