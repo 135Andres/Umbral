@@ -21,6 +21,9 @@ so the run below is labelled a **dry pass** and does not satisfy the criterion.
 
 ## 2. PROTOCOL
 
+> **For any run after 2026-09-12, use §6 (protocol v2), which adds a fixture requirement.**
+> This section is preserved as it was executed.
+
 **Subject.** A person who did not write the code. Preferred: someone other than the project
 owner. If neither is available, the owner, with the weakness declared in the record.
 
@@ -59,6 +62,11 @@ and narrow the contract explicitly in this record. Narrowing it silently is not 
 ---
 
 ## 3. DRY PASS — EXECUTED 2026-09-12 BY THE AUTHOR-AGENT
+
+> **Note added 2026-09-12:** the transcript below was produced **before** the F-V01-2
+> correction, so it shows the earlier labelling — for example `observed  run=1  entries=7`,
+> where `run` and `entries` are now `derived`. It is left as it was produced, because it is the
+> record of what that run saw. Current labelling: §7.
 
 **This does not satisfy A1 and does not count as the formal run.** It was run to validate that
 the protocol's questions are answerable at all from the output, and to catch output defects
@@ -310,9 +318,9 @@ The subject found one instance of the first class. The defect is the class, not 
 the reader's doubt is legitimate for every one of those lines, and it will recur for any
 reader. This is exactly the class of question Q8 exists to surface, and it surfaced it.
 
-Disposition: **PENDING owner decision.** The two legitimate options are to correct the labels
-inside v0.1 (a repair of the contract the version already committed to, not new capability) or
-to declare the distinction narrower than the version claimed and record that.
+Disposition: **CORRECTED IN v0.1** (owner decision, 2026-09-12). The labels were repaired — a
+repair of the contract the version had already committed to, not new capability — and the
+distinction is now enforced by a test rather than by review. See §7.
 
 **F-V01-3 — limits are expressed only reactively, so a fully-observed tree exhibits none.
 Class: output-contract completeness, entangled with a protocol setup gap.** Found by Q6 and Q7.
@@ -331,17 +339,202 @@ Two distinct causes, and they must not be merged:
    records a fingerprint rather than the content, and it knows nothing about changes between
    observations — and it never states any of them. A reader cannot discover them from the output.
 
-Disposition: **PENDING owner decision.** Fixing (1) is a protocol amendment and costs no product
-surface. Fixing (2) would add an affirmative statement to the output, which changes the surface
-after the acceptance criteria were frozen — a decision for the owner, not for this record.
+Disposition: **THE PROTOCOL IS AMENDED; THE SURFACE IS NOT** (owner decision, 2026-09-12).
+Cause (1) is fixed by requiring the subject's tree to contain negative cases. Cause (2) is
+deliberately NOT fixed: an affirmative statement of Umbral's limits is outside v0.1's contract
+and may be evaluated later. The purpose of the amendment is to repair the experiment, not to
+extend the product. See §6.
 
 **N-V01-1 — protocol delivery.** The instructions handed to the subject used `<dir>` as a
 placeholder, and the shell read it as a redirection until the subject corrected it. Defect of
 how the protocol was delivered, not of the tool. Disposition: use a literal path in the
 instructions, or quote the placeholder, in any future run.
 
-### 5.6 What is still missing
+### 5.6 The transcript, as received
 
-The **raw transcript of the six commands**, required by §2's recording rule. It has not been
-received. Until it arrives this section is not closed, Q1 cannot be independently verified, and
-the finding classes above rest on the subject's summary rather than on the output itself.
+The primary evidence for the first attempt is the output quoted inside the subject's answers.
+It was received in that form — as fragments quoted while answering — not as a separate
+command-by-command transcript. Nothing below is reconstructed: these are the values the subject
+quoted, reproduced exactly as they appeared.
+
+```
+content-verified=2
+content-not-verified=0
+complete=true
+run 2, started 2026-09-12T22:55:37.975Z, finished 2026-09-12T22:55:37.976Z
+modified=1
+content-changed=true
+hash 68d9bd28f591 -> 6b6353db25d5   (the two hashes of a.txt, run 1 and run 2)
+ambiguous=0
+unknown unobservable-paths=0
+workspace-id=<workspace-id>
+```
+
+**Not received:** the complete output of the six commands. Its absence is recorded rather than
+papered over: Q1's answer ("2 entries, both files") is therefore consistent with the quoted
+counts but not independently verifiable, and the two finding classes in §5.5 rest on the
+subject's summary plus these fragments rather than on the full output.
+
+### 5.7 The first attempt, and N-V01-1
+
+The instructions handed to the subject used `<dir>` as a placeholder. In the subject's shell the
+first command produced, verbatim:
+
+```
+zsh: parse error near `\n'
+```
+
+The subject recognised the cause and replaced the placeholder with a literal path; the protocol
+then ran without further incident. **N-V01-1 is a defect of how the protocol was presented, not
+of the tool.** Disposition: instructions for a future run must contain a literal path or a
+quoted placeholder.
+
+### 5.8 Redaction of the workspace identifier
+
+Recorded so the record does not misrepresent what it contains:
+
+- the value **did appear** in the output the subject quoted, and the subject quoted it in full;
+- it is **redacted in this record**, replaced by `<workspace-id>`;
+- the value is derived deterministically from the workspace's canonical path (BLAKE3 over its
+  raw bytes, first 8 bytes as hex), so publishing it would publish a fingerprint from which a
+  guessable private path could be confirmed;
+- the redaction was applied to protect a private path, not to remove an inconvenient fact, and
+  the fact that the output contained the value is preserved here rather than deleted.
+
+The identifier is not a secret and not a credential. It is withheld only because the repository
+is public and the path it fingerprints is not.
+
+---
+
+## 6. PROTOCOL v2 — AMENDED 2026-09-12
+
+**Why.** In the first run the subject's tree was small and clean: nothing unobservable, nothing
+unverified, nothing ambiguous. Every category that could have carried a statement of a limit was
+present but at zero, so Q6 and Q7 had no material and could not be answered. The protocol now
+requires the subject's tree to contain negative cases.
+
+The tool's surface is deliberately **not** changed. What changes is the fixture, and the purpose
+is to repair the experiment rather than to extend the product.
+
+### 6.1 The fixture requirement
+
+The subject prepares a directory that looks like a working directory in use, containing at
+minimum:
+
+- several regular files, at least two of which have byte-identical contents;
+- at least one subdirectory;
+- at least one symbolic link, including at least one that points to a path that does not exist;
+- at least one regular file whose permissions deny read access to the subject's own user (mode
+  `000`, for example);
+- at least one file whose name is not valid UTF-8, where the platform permits such a name;
+- at least one file the subject will modify between the first and the second observation.
+
+### 6.2 What this recipe is, and what it is not
+
+It describes the **contents of the directory** — filesystem facts. It says nothing about what the
+tool will report for any of them, and it must not be accompanied by any such statement.
+
+Binding on whoever prepares and administers the run:
+
+- do not tell the subject which category of output any of these will produce;
+- do not tell the subject which of these the tool handles well or badly;
+- do not give examples of correct answers;
+- do not explain how to read the output before the answers are written;
+- do not let preparing the fixture become a clue about the result;
+- do not let the subject read this record, the repository or the source before answering.
+
+### 6.3 The cost of the amendment, recorded
+
+The subject now knows the fixture contains awkward cases. That is a small loss of cold reading:
+"there is something here the tool may not describe" is nearer to the answer than a clean tree
+would be.
+
+The cost is accepted deliberately, because the measured alternative is worse. With a clean tree,
+three of the eight questions could not be answered, and two of them produced nothing beyond "I
+cannot tell from this output".
+
+What the amendment does not do is say what the tool will report, or which of the awkward cases is
+the interesting one. Q6 and Q7 still have to be answered by reading the output.
+
+### 6.4 Unchanged from §2
+
+The questions, the pass condition, the recording rule, the prohibition on summarising, and the
+requirement that the subject did not write the code. The preference for a subject other than the
+owner stands; the first run's fallback — the owner, with the weakness declared — is recorded in
+§5.1.
+
+### 6.5 Status of the first run
+
+The first run is not retracted. It is evidence about the version as it stood, and it produced
+F-V01-2, which was real and has since been corrected. A second run under this protocol would test
+the corrected output, and would be a **new** experiment record rather than a revision of this one.
+
+---
+
+## 7. THE CORRECTION (F-V01-2), 2026-09-12
+
+Applied in `umbral/`, with no change to what the tool observes. Only the label each value carries
+changed, plus a test that makes the distinction enforceable.
+
+### 7.1 The rule now written into the code
+
+> **`observed`** — the filesystem reported this value for an entry during this run: the entry's
+> path, kind, size and mtime, and the canonical form of the observed root, which is the
+> filesystem's own answer to "where is this really".
+>
+> **`derived`** — the tool produced it. Everything computed, counted, aggregated, compared,
+> assigned or composed: content fingerprints, stability verdicts, run identifiers, the run's own
+> timestamps, workspace identifiers, composed paths, and configuration echoed back.
+
+The line is drawn at *who produced the value*, not at *whether the tool knows it*. That is what a
+reader needs in order to tell, from the output alone, whether a value came from their filesystem
+or from the tool.
+
+### 7.2 What moved
+
+| Was labelled `observed` | Now | Because |
+|---|---|---|
+| `workspace-id` | `derived` | BLAKE3 over the canonical path — the value the reader questioned |
+| `state-dir` | `derived` | composed from the data home plus that identifier |
+| `state` (in `check`) | `derived` | the same composed path |
+| `root` | `derived` | the caller's argument echoed back, not read from the filesystem |
+| `run`, `last-run`, `from-run`, `to-run` | `derived` | identifiers the store assigns |
+| `started`, `finished` | `derived` | the tool's own clock readings |
+| `created`, `tool-version` | `derived` | written into the record by the tool |
+| `entries`, `files`, `dirs`, `symlinks`, `other` | `derived` | counts |
+| `content-verified`, `content-not-verified` | `derived` | counts |
+| `content-verification-not-applicable` | `derived` | already correct |
+| `unobservable-paths` | `derived` | a count, even though what it counts are things the tool does not know; the unknowns themselves are reported per path by `show` |
+| `log-runs`, `log-observations` | `derived` | counts over the log |
+| `hash` | `derived` | a function of the bytes the tool read |
+| `stability` | `derived` | the outcome of comparing two readings |
+
+Two lines that previously mixed categories were split, so that no line carries values of more
+than one kind:
+
+```
+show:  derived   run=1  hash=ac678d92b3d7  stability=stable
+       observed  kind=file  size=6  mtime=2026-09-12T23:10:41.214Z
+```
+
+Only four fields may now appear on an `observed` line: `canonical`, `kind`, `size`, `mtime`.
+
+### 7.3 Enforcement, so the distinction cannot decay
+
+The contract is a constant in `umbral/src/report.rs`, not a convention:
+
+- `OBSERVED_FIELDS` — the complete set of fields an `observed` line may carry. An allowlist, not
+  a denylist, so that adding one is a deliberate act.
+- `DERIVED_ONLY_FIELDS` — the computed fields that may never appear on an `observed` line.
+- `label_contract_violations` — the check, run against the rendered output of every command by
+  `tests/output_contract.rs::no_command_labels_a_computed_value_as_observed`.
+
+The test is shown to fail: `the_label_check_rejects_doctored_lines` feeds it every field the
+reader's report named, in the exact form the reader found the defect, and requires the check to
+reject each one.
+
+### 7.4 What did not change
+
+The tool observes exactly what it observed before. No new capability, no new command, no new
+output content — one line was split in two and the labels moved. `fsp-check/` is untouched, and
+the frozen V0 records are untouched.
