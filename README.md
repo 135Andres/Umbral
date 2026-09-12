@@ -90,14 +90,18 @@ nothing else in this repository is a decision.
 ```
 
 - **Tested:** 68 tests; 512 generated property-test cases checked against an
-  independent oracle; real process-kill crash trials; benchmarks recorded as evidence.
+  independent oracle; real process-kill crash trials; benchmarks recorded as evidence. One
+  test originally encoded an assumption about the filesystem (that a freed inode is never
+  reused) and failed on ext4 — found by the CI runner, corrected in the test, and recorded
+  as finding F-6 rather than quietly fixed.
 - **Falsification:** an oracle that models reality directly and never reuses the
   prototype's own reconciliation logic.
 - **Result:** no implementation failure was produced inside the tested scope. Four defects
-  were found, all in the harness or the oracle, **plus one coverage gap**: the property-test
-  strategy never generated directory deletion, so that operation was modelled but never
-  exercised. The three are distinguished explicitly in the falsification report — operations
-  modelled, operations actually generated, operations exercised end to end.
+  were found, all in the harness or the oracle, **plus two class B findings**: a coverage gap
+  (the property-test strategy never generated directory deletion, so that operation was
+  modelled but never exercised) and a defective test assertion (F-6, above). The three are
+  distinguished explicitly in the falsification report — operations modelled, operations
+  actually generated, operations exercised end to end.
 - **Frozen state:** `PARTIAL`. The only gap is a reader-facing surface that would let a
   new reader reconstruct what the prototype recorded and when — deliberately outside V0's
   mandate.

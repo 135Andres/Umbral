@@ -171,7 +171,10 @@ interpretation (Unchanged entries are statements of sameness, not changes), SC-5
 (storage is sufficient for an engineer; no reader-facing surface yet). Q25: additional
 evidence recorded, question remains OPEN. Benchmarks also observed WAL growth exceeding
 the DB file without checkpointing (accepted V0 limitation, not a decision input).
-68/68 tests green; clippy 0; fmt ok.
+68/68 tests green; clippy 0; fmt ok. [SUPERSEDED IN PART 2026-09-11: that count holds on
+the development environment (tmpfs); on ext4 it was 67/68 plus one test encoding an unstated
+inode-reuse assumption. Corrected in the test; see FALSIFICATION-REPORT.md F-6. This record
+is not rewritten.]
 
 --- AMENDMENT 9: V0 formal closeout and scope freeze (user mandate, same day) ---
 experiments/v0-harness/V0-CLOSEOUT.md: final evidence audit (SC-1 PASS, SC-2 PASS,

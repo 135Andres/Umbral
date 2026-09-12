@@ -379,16 +379,48 @@ fn full_cycle_scan_reconcile_store() {
             .iter()
             .any(|m| m.path == *"keep.txt")
     );
+
+    // bye.txt vanished. WHICH mutation accounts for it is decided by evidence
+    // the filesystem controls, not by this test: if the freed dev+ino was
+    // handed to the file created at the same moment, physical identity cannot
+    // separate "a new file appeared" from "bye.txt was renamed" — both readings
+    // fit the same evidence. dev+ino is evidence, not eternal, and reuse after
+    // delete is documented (src/identity.rs). On a filesystem that does not
+    // reuse inodes the pair is Deleted + Created; on one that reuses it the two
+    // paths collapse into a single RenamedOrMoved.
+    //
+    // The property that must hold either way is stronger than "Deleted was
+    // reported": the disappearance is accounted for EXACTLY ONCE, and the
+    // accompanying mutation agrees with the reading that was taken.
+    let bye_deleted = kinds(&r, MutationKind::Deleted)
+        .iter()
+        .any(|m| m.path == *"bye.txt");
+    let bye_renamed = kinds(&r, MutationKind::RenamedOrMoved).iter().any(|m| {
+        m.path == *"new.txt" && m.old_path.as_deref() == Some(std::path::Path::new("bye.txt"))
+    });
+    let new_created = kinds(&r, MutationKind::Created)
+        .iter()
+        .any(|m| m.path == *"new.txt");
+
     assert!(
-        kinds(&r, MutationKind::Deleted)
-            .iter()
-            .any(|m| m.path == *"bye.txt")
+        bye_deleted ^ bye_renamed,
+        "bye.txt must be accounted for exactly once (Deleted={bye_deleted}, \
+         RenamedOrMoved from bye.txt={bye_renamed}); neither or both means the \
+         reconciler either lost a mutation or double-reported one"
     );
-    assert!(
-        kinds(&r, MutationKind::Created)
-            .iter()
-            .any(|m| m.path == *"new.txt")
-    );
+    if bye_deleted {
+        assert!(
+            new_created,
+            "without identity reuse the two paths are independent mutations: \
+             Deleted(bye.txt) requires Created(new.txt)"
+        );
+    } else {
+        assert!(
+            !new_created,
+            "when the freed dev+ino was reused, one RenamedOrMoved explains both \
+             paths; a separate Created(new.txt) would double-report the same event"
+        );
+    }
     // rename: src existed in s1b, dst in s2
     let r2 = reconcile(&scan_to_set_pre(root, &s1b), &s2);
     assert!(

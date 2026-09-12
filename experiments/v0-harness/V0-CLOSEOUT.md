@@ -31,9 +31,11 @@ transitions between two observation sets; and an append-only SQLite history with
 rebuildable projection.
 
 **How was it tested?**
-68 tests; 512 generated property-test cases over real filesystem trees; real process-kill
-crash trials at instrumented points in separate processes; benchmarks recorded as
-evidence with no thresholds.
+68 tests — *superseded in part: on ext4 the count was 67/68 plus one test that encoded an
+assumption about the filesystem; see the F-6 addendum at the end of this record*; 512
+generated property-test cases over real filesystem trees; real process-kill crash trials at
+instrumented points in separate processes; benchmarks recorded as evidence with no
+thresholds.
 
 **How was it falsified?**
 An independent oracle (`ReferenceState`) modelled reality directly — existence, content,
@@ -240,6 +242,38 @@ disposition: FALSIFICATION-REPORT.md, finding F-5.
 
 The record above is not rewritten. V0 remains frozen at PARTIAL, and this gap is added to
 the V1 handoff rather than patched into the frozen prototype.
+
+## ADDENDUM 2 (2026-09-11, first public CI run on ext4)
+
+A second defect was found by an environment independent of the one V0 was developed and
+verified on: the GitHub Actions runner, whose ext4 filesystem reuses freed inode numbers.
+
+`tests/reconcile_mutations.rs::full_cycle_scan_reconcile_store` failed deterministically
+there (twice, same assertion) while passing on the development machine. Its fixture deletes
+`bye.txt` and creates `new.txt` in the same instant and then required both `Deleted(bye.txt)`
+and `Created(new.txt)`. That pair only holds when the filesystem does **not** give the freed
+`dev+ino` to the new file; ext4 does, and `reconcile` then correctly reports a single
+`RenamedOrMoved`. The test had an unstated filesystem assumption in it.
+
+What this is, kept apart: **not** a defect of `reconcile` (its output followed its
+documented rules in both environments — dev+ino is defined as evidence, not eternal
+identity, and inode reuse is documented in `src/identity.rs` and already recorded as an
+observed limitation in `identity_physical.rs`); a **defective assertion** in the test; and a
+**filesystem-dependent behaviour** of the substrate.
+
+The assertion now states the property that holds in both environments: the disappearance is
+accounted for exactly once (a `Deleted` XOR a `RenamedOrMoved` from the same `old_path`), and
+the accompanying mutation must agree with the reading taken. This is stronger than before —
+it fails if the mutation is lost, double-reported, or merely `Unobserved`. No source file, no
+semantics and no behaviour of V0 was changed; only the test's expectation.
+
+Corrected coverage statement, superseding the unqualified count above: **68/68 on the
+development environment (tmpfs)**; **67/68 + 1 filesystem-dependent test on ext4** before the
+correction; **68/68 on both after it**. Verified by a fresh local run (no cache) and by CI on
+ext4 — the environment that exposed the gap. Full analysis: FALSIFICATION-REPORT.md, F-6.
+
+The record above is not rewritten. V0 remains frozen at PARTIAL; this is a test-correction
+and an evidence correction, not a change to the prototype.
 
 --------------------------------------------------------------------------------
 Provenance: all claims in this record cite named tests, benchmark records, or the
