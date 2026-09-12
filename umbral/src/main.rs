@@ -69,13 +69,16 @@ fn run(args: &[String]) -> u8 {
             };
             match workspace::init(Path::new(root)) {
                 Ok(ws) => {
+                    // Only the canonical root is the filesystem's answer. The root as given
+                    // is the caller's own argument echoed back, and the workspace
+                    // identifier and state path are computed from it.
                     println!(
                         "{}",
                         report::render(&[
-                            report::Line::observed(format!("root={}", ws.root.display())),
                             report::Line::observed(format!("canonical={}", ws.canonical.display())),
-                            report::Line::observed(format!("workspace-id={}", ws.id)),
-                            report::Line::observed(format!("state-dir={}", ws.state_dir.display())),
+                            report::Line::derived(format!("root={}", ws.root.display())),
+                            report::Line::derived(format!("workspace-id={}", ws.id)),
+                            report::Line::derived(format!("state-dir={}", ws.state_dir.display())),
                             report::Line::derived("initialised=true"),
                         ])
                     );
@@ -127,10 +130,16 @@ fn run(args: &[String]) -> u8 {
                     lines.push(report::Line::unknown("workspaces=none"));
                 }
                 for w in &list {
+                    // Everything in a workspace record except the canonical root was
+                    // computed by the tool when the record was written: the identifier, the
+                    // creation timestamp, the tool version.
                     lines.push(report::Line::observed(format!(
-                        "workspace-id={}  canonical={}  created={}  tool-version={}",
-                        w.id,
-                        w.canonical.display(),
+                        "canonical={}",
+                        w.canonical.display()
+                    )));
+                    lines.push(report::Line::derived(format!("workspace-id={}", w.id)));
+                    lines.push(report::Line::derived(format!(
+                        "created={}  tool-version={}",
                         report::format_unix_ns(w.created_at_ns),
                         w.tool_version
                     )));
