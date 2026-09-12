@@ -1,0 +1,10 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 02112a75c474eeced3a12a3211ffa08bcb8fa3d58e1a56bff2852a30effe89b3 # shrinks to case = TestCase { initial: [], ops: [Append { path: "a", bytes: [] }] }
+cc 30322331a522563825bf706a77be67932b133d51cd14a85be6be8d75e9a088c5 # shrinks to case = TestCase { initial: [], ops: [Recreate { path: "d0/c", bytes: [] }, AtomicReplace { path: "d0/c", bytes: [] }] }
+cc 17966c8c4ed0fb202e9d8e823fea535e4066a4e765bbfdb420f1395af8435b5f # shrinks to case = TestCase { initial: [], ops: [RenameDir { from: "d0", to: "d1" }, CreateFile { path: "d0/c" }] }
+cc 399c292bd677cadcebd703828f1cba7900015baccc33798d85500fe7d101edef # shrinks to case = TestCase { initial: [("a", [])], ops: [CreateHardLink { from: "a", to: "hl" }, Write { path: "a", bytes: [0] }] }

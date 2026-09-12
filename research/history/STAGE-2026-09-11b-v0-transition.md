@@ -155,3 +155,20 @@ Two proptest properties (self-reconcile all-unchanged on generated sets; determi
 on arbitrary pairs) plus same-hash-never-identity. One test expectation was corrected
 against the model, not the model against the test (Deleted of original in the
 duplicate-content case is a path fact). 60/60 green, clippy 0, fmt ok. Q25 untouched.
+
+--- AMENDMENT 8: increment 6 HARNESS/falsification (user mandate, same day) ---
+Independent oracle (ReferenceState) modelling existence/content/physical-id/aliasing
+without reusing fsp-check's reconcile; generated op sequences with explicit precondition
+gating; 512 proptest cases; crash during observe->reconcile->persist; benchmarks executed
+(evidence record in experiments/v0-harness/). FOUR findings, all class D (harness or
+oracle defects — none in fsp-check): invalid-op generation (fixed by precondition gate);
+atomic-replace temp path outside target dir; the SECOND occurrence of the
+Path::starts_with trailing-slash trap (directory rename children); and an ORACLE defect
+where the reference model did not propagate content across hard links — the
+implementation was correct and the oracle was wrong, so the oracle was fixed (never the
+reverse). SC-1 PASS, SC-2 PASS, SC-3 PASS (process-kill scope), SC-4 PASS with a recorded
+interpretation (Unchanged entries are statements of sameness, not changes), SC-5 PARTIAL
+(storage is sufficient for an engineer; no reader-facing surface yet). Q25: additional
+evidence recorded, question remains OPEN. Benchmarks also observed WAL growth exceeding
+the DB file without checkpointing (accepted V0 limitation, not a decision input).
+68/68 tests green; clippy 0; fmt ok.

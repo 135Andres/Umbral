@@ -256,6 +256,35 @@ process-kill durability only, not power-cut durability). Reconcile increment wil
 exercise the store harder and add evidence before any closure.
 
 ================================================================================
+15. V0 CRITERIA EVALUATION (increment 6 harness, 2026-09-11)
+================================================================================
+Evidence: experiments/v0-harness/{BENCHMARKS.md, FALSIFICATION-REPORT.md}.
+
+  SC-1  Harness reproducibly generates and runs the §7-A scenarios ............ PASS
+        Generated sequences (512 proptest cases) over real trees; explicit
+        precondition gating; deterministic seeds via proptest shrinking
+        (minimisation is proptest's own, exercised on four real findings).
+  SC-2  INV-1..INV-8 hold .................................................... PASS
+        INV-1 both halves tested; INV-2 (rebuild) through sequences; INV-7 via
+        real process kills incl. crash during observe→reconcile→persist; INV-8
+        exercised by the ambiguity properties. No invariant had to be weakened.
+  SC-3  A store killed mid-write always recovers consistently ................ PASS
+        (process-kill scope only: no power-loss or storage-corruption claim.)
+  SC-4  Zero-change re-observation produces no mutations ...................... PASS (interpreted)
+        Literal reading would require reconcile(A,A) to return an EMPTY list;
+        the model returns one Unchanged entry per path — an explicit positive
+        statement of sameness, not a change. Measured: 2040 Unchanged, zero
+        Modified/Created/Deleted/Recreated/Renamed/Ambiguous. Interpretation
+        recorded here so the criterion is not silently redefined.
+  SC-5  A fresh reader can reconstruct what fsp-check knew and when .......... PARTIAL
+        The store holds history (seq, observed_at_ns) + active projection and
+        `inspect`/`rebuild` expose it; but V0 has no query surface for "what did
+        it know at time T" beyond reading the history table directly, and no
+        human-facing summary document. Sufficient for an engineer with the
+        schema; NOT yet sufficient for a non-author reader. Honest verdict:
+        PARTIAL — the remaining gap is presentation, not storage.
+
+================================================================================
 13. DEFINITION OF DONE
 ================================================================================
 V0 is finished when the user-confirmed §9 criteria (SC-1..SC-5) pass, the red-team A-class scenarios are
