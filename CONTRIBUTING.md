@@ -1,8 +1,11 @@
 # Contributing to Umbral
 
-Umbral is an early research project. The most valuable contribution right now is usually
-**not code** — it is a well-founded argument, a counter-example, or evidence that
-contradicts something the project currently assumes.
+Umbral is an early research project, and **contributions are open** — from people and from
+AI agents working alongside them.
+
+The most valuable contribution right now is usually **not code**. It is a well-founded
+argument, a counter-example, a source, or an experiment that contradicts something the
+project currently assumes.
 
 Before anything else, read [`README.md`](README.md) — especially
 [How to read claims here](README.md#how-to-read-claims-here). It takes a few minutes and
@@ -10,7 +13,7 @@ prevents most of the confusion this project is designed to avoid.
 
 ---
 
-## 1. Where to read before you change anything
+## 1. How to orient yourself
 
 | If you want to change… | Read first |
 |---|---|
@@ -20,6 +23,7 @@ prevents most of the confusion this project is designed to avoid.
 | an experiment | the experiment's own directory under [`experiments/`](experiments/) |
 | the V0 prototype | [`V0-IMPLEMENTATION-PLAN.md`](V0-IMPLEMENTATION-PLAN.md) and [`experiments/v0-harness/V0-CLOSEOUT.md`](experiments/v0-harness/V0-CLOSEOUT.md) |
 | this repository's structure | [`DOCUMENTATION-ARCHITECTURE.md`](DOCUMENTATION-ARCHITECTURE.md) |
+| where the project stands | [`PROJECT-DIRECTION.md`](PROJECT-DIRECTION.md) |
 
 **One fact has one home.** If a fact already exists somewhere, change it there and let
 other documents link to it. Do not copy paragraphs between files.
@@ -30,10 +34,10 @@ This is the single most important rule in the project.
 
 | Category | What it is | Where it lives |
 |---|---|---|
-| **Decision** | a choice made by the project owner, with authority | `DECISIONS.md`, `UD-nnn` — immutable |
+| **Decision** | a choice made by the project owner, with authority | [`DECISIONS.md`](DECISIONS.md), `UD-nnn` — immutable |
 | **Proposal** | a recommendation with no authority yet | research artifacts, or a "proposed" section of the relevant document |
-| **Hypothesis** | a falsifiable idea, explicitly not selected | `ARCHITECTURE-HYPOTHESES.md`, `Hn` |
-| **Experiment / evidence** | a measured result | `experiments/`, experiment logs, benchmark records |
+| **Hypothesis** | a falsifiable idea, explicitly not selected | [`ARCHITECTURE-HYPOTHESES.md`](ARCHITECTURE-HYPOTHESES.md), `Hn` |
+| **Experiment / evidence** | a measured result | [`experiments/`](experiments/), experiment logs, benchmark records |
 
 A contribution that blurs these is harder to accept than one that disagrees with them.
 If your change would promote a hypothesis into a decision, or present research as
@@ -42,55 +46,77 @@ project's record would become misleading.
 
 Concretely, do not:
 
-- add a decision record on your own authority (propose it instead, and say who must decide);
+- add a decision record on your own authority — propose it instead, and say who must decide;
 - describe a hypothesis as "the architecture" or "the design";
 - present a research artifact or a model's output as evidence of correctness;
 - delete or rewrite a superseded decision — supersede it with a pointer;
 - edit a historical record to make it look better.
 
-## 3. Proposing a change
+## 3. How to propose a change
 
-1. **Open an issue first** for anything non-trivial: a decision, a hypothesis change, a new
-   experiment, or a structural change to this repository.
+1. **Open an issue first** for anything non-trivial: a decision, a hypothesis change, a
+   new experiment, or a structural change to this repository. Use the
+   [proposal template](https://github.com/135Andres/Umbral/issues/new/choose) and pick
+   whether it is a feature, architectural or research proposal.
 2. **State the evidence class** of what you are adding — observed, measured, reasoned,
    assumed, unknown. Say what would falsify it.
 3. **Preserve conflicts.** If your change contradicts an existing document, say so
-   explicitly in the issue or pull request. Do not resolve it silently.
+   explicitly. Do not resolve it silently.
 4. **Keep it small.** One concern per pull request.
 
-## 4. Pull requests
+## 4. Reporting bugs
 
-A pull request is expected to state:
+Use the [bug template](https://github.com/135Andres/Umbral/issues/new/choose). Include
+what you observed, what you expected, how to reproduce it, and the commit you tested.
+Synthetic fixtures only — never real personal data.
 
-- **what changed** and in which files;
-- **why** it changed;
-- **evidence** — a link, a measurement, a reproducible command, or an explicit "no
-  evidence, this is reasoning";
-- **documentation impact** — which canonical document now needs to agree;
-- **whether it changes a decision, a hypothesis or an invariant** — and if so, on whose
-  authority;
-- **how it was verified**.
+Security issues do **not** go in the issue tracker: see [`SECURITY.md`](SECURITY.md).
+
+## 5. Proposing research
+
+Research proposals are welcome and are a first-class contribution. A useful research
+proposal states:
+
+- the question, and why it matters for a decision the project has to make;
+- what evidence would settle it, and what would falsify the current assumption;
+- how it could be measured or gathered — the cheaper the better;
+- which existing document would change as a result.
+
+Open it as a research proposal in the issue tracker. If you then run it, the result goes
+under [`experiments/`](experiments/) with its method, result and limitations — including
+negative results, which are kept.
+
+## 6. The V0 prototype is frozen
+
+`fsp-check/` is **closed and frozen**. It is kept as evidence of what was tested, not as
+a foundation. New product code is not accepted before the project has an accepted
+architecture.
+
+What that means in practice:
+
+- **Do not** add features to it, or extend it toward a product.
+- **You may** change it to reproduce a result, to fix a defect in the harness or a test,
+  or to add a failing case that demonstrates a real problem — say clearly in the pull
+  request what the change demonstrates.
+- A change to the prototype does **not** change Umbral's architecture, and must not be
+  described as if it did. Its results are evidence, not decisions.
+
+If you want to change the prototype's behaviour rather than its evidence, open a proposal
+first.
+
+## 7. Pull requests
+
+A pull request is expected to state: what changed, why, the evidence or tests, the
+documentation impact, whether a decision / invariant / principle / hypothesis changes, and
+whether it introduces a new architectural commitment. The
+[PR template](.github/PULL_REQUEST_TEMPLATE.md) asks for exactly that — nothing more.
 
 Small, semantic commits are preferred over one large commit. Documentation-only changes
 and code changes should not be mixed when they can be separated.
 
-## 5. New evidence
+## 8. Running the prototype's tests
 
-If you produce a measurement, an experiment or a survey:
-
-- put it under [`experiments/`](experiments/) (or `research/` for literature and sources);
-- state the question, method, what was measured, the result, and the limitations;
-- record negative and inconclusive results too — they are kept;
-- say what it would take to falsify it;
-- do not edit an existing experiment's results; add a new record that supersedes it.
-
-## 6. Code
-
-There is one prototype, `fsp-check/`, and it is **frozen**. It is kept as evidence of what
-was tested, not as a foundation. New product code is not accepted before the project has
-an accepted architecture.
-
-If you change the prototype anyway (for example to reproduce a result), run:
+If you touch `fsp-check/`:
 
 ```sh
 cd fsp-check
@@ -99,21 +125,17 @@ cargo clippy --all-targets
 cargo test
 ```
 
-and state in the pull request what the change demonstrates.
+These same three commands run in CI (see
+[`.github/workflows/fsp-check.yml`](.github/workflows/fsp-check.yml)).
 
-## 7. Documentation style
+## 9. Documentation style
 
 Plain Markdown, readable without any tooling. Short paragraphs, small tables, relative
 links, one canonical home per fact, stable IDs, explicit status lines. Avoid duplication,
 generated indexes, and decoration that has to be maintained.
 
-## 8. Conduct and security
+## 10. Conduct and license
 
 - [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) applies to all project spaces.
-- Report vulnerabilities through the channel in [`SECURITY.md`](SECURITY.md) — never in a
-  public issue.
-
-## 9. License
-
-By contributing you agree that your contribution is licensed under the
-[Apache License 2.0](LICENSE), the license of this repository.
+- By contributing you agree that your contribution is licensed under the
+  [Apache License 2.0](LICENSE), the license of this repository.

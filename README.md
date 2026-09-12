@@ -1,8 +1,9 @@
 # Umbral
 
-**Umbral aims to make the reality of a working environment legible to multiple
-intelligences — human and artificial — while leaving organization under the user's
-control and providing tools that make the work more ordered and efficient.**
+**Umbral is an open-source, local-first, AI-native project environment for making the
+reality of an environment legible to multiple intelligences — human and artificial —
+while keeping organization and authority in the user's hands, and providing tools that
+make the work more ordered and efficient.**
 
 > Status: **research project. No architecture selected. No product.** A frozen
 > proof-of-concept (V0) exists under `fsp-check/`. See [Current status](#current-status).
@@ -182,6 +183,18 @@ The founding charter is the project owner's own document. It is cited throughout
 `MC §n` and is **not part of the public edition of this repository**; the canonical
 documents above carry its load-bearing content, each with its `MC §n` citation preserved.
 Where a citation cannot be checked publicly, that is stated rather than hidden.
+
+## How this project is developed
+
+Umbral is developed by its owner together with AI agents, and the commit history says so:
+the commits in this repository were authored by an agent identity, and the project has not
+rewritten that history to look otherwise.
+
+The project's own rules exist precisely because of this. Agent output — including the
+output of the agents that wrote and maintain these documents — is **never authority**:
+research is attributed and unratified, proposals stay proposals, and only the project owner
+can record a decision. Where an agent's claim and a document here disagree, the document
+wins; where neither is established, the answer is recorded as unknown.
 
 ## Contributing
 

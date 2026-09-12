@@ -1,0 +1,51 @@
+# CI for the V0 prototype (fsp-check/), which is frozen experimental infrastructure.
+#
+# Scope is deliberately minimal: detect basic regressions in the prototype. No release
+# automation, packaging, coverage, dependency bots, containers, benchmarks or artifacts.
+#
+# Assumption documented per the project's rules: there is no Cargo workspace at the
+# repository root, so cargo must run inside fsp-check/. That is why every step sets
+# working-directory rather than adding a root manifest, which would change the layout.
+
+name: fsp-check
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    paths:
+      - 'fsp-check/**'
+      - '.github/workflows/fsp-check.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: fsp-check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt,clippy
+          rustup default stable
+          rustc --version
+
+      - name: Cache cargo registry and build output
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            fsp-check/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('fsp-check/Cargo.lock') }}
+
+      - name: cargo fmt --check
+        run: cargo fmt --check
+
+      - name: cargo clippy --all-targets
+        run: cargo clippy --all-targets
+
+      - name: cargo test
+        run: cargo test
