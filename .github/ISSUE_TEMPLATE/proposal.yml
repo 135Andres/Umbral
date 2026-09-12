@@ -1,0 +1,54 @@
+name: Proposal
+description: Propose a change to a requirement, principle, constraint, hypothesis or decision
+title: "[proposal] "
+labels: ["proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for anything that would change what the project commits to, or what it
+        currently believes. Please read CONTRIBUTING.md first: this project keeps
+        decisions, proposals, hypotheses and evidence strictly separate, and a proposal is
+        not a decision.
+  - type: textarea
+    id: what
+    attributes:
+      label: What you propose
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The problem it solves, or the thing it makes possible.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or reasoning
+      description: |
+        State which it is. If there is no evidence, say so explicitly — reasoning is a
+        legitimate contribution, but it must not be presented as evidence.
+    validations:
+      required: true
+  - type: textarea
+    id: conflicts
+    attributes:
+      label: What this conflicts with
+      description: |
+        Any existing decision, hypothesis, invariant or open question it contradicts.
+        Do not resolve the conflict here; state it.
+    validations:
+      required: true
+  - type: dropdown
+    id: authority
+    attributes:
+      label: What would have to happen for this to become a decision?
+      options:
+        - The project owner must decide (recorded as UD-nnn)
+        - It stays a hypothesis until an experiment tests it
+        - It is documentation-only and needs no decision
+        - I am not sure
+    validations:
+      required: true
