@@ -4,5 +4,5 @@ contact_links:
     url: https://github.com/135Andres/Umbral/security/advisories/new
     about: Report privately — do not open a public issue. See SECURITY.md.
   - name: Read the project's status first
-    url: https://github.com/135Andres/Umbral/blob/main/PROJECT-DIRECTION.md
+    url: https://github.com/135Andres/Umbral/blob/main/docs/canonical/PROJECT-DIRECTION.md
     about: Where Umbral stands right now, and what is being worked on.
