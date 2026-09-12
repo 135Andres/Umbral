@@ -94,7 +94,7 @@ status comes only from SC-5, the missing reader-facing surface, which was outsid
 mandate. What V0 did not demonstrate, and what it leaves open, is listed in the closeout
 record's V1 handoff section — Q25 (SQLite-only vs SQLite + JSONL) remains OPEN.
 
-Current work is publication preparation (PUBLICATION-PROPOSAL.md), not product work.
+Current work is publication preparation, not product work.
 Unchanged evidence lines (open, not cancelled, runnable independently):
 E-CO-1 (coexistence kill-test), E-CO-6a (safety floor), E-MIN-1 (field ablation with
 readers). Prior next-step text preserved below for continuity.

@@ -17,13 +17,13 @@ prevents most of the confusion this project is designed to avoid.
 
 | If you want to change… | Read first |
 |---|---|
-| a decision | [`DECISIONS.md`](DECISIONS.md) — and see §3 below |
-| an architecture idea | [`ARCHITECTURE-HYPOTHESES.md`](ARCHITECTURE-HYPOTHESES.md), [`CONSTRAINTS.md`](CONSTRAINTS.md), [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) |
-| a requirement or principle | [`REQUIREMENTS.md`](REQUIREMENTS.md), [`PRINCIPLES.md`](PRINCIPLES.md), [`INVARIANTS.md`](INVARIANTS.md) |
-| an experiment | the experiment's own directory under [`experiments/`](experiments/) |
-| the V0 prototype | [`V0-IMPLEMENTATION-PLAN.md`](V0-IMPLEMENTATION-PLAN.md) and [`experiments/v0-harness/V0-CLOSEOUT.md`](experiments/v0-harness/V0-CLOSEOUT.md) |
-| this repository's structure | [`DOCUMENTATION-ARCHITECTURE.md`](DOCUMENTATION-ARCHITECTURE.md) |
-| where the project stands | [`PROJECT-DIRECTION.md`](PROJECT-DIRECTION.md) |
+| a decision | [`DECISIONS.md`](docs/decisions/DECISIONS.md) — and see §3 below |
+| an architecture idea | [`ARCHITECTURE-HYPOTHESES.md`](docs/candidates/ARCHITECTURE-HYPOTHESES.md), [`CONSTRAINTS.md`](docs/canonical/CONSTRAINTS.md), [`OPEN-QUESTIONS.md`](docs/candidates/OPEN-QUESTIONS.md) |
+| a requirement or principle | [`REQUIREMENTS.md`](docs/canonical/REQUIREMENTS.md), [`PRINCIPLES.md`](docs/canonical/PRINCIPLES.md), [`INVARIANTS.md`](docs/canonical/INVARIANTS.md) |
+| an experiment | the experiment's own directory under [`experiments/`](experiments) |
+| the V0 prototype | [`V0-IMPLEMENTATION-PLAN.md`](docs/v0/V0-IMPLEMENTATION-PLAN.md) and [`experiments/v0-harness/V0-CLOSEOUT.md`](experiments/v0-harness/V0-CLOSEOUT.md) |
+| this repository's structure | [`DOCUMENTATION-ARCHITECTURE.md`](docs/DOCUMENTATION-ARCHITECTURE.md) |
+| where the project stands | [`PROJECT-DIRECTION.md`](docs/canonical/PROJECT-DIRECTION.md) |
 
 **One fact has one home.** If a fact already exists somewhere, change it there and let
 other documents link to it. Do not copy paragraphs between files.
@@ -34,10 +34,10 @@ This is the single most important rule in the project.
 
 | Category | What it is | Where it lives |
 |---|---|---|
-| **Decision** | a choice made by the project owner, with authority | [`DECISIONS.md`](DECISIONS.md), `UD-nnn` — immutable |
+| **Decision** | a choice made by the project owner, with authority | [`DECISIONS.md`](docs/decisions/DECISIONS.md), `UD-nnn` — immutable |
 | **Proposal** | a recommendation with no authority yet | research artifacts, or a "proposed" section of the relevant document |
-| **Hypothesis** | a falsifiable idea, explicitly not selected | [`ARCHITECTURE-HYPOTHESES.md`](ARCHITECTURE-HYPOTHESES.md), `Hn` |
-| **Experiment / evidence** | a measured result | [`experiments/`](experiments/), experiment logs, benchmark records |
+| **Hypothesis** | a falsifiable idea, explicitly not selected | [`ARCHITECTURE-HYPOTHESES.md`](docs/candidates/ARCHITECTURE-HYPOTHESES.md), `Hn` |
+| **Experiment / evidence** | a measured result | [`experiments/`](experiments), experiment logs, benchmark records |
 
 A contribution that blurs these is harder to accept than one that disagrees with them.
 If your change would promote a hypothesis into a decision, or present research as
@@ -83,7 +83,7 @@ proposal states:
 - which existing document would change as a result.
 
 Open it as a research proposal in the issue tracker. If you then run it, the result goes
-under [`experiments/`](experiments/) with its method, result and limitations — including
+under [`experiments/`](experiments) with its method, result and limitations — including
 negative results, which are kept.
 
 ## 6. The V0 prototype is frozen
@@ -113,6 +113,12 @@ whether it introduces a new architectural commitment. The
 
 Small, semantic commits are preferred over one large commit. Documentation-only changes
 and code changes should not be mixed when they can be separated.
+
+New commits follow `type(scope): concise imperative summary`, with the why in the body
+when it is not obvious. Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`,
+`research`. Keep the subject specific — no "updates", "misc changes" or "cleanup" — and
+include identifiers (`F-6`, `Q25`, `UD-nnn`) only when they add real traceability. No
+emojis, no promotional language. Existing commits are left as they were written.
 
 ## 8. Running the prototype's tests
 

@@ -18,13 +18,13 @@ hypotheses > your own inference. **Never promote a lower level into a higher one
 
 | Need | File |
 |---|---|
-| where the project stands | [`PROJECT-DIRECTION.md`](PROJECT-DIRECTION.md) |
-| what has been committed to | [`DECISIONS.md`](DECISIONS.md) |
-| what must stay true | [`INVARIANTS.md`](INVARIANTS.md) · [`PRINCIPLES.md`](PRINCIPLES.md) · [`CONSTRAINTS.md`](CONSTRAINTS.md) |
-| what is only a candidate | [`ARCHITECTURE-HYPOTHESES.md`](ARCHITECTURE-HYPOTHESES.md) — **nothing here is selected** |
-| what is unresolved | [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) |
-| what was measured | [`experiments/`](experiments/) · [`experiments/v0-harness/V0-CLOSEOUT.md`](experiments/v0-harness/V0-CLOSEOUT.md) |
-| how this repository is organized | [`DOCUMENTATION-ARCHITECTURE.md`](DOCUMENTATION-ARCHITECTURE.md) — before creating any file, apply its routing rule (§10) |
+| where the project stands | [`PROJECT-DIRECTION.md`](docs/canonical/PROJECT-DIRECTION.md) |
+| what has been committed to | [`DECISIONS.md`](docs/decisions/DECISIONS.md) |
+| what must stay true | [`INVARIANTS.md`](docs/canonical/INVARIANTS.md) · [`PRINCIPLES.md`](docs/canonical/PRINCIPLES.md) · [`CONSTRAINTS.md`](docs/canonical/CONSTRAINTS.md) |
+| what is only a candidate | [`ARCHITECTURE-HYPOTHESES.md`](docs/candidates/ARCHITECTURE-HYPOTHESES.md) — **nothing here is selected** |
+| what is unresolved | [`OPEN-QUESTIONS.md`](docs/candidates/OPEN-QUESTIONS.md) |
+| what was measured | [`experiments/`](experiments) · [`experiments/v0-harness/V0-CLOSEOUT.md`](experiments/v0-harness/V0-CLOSEOUT.md) |
+| how this repository is organized | [`DOCUMENTATION-ARCHITECTURE.md`](docs/DOCUMENTATION-ARCHITECTURE.md) — before creating any file, apply its routing rule (§10) |
 | how to contribute | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 
 ## Rules
@@ -39,14 +39,13 @@ hypotheses > your own inference. **Never promote a lower level into a higher one
   distinct.
 - **One home per fact.** Before adding a file, check whether the fact already has one.
 - **Never rewrite history.** Decision records and frozen records in
-  [`research/history/`](research/history/) are immutable; supersede with a pointer.
+  [`research/history/`](research/history) are immutable; supersede with a pointer.
 - **No architecture selection**, no schema, no protocol, no technology choice presented as
   settled. The V0 prototype's stack is scoped, provisional and reversible
   (`UD-012`, `UD-013`), and **V0 is not Umbral's architecture**.
 - **Preserve the boundary.** `research/sources/` may contain material that is not part of
-  the public edition of this repository; see
-  [`PUBLICATION-PROPOSAL.md`](PUBLICATION-PROPOSAL.md). Do not quote, copy or republish
-  anything from a non-public source into a public document.
+  the public edition of this repository; see the root README, "Naming and sources". Do not
+  quote, copy or republish anything from a non-public source into a public document.
 
 ## Process
 

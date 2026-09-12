@@ -375,6 +375,8 @@ Top level, canonical and current-state (UPPERCASE-KEBAB, no numbering, no prefix
   README.md, AGENTS.md, PROJECT-DIRECTION.md, VISION.md, DECISIONS.md, INVARIANTS.md,
   PRINCIPLES.md, REQUIREMENTS.md, CONSTRAINTS.md, ARCHITECTURE-HYPOTHESES.md,
   OPEN-QUESTIONS.md, RESEARCH-AGENDA.md, DOCUMENTATION-ARCHITECTURE.md
+  [SUPERSEDED 2026-09-12, owner decision — see DM4 below: the working documentation now
+   lives under docs/, grouped by function; the root keeps only the visitor surface]
 
 research/history/  FROZEN records only (dated, never edited except for a supersession
               pointer). Anything a reader could mistake for current state does not live
@@ -412,6 +414,24 @@ M1-M8, ENVIRONMENT-INTELLIGENCE.md M9-M10). The historical audit record
 frozen; do not "correct" it. Experiment-local namespaces are scoped and declared: EXP-1's
 mutation classes M1-M10 and the EXP-DOC-1 readers' finding labels M1-M5 are LOCAL to their
 experiment files and are not project IDs.
+
+DM4 — APPLIED 2026-09-12 (owner-directed presentation refactor, post-publication):
+     The 14 canonical root documents moved under docs/, grouped by the document types this
+     file already defines:
+       docs/canonical/    DT2 — PROJECT-DIRECTION, VISION, PRINCIPLES, INVARIANTS,
+                          REQUIREMENTS, CONSTRAINTS
+       docs/decisions/    DT3 — DECISIONS
+       docs/candidates/   DT4 and candidate sets — ARCHITECTURE-HYPOTHESES,
+                          OPEN-QUESTIONS, RESEARCH-AGENDA, COEXISTENCE-STRATEGIES,
+                          ENVIRONMENT-INTELLIGENCE
+       docs/v0/           V0-IMPLEMENTATION-PLAN
+       docs/              DOCUMENTATION-ARCHITECTURE (this file) and docs/README.md, a
+                          navigation index (DT8, derived)
+     The root keeps only the visitor surface: README, LICENSE, NOTICE, CONTRIBUTING,
+     SECURITY, CODE_OF_CONDUCT, AGENTS. research/, experiments/ and fsp-check/ are
+     unchanged. This amends the flat-root convention of §11 above for the public edition;
+     the routing rule (§10), the homes (§8b) and every status line are unchanged. Content
+     was not edited — only locations and links.
 
 DM0 — ALREADY TRUE (before this audit): 13 flat canonical documents + research/. No
      change needed to the folder structure; it was already minimal and it survives the
