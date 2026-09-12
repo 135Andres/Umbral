@@ -2,13 +2,10 @@
 
 **Umbral is an open-source, local-first, AI-native project environment for making the
 reality of an environment legible to multiple intelligences — human and artificial —
-while keeping organization and authority in the user's hands, and providing tools that
-make the work more ordered and efficient.**
+while keeping organization and authority in the user's hands.**
 
-> Status: **research project. No architecture selected. No product.** A frozen
-> proof-of-concept (V0) exists under `fsp-check/`. See [Current status](#current-status).
-
----
+> **Research project.** No architecture selected. No product. A frozen proof-of-concept
+> (V0) exists under [`fsp-check/`](fsp-check/). V1 has not started and is not authorized.
 
 ## What is Umbral?
 
@@ -19,20 +16,10 @@ already owns — not as a mandated taxonomy, and not inside a proprietary databa
 
 The files stay the user's. The overlay is a projection that can be discarded and rebuilt.
 
-```
-                 ┌──────────────────────────────────────────────┐
-                 │  several intelligences — human and artificial │
-                 └───────────────────┬──────────────────────────┘
-                                     │  read / propose / act
-                 ┌───────────────────▼──────────────────────────┐
-                 │  derived overlay (optional, rebuildable)     │
-                 │  meaning, relationships, provenance, state   │
-                 └───────────────────┬──────────────────────────┘
-                                     │  projected from, never owning
-                 ┌───────────────────▼──────────────────────────┐
-                 │  the user's real filesystem                  │
-                 │  arbitrary files · arbitrary structure       │
-                 └──────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    A["human and artificial intelligences"] -->|"read · propose · act"| B["optional derived overlay<br/>meaning · relationships · provenance · state"]
+    B -->|"projected from, never owning"| C["the user's filesystem<br/>the source of truth"]
 ```
 
 ## Why?
@@ -44,8 +31,6 @@ easier — for the *next* participant, human or artificial, to understand.
 
 Umbral starts from the opposite assumption: the filesystem is already the shared reality,
 and what is missing is a truthful, portable account of it.
-
-## The idea
 
 Four commitments define the shape of the project:
 
@@ -59,20 +44,15 @@ Four commitments define the shape of the project:
   observe, derive, and report — including reporting that something is unknown, ambiguous,
   or disputed.
 
-## Current status
+## What exists today
 
 | | |
 |---|---|
-| Phase | DISCOVERY → RESEARCH → ARCHITECTURE |
-| Architecture | **not selected.** No database, protocol, versioning engine, UI or semantic model has been chosen |
 | Product | **does not exist.** There is no usable application to install |
+| Architecture | **not selected.** No database, protocol, versioning engine, UI or semantic model has been chosen |
 | Prototype | **V0 exists and is frozen**, status `PARTIAL` — see below |
+| Phase | DISCOVERY → RESEARCH → ARCHITECTURE |
 | Next | V1 is **not started** and is not authorized |
-
-The documentation in this repository is the project's memory: what it intends, what must
-stay true, what is required, what constrains it, what is hypothesised, what is unknown,
-and what has been decided. Decisions are recorded only in [`DECISIONS.md`](DECISIONS.md);
-nothing else in this repository is a decision.
 
 ## V0 — the first experiment
 
@@ -81,74 +61,48 @@ nothing else in this repository is a decision.
 > Can a filesystem be observed, identified, content-verified, reconciled and persisted
 > deterministically and safely — **without pretending to know what the files mean?**
 
-```
-  scan ──▶ identity ──▶ hash ──▶ reconcile ──▶ store
-  (what    (physical    (content  (what         (append-only
-   exists)  evidence)    bytes)    changed)      history +
-                                                   rebuildable
-                                                   projection)
+```mermaid
+flowchart LR
+    scan["scan<br/>what exists"] --> identity["identity<br/>physical evidence"]
+    identity --> hash["hash<br/>content bytes"]
+    hash --> reconcile["reconcile<br/>what changed"]
+    reconcile --> store["store<br/>append-only history,<br/>rebuildable projection"]
 ```
 
-- **Tested:** 68 tests; 512 generated property-test cases checked against an
-  independent oracle; real process-kill crash trials; benchmarks recorded as evidence. One
-  test originally encoded an assumption about the filesystem (that a freed inode is never
+- **Tested:** 68 tests; 512 generated property-test cases checked against an independent
+  oracle; real process-kill crash trials; benchmarks recorded as evidence. One test
+  originally encoded an assumption about the filesystem (that a freed inode is never
   reused) and failed on ext4 — found by the CI runner, corrected in the test, and recorded
   as finding F-6 rather than quietly fixed.
-- **Falsification:** an oracle that models reality directly and never reuses the
-  prototype's own reconciliation logic.
-- **Result:** no implementation failure was produced inside the tested scope. Four defects
-  were found, all in the harness or the oracle, **plus two class B findings**: a coverage gap
-  (the property-test strategy never generated directory deletion, so that operation was
-  modelled but never exercised) and a defective test assertion (F-6, above). The three are
-  distinguished explicitly in the falsification report — operations modelled, operations
-  actually generated, operations exercised end to end.
+- **Result:** no implementation failure was produced inside the tested scope. The findings
+  were in the harness, the oracle, or the tests — never in the prototype. They are
+  enumerated, with their class, in the falsification report.
 - **Frozen state:** `PARTIAL`. The only gap is a reader-facing surface that would let a
   new reader reconstruct what the prototype recorded and when — deliberately outside V0's
   mandate.
-
-Full evidence: [`experiments/v0-harness/V0-CLOSEOUT.md`](experiments/v0-harness/V0-CLOSEOUT.md)
-(scope statement, criteria, limitations, open questions, V1 handoff).
 
 > **V0 evidence ≠ Umbral architecture.** `fsp-check` is an experiment with a result. It is
 > not "the Umbral engine", it is not the product's design, and nothing in it is a
 > commitment about how Umbral will be built.
 
-## Principles
-
-The essentials, each with a canonical home:
-
-- **The filesystem is the source of truth**; derived state must be rebuildable.
-- **No mandatory organization.** The tool adapts to the user's structure.
-- **The user decides.** Umbral records decisions, proposals, evidence and uncertainty; it
-  does not hold opinions, and it never silently resolves a conflict.
-- **Unknown is a valid answer.** Absence of evidence is represented as absence, not
-  guessed.
-- **Local-first, and survivable.** What the user wrote must remain readable if the
-  software disappears.
-- **No hidden instructions** injected into connected AI systems.
-- **Research before implementation**; evidence before claims.
-
-Detail: [`PRINCIPLES.md`](PRINCIPLES.md) · [`INVARIANTS.md`](INVARIANTS.md) ·
-[`CONSTRAINTS.md`](CONSTRAINTS.md).
+Full evidence: [`experiments/v0-harness/V0-CLOSEOUT.md`](experiments/v0-harness/V0-CLOSEOUT.md)
+(scope statement, criteria, limitations, open questions, V1 handoff).
 
 ## Documentation
 
-Read in this order; each file has exactly one role, and none duplicates another.
+The project's memory is its documentation: what it intends, what must stay true, what is
+required, what constrains it, what is hypothesised, what is unknown, and what has been
+decided. Each file has one role; nothing duplicates another.
 
-| Read | For |
+| Where | What |
 |---|---|
-| [`PROJECT-DIRECTION.md`](PROJECT-DIRECTION.md) | the one-screen compass: where the project is right now |
-| [`VISION.md`](VISION.md) | what Umbral is meant to become, and what it refuses to be |
-| [`PRINCIPLES.md`](PRINCIPLES.md) · [`INVARIANTS.md`](INVARIANTS.md) | how decisions are made; what must hold regardless of design |
-| [`REQUIREMENTS.md`](REQUIREMENTS.md) · [`CONSTRAINTS.md`](CONSTRAINTS.md) | what it must do; what bounds every candidate |
-| [`DECISIONS.md`](DECISIONS.md) | **the only place commitments live** (UD-001 …) |
-| [`ARCHITECTURE-HYPOTHESES.md`](ARCHITECTURE-HYPOTHESES.md) | candidate architectures and mechanisms — all explicitly *not selected* |
-| [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | what is still unresolved |
-| [`RESEARCH-AGENDA.md`](RESEARCH-AGENDA.md) | research phases and comparison criteria |
-| [`research/`](research/) | evidence: sources, research artifacts, external briefs, frozen history |
+| [`docs/`](docs/README.md) | the working documentation, grouped by function — with a map of its own |
+| [`docs/canonical/`](docs/canonical/PROJECT-DIRECTION.md) | where the project stands; vision, principles, invariants, requirements, constraints |
+| [`docs/decisions/DECISIONS.md`](docs/decisions/DECISIONS.md) | **the only place commitments live** (`UD-nnn`) |
+| [`docs/candidates/`](docs/candidates/ARCHITECTURE-HYPOTHESES.md) | candidate architectures, open questions, research agenda — all explicitly *not selected* |
+| [`docs/v0/`](docs/v0/V0-IMPLEMENTATION-PLAN.md) | the V0 plan, invariants and criteria |
+| [`research/`](research/) | evidence: research artifacts, external briefs, frozen history |
 | [`experiments/`](experiments/) | experiments and their results, including V0 |
-| [`V0-IMPLEMENTATION-PLAN.md`](V0-IMPLEMENTATION-PLAN.md) | the V0 plan, invariants, criteria and closeout |
-| [`DOCUMENTATION-ARCHITECTURE.md`](DOCUMENTATION-ARCHITECTURE.md) | how this repository itself is organized (proposed) |
 
 ### How to read claims here
 
@@ -157,7 +111,7 @@ what is not. The authority ladder, highest first — a lower level never overrid
 one:
 
 1. An explicit current instruction from the project owner
-2. A decision record — [`DECISIONS.md`](DECISIONS.md), `UD-nnn`
+2. A decision record — [`DECISIONS.md`](docs/decisions/DECISIONS.md), `UD-nnn`
 3. The founding charter (cited as `MC §n`; see [Naming and sources](#naming-and-sources))
 4. Canonical knowledge — `PROJECT-DIRECTION`, `VISION`, `INVARIANTS`, `PRINCIPLES`,
    `REQUIREMENTS`, `CONSTRAINTS`
@@ -168,7 +122,6 @@ one:
 
 Rules that follow from it:
 
-- **Repetition is not confirmation.** A claim appearing often was repeated, not validated.
 - **Model output is never authority** — no matter which model produced it, including the
   agents that maintain this repository.
 - **Research does not override the owner.** A recommendation stays a recommendation.
@@ -183,13 +136,13 @@ Rules that follow from it:
 **Umbral** is the public name of the project. It was previously developed under the
 working name **FSP** (*File System Pro*), and `fsp-check` — the frozen V0 prototype — keeps
 that name. Historical records (`research/history/`, experiment logs) and dated research
-artifacts retain the working name as written; they are not rewritten. This is the naming
-note the rest of the repository refers to.
+artifacts retain the working name as written; they are not rewritten.
 
 The founding charter is the project owner's own document. It is cited throughout as
 `MC §n` and is **not part of the public edition of this repository**; the canonical
-documents above carry its load-bearing content, each with its `MC §n` citation preserved.
-Where a citation cannot be checked publicly, that is stated rather than hidden.
+documents in [`docs/`](docs/README.md) carry its load-bearing content, each with its
+`MC §n` citation preserved. Where a citation cannot be checked publicly, that is stated
+rather than hidden.
 
 This repository's history was rewritten once, before its first public release, to remove a
 document that is not part of the public edition. That is why no commit hash is cited
@@ -211,9 +164,9 @@ wins; where neither is established, the answer is recorded as unknown.
 
 ## Contributing
 
-Contributions are welcome once the repository is published. Read
-[`CONTRIBUTING.md`](CONTRIBUTING.md) first — in particular, the rules that keep decisions,
-hypotheses, evidence and experiments from being confused with one another.
+Contributions are welcome. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) first — in
+particular, the rules that keep decisions, hypotheses, evidence and experiments from being
+confused with one another.
 
 ## Security
 
