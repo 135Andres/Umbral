@@ -191,6 +191,154 @@ pub fn unlabelled_lines(rendered: &str) -> Vec<String> {
 }
 
 // ---------------------------------------------------------------------------------------
+// What may be labelled `observed`
+// ---------------------------------------------------------------------------------------
+//
+// The rule, and the line it draws:
+//
+//   `observed` — the filesystem itself reported this value for an entry, during this run:
+//                the entry's path, kind, size, mtime and physical identity, and the
+//                canonical form of the observed root (the filesystem's answer to "where is
+//                this really").
+//
+//   `derived`  — the tool produced it. That covers everything computed, counted,
+//                aggregated, compared, identified, assigned or composed: content
+//                fingerprints, stability verdicts, run identifiers, the run's own
+//                timestamps, workspace identifiers, composed paths, and configuration
+//                echoed back.
+//
+// The reason for drawing it here rather than at "does the tool know it": a reader has to be
+// able to tell, from the output alone, whether a value came from their filesystem or was
+// produced by the tool. A hash is a function of bytes the tool read; a stability verdict is
+// the outcome of comparing two readings; a count is an aggregate. All three are the tool's
+// output, not the filesystem's statement, so all three are `derived`.
+//
+// This was a real defect, found by the reader protocol's Q8 rather than by reading the code:
+// `workspace-id` was labelled `observed` while being a fingerprint computed from the
+// canonical path. See `experiments/v0.1-reader-protocol/` §5.5, finding F-V01-2.
+//
+// [`DERIVED_ONLY_FIELDS`] is the enforceable half of the rule, and
+// [`derived_field_violations`] is the check. It exists so the distinction cannot decay:
+// adding `foo=3` to an `observed` line is caught by a test, not by review.
+
+/// Field names that only ever carry a computed value, so they may never appear on a line
+/// labelled `observed`.
+pub const DERIVED_ONLY_FIELDS: &[&str] = &[
+    // Identifiers and composed paths
+    "workspace-id=",
+    "state-dir=",
+    "state=",
+    // Assigned identifiers
+    "run=",
+    "last-run=",
+    "from-run=",
+    "to-run=",
+    // The tool's own clock readings
+    "started=",
+    "finished=",
+    "created=",
+    // Counts and aggregates
+    "entries=",
+    "files=",
+    "dirs=",
+    "symlinks=",
+    "other=",
+    "content-verified=",
+    "content-not-verified=",
+    "content-verification-not-applicable=",
+    "unobservable-paths=",
+    "log-runs=",
+    "log-observations=",
+    // Values computed from the bytes read
+    "hash=",
+    "stability=",
+    // Configuration echoed back
+    "root=",
+    "tool-version=",
+];
+
+/// The complete set of fields a line labelled `observed` may carry. Everything else is the
+/// tool's output and belongs on a `derived` line.
+///
+/// Deliberately exhaustive rather than a denylist: adding an `observed` field is then a
+/// deliberate act that requires changing this list, instead of something that slips in.
+pub const OBSERVED_FIELDS: &[&str] = &["canonical=", "kind=", "size=", "mtime="];
+
+/// Every `name=` field present in a line of output.
+pub fn fields_in(text: &str) -> Vec<String> {
+    let bytes = text.as_bytes();
+    let mut out = Vec::new();
+    for i in 0..bytes.len() {
+        if bytes[i] != b'=' {
+            continue;
+        }
+        // Walk back over the field name.
+        let mut j = i;
+        while j > 0 {
+            let c = bytes[j - 1] as char;
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                j -= 1;
+            } else {
+                break;
+            }
+        }
+        if j < i {
+            out.push(text[j..=i].to_string());
+        }
+    }
+    out
+}
+
+/// Contract violations of the observed/derived distinction. Two halves, both checked:
+///
+/// 1. an `observed` line must not carry a field the tool computes; and
+/// 2. an `observed` line must not carry a field outside [`OBSERVED_FIELDS`].
+///
+/// Empty for conforming output and non-empty for output that breaks the rule, which is what
+/// lets a test prove the check can fail.
+pub fn label_contract_violations(lines: &[Line]) -> Vec<String> {
+    let mut out = Vec::new();
+    for (i, line) in lines.iter().enumerate() {
+        if line.label != Label::Observed {
+            continue;
+        }
+        for field in fields_in(&line.text) {
+            if DERIVED_ONLY_FIELDS.contains(&field.as_str()) {
+                out.push(format!(
+                    "line {}: labelled `observed` but carries the computed field `{field}`: {}",
+                    i + 1,
+                    line.text
+                ));
+            } else if !OBSERVED_FIELDS.contains(&field.as_str()) {
+                out.push(format!(
+                    "line {}: `observed` carries `{field}`, which is not an observed field: {}",
+                    i + 1,
+                    line.text
+                ));
+            }
+        }
+    }
+    out
+}
+
+/// The same check over already-rendered output.
+pub fn label_contract_violations_in_text(rendered: &str) -> Vec<String> {
+    let lines: Vec<Line> = rendered
+        .lines()
+        .filter(|l| !l.trim().is_empty())
+        .filter_map(|l| {
+            let label = parse_label(l)?;
+            let text = l
+                .split_once(char::is_whitespace)
+                .map(|(_, t)| t.trim().to_string())
+                .unwrap_or_default();
+            Some(Line { label, text })
+        })
+        .collect();
+    label_contract_violations(&lines)
+}
+
+// ---------------------------------------------------------------------------------------
 // Timestamps. Rendered in UTC without pulling in a date library.
 // ---------------------------------------------------------------------------------------
 
@@ -286,20 +434,19 @@ pub fn observe_summary(
     verified: u64,
     not_verified: u64,
 ) -> Vec<Line> {
+    // Everything here describes the run the tool just performed, so all of it is the tool's
+    // own output. The one exception is the canonical root: that is the filesystem's answer
+    // about where the observed path really is.
     vec![
-        Line::observed(format!(
-            "run={}  root={}  canonical={}",
-            run.id,
-            ws.root.display(),
-            ws.canonical.display()
-        )),
-        Line::observed(format!("run={}  entries={}", run.id, run.entries)),
-        Line::observed(format!("run={}  content-verified={}", run.id, verified)),
-        Line::observed(format!(
+        Line::observed(format!("canonical={}", ws.canonical.display())),
+        Line::derived(format!("run={}  root={}", run.id, ws.root.display())),
+        Line::derived(format!("run={}  entries={}", run.id, run.entries)),
+        Line::derived(format!("run={}  content-verified={}", run.id, verified)),
+        Line::derived(format!(
             "run={}  content-not-verified={}  reason=unstable-or-unreadable",
             run.id, not_verified
         )),
-        Line::observed(format!(
+        Line::derived(format!(
             "run={}  started={}  finished={}",
             run.id,
             format_unix_ns(run.started_at_ns),
@@ -315,19 +462,22 @@ pub fn observe_summary(
 
 pub fn status(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, crate::log::LogError> {
     let mut out = Vec::new();
+    // The canonical root is the filesystem's answer; the workspace identifier is a
+    // fingerprint the tool computed over it, and the state path is composed from the data
+    // home plus that identifier. Only the first is observed.
     out.push(Line::observed(format!(
-        "root={}  canonical={}",
-        ws.root.display(),
+        "canonical={}",
         ws.canonical.display()
     )));
-    out.push(Line::observed(format!("workspace-id={}", ws.id)));
+    out.push(Line::derived(format!("root={}", ws.root.display())));
+    out.push(Line::derived(format!("workspace-id={}", ws.id)));
 
     let Some(run) = log.latest_run()? else {
         out.push(Line::unknown("observations=none  reason=no-run-recorded"));
         return Ok(out);
     };
 
-    out.push(Line::observed(format!(
+    out.push(Line::derived(format!(
         "last-run={}  started={}  entries={}",
         run.id,
         format_unix_ns(run.started_at_ns),
@@ -360,7 +510,11 @@ pub fn status(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, cra
         }
     }
 
-    out.push(Line::observed(format!(
+    // Every value below is an aggregate computed from the stored observations. The count of
+    // paths that could not be observed is a computed count too, even though what it counts
+    // are things the tool does not know: the number is the tool's arithmetic, and the
+    // unknowns themselves are reported per path by `show`.
+    out.push(Line::derived(format!(
         "entries={}  files={}  dirs={}  symlinks={}  other={}",
         obs.len(),
         files,
@@ -368,15 +522,15 @@ pub fn status(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, cra
         symlinks,
         other
     )));
-    out.push(Line::observed(format!("content-verified={verified}")));
-    out.push(Line::observed(format!(
+    out.push(Line::derived(format!("content-verified={verified}")));
+    out.push(Line::derived(format!(
         "content-not-verified={not_verified}  reason=unstable-or-unreadable"
     )));
     out.push(Line::derived(format!(
         "content-verification-not-applicable={}  reason=not-a-regular-file",
         dirs + symlinks + other
     )));
-    out.push(Line::unknown(format!(
+    out.push(Line::derived(format!(
         "unobservable-paths={errored}  reason=not-observed-at-observation-time"
     )));
 
@@ -495,17 +649,26 @@ pub fn show(
     let mut out = Vec::new();
 
     for o in &obs {
-        out.push(Line::observed(format!(
-            "run={}  kind={}  size={}  mtime={}  hash={}  stability={}",
+        // Split by what produced each value: kind, size and mtime are the filesystem's own
+        // statements about the entry; the run identifier is assigned by the tool, the hash
+        // is a function of bytes the tool read, and the stability verdict is the outcome of
+        // comparing two readings. All are stored observations, but only the first group is
+        // `observed`. Ordering pairs them: the derived line introduces the run whose observed
+        // facts follow it.
+        out.push(Line::derived(format!(
+            "run={}  hash={}  stability={}",
             o.run_id,
+            opt_hash(o),
+            opt_stability(o)
+        )));
+        out.push(Line::observed(format!(
+            "kind={}  size={}  mtime={}",
             kind_field(o),
             opt_u64(o.size),
             match o.mtime {
                 Some((s, n)) => format_unix_ns(s * 1_000_000_000 + n as i64),
                 None => "none".to_string(),
-            },
-            opt_hash(o),
-            opt_stability(o)
+            }
         )));
 
         let mut absent = Vec::new();
@@ -579,10 +742,12 @@ pub fn show(
 /// observable state be reconstructed from the persisted record — and reports it.
 pub fn check(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, crate::log::LogError> {
     let mut out = Vec::new();
-    out.push(Line::observed(format!("state={}", ws.log_path().display())));
+    // The state path is composed from the data home and the workspace identifier, and the
+    // counts are aggregates over the log. Both are the tool's own output.
+    out.push(Line::derived(format!("state={}", ws.log_path().display())));
 
     let (runs_n, obs_n) = log.counts()?;
-    out.push(Line::observed(format!(
+    out.push(Line::derived(format!(
         "log-runs={runs_n}  log-observations={obs_n}"
     )));
 
