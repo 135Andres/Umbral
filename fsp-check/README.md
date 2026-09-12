@@ -1,6 +1,6 @@
 # fsp-check
 
-V0 observation prototype (UD-012; stack UD-013, V0-scoped). NOT FSP; the V0 store is
+V0 observation prototype (UD-012; stack UD-013, V0-scoped). NOT Umbral; the V0 store is
 NOT Project Reality (H25). Plan: ../V0-IMPLEMENTATION-PLAN.md.
 
 ## Status

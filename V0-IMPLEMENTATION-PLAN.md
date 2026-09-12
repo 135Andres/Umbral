@@ -11,14 +11,14 @@ STATUS VOCABULARY USED HERE (existing project labels, no new states):
 DECIDIDO = has a UD record · PROVISIONALMENTE ADOPTADO = user-authorized for V0 only,
 explicitly non-final · PROPUESTO = Hermes proposal awaiting user confirmation ·
 HIPÓTESIS = to be validated by V0 evidence · ABIERTO = no decision, kept open ·
-FUERA DE ALCANCE = out of V0 scope (not rejected for FSP) · SUPERSEDed/HISTÓRICO =
+FUERA DE ALCANCE = out of V0 scope (not rejected for Umbral) · SUPERSEDed/HISTÓRICO =
 marked in place, never deleted.
 
 ================================================================================
 1. OBJECTIVE
 ================================================================================
 Build a small technical prototype, provisionally named **fsp-check**, demonstrating that
-FSP can:
+Umbral can:
   - observe a real filesystem;
   - catalog its observable state;
   - detect mutations;
@@ -28,13 +28,13 @@ FSP can:
   - maintain verifiable invariants;
   - recover from reasonable failures.
 
-fsp-check is an EXPERIMENTAL BASE, not FSP. It implements no product surface.
+fsp-check is an EXPERIMENTAL BASE, not Umbral. It implements no product surface.
 
 PROJECT STATE (2026-09-11, closeout): **V0 CLOSED AND FROZEN — STATUS: PARTIAL.**
 All six increments implemented and falsified through an independent oracle; final
 criteria evaluation §15; formal scope statement, freeze lists, Q25 state, SC-5 gap
 record and V1 handoff in experiments/v0-harness/V0-CLOSEOUT.md. V0 is frozen except
-where new evidence contradicts an already-made claim. As always: FSP is not designed,
+where new evidence contradicts an already-made claim. As always: Umbral is not designed,
 no final architecture or full stack is decided, no hypothesis is demonstrated, Project
 Reality is not resolved.
 
@@ -46,7 +46,7 @@ and classification; observation history + active projection in one embedded stor
 reconciliation; invariant checks; crash/failure recovery tests; property-based harness
 generating real filesystem trees and operation sequences.
 
-FUERA DE ALCANCE DE V0 (explicit user list; NOT rejected for FSP, only out of V0 scope):
+FUERA DE ALCANCE DE V0 (explicit user list; NOT rejected for Umbral, only out of V0 scope):
 Tokio · Rayon · notify · Iroh · MCP · HTTP · Tauri · React · cryptographic identity ·
 P2P · plugins · mobile · Tree-sitter inside the core.
 Also out of V0 (mandate §"LO QUE V0 NO DEBE INTENTAR RESOLVER"): multi-device sync, P2P
@@ -83,9 +83,9 @@ CORRECTED INVARIANT FORMULATION (user correction of an over-strong Gemini formul
 the original `hash(p) == BLAKE3(read(p))` wrongly implied the file keeps those bytes after
 observation). Correct meaning:
 
-  **A persisted hash represents exactly the bytes FSP read during one valid observation.**
+  **A persisted hash represents exactly the bytes Umbral read during one valid observation.**
 
-FSP observes a LIVE filesystem; it does not control or freeze the reality it observes.
+Umbral observes a LIVE filesystem; it does not control or freeze the reality it observes.
 This distinction is normative for every invariant below.
 
 PERSISTENCE HYPOTHESIS (kept open, validated during V0 — Q25): SQLite as observations
@@ -101,7 +101,7 @@ prematurely.
   identity  physical identity handling (dev/ino where available), path mapping
   hash      BLAKE3 content hashing, chunked reads, re-read guard for changing files
   store     rusqlite: observations/history + active projection; schema is a V0-internal
-            detail, NOT an FSP schema decision
+            detail, NOT an Umbral schema decision
   reconcile compare observed vs known state; emit classified mutations
   classify  create / write / append / overwrite / atomic replace / rename / dir rename /
             delete / recreate (then chmod / symlink / hard link / platform-specific)
@@ -179,7 +179,7 @@ it does not silently change the design.
 ================================================================================
 10. RISKS
 ================================================================================
-  - Scope creep toward "real FSP" — mitigated by §2 out-of-scope list being user-fixed.
+  - Scope creep toward "real Umbral" — mitigated by §2 out-of-scope list being user-fixed.
   - Schema drift: the store schema is V0-internal; premature generalization would smuggle
     in the Project Reality representation (violates H25 guard).
   - Physical-identity platform divergence (inode reuse, case-insensitivity) — classified
@@ -227,7 +227,7 @@ missing evidence, and unresolved delete+recreate; matching is global-by-identity
 per-path, so swaps classify as renames. All rules are pure-model properties tested
 without a filesystem.
 Hash evidence (increment 3): guard = size+ns-mtime+dev/ino before/after; retry policy
-MAX_GUARD_ATTEMPTS=2 is a V0 instrument policy, NOT an FSP architecture decision; a
+MAX_GUARD_ATTEMPTS=2 is a V0 instrument policy, NOT an Umbral architecture decision; a
 stat-guard cannot see a rewrite that restores size and exact mtime inside the read
 window (documented residual risk; hash-comparison across observations partially
 backstops); content equality NEVER implies identity equality (two objects, same bytes =

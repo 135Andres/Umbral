@@ -76,7 +76,7 @@ RM-4  (EVIDENCE-PASS, OBSERVED) W3C RDF-star/PG mapping losslessly unfolds prope
       edges into statements: Relation is derivable from Assertion. Same source as RM-2.
 RM-5  (EVIDENCE-PASS, OBSERVED) ATMS (de Kleer 1986) computes belief status as derived
       state over assertion+justification topology and never "believes" anything — the
-      non-epistemic stance FSP requires has a 40-year-old formal precedent.
+      non-epistemic stance Umbral requires has a 40-year-old formal precedent.
       doi:10.1016/0004-3702(86)90082-2
 RM-6  (EVIDENCE-PASS, OBSERVED) USLM versioning = exactly @startPeriod + @endPeriod +
       @status per provision, with an explicit warning that the period is not the effective
@@ -136,7 +136,7 @@ disagreement is about representation, not information, and is recorded rather th
 
 ASSERTION — PRIMITIVE (unanimous). Present in every surveyed system under some name; the
   only abstraction that supports the self-referential structure all collapses depend on.
-  Renamed for FSP: RECORD (see §6 — an actor asserts, a tool observes; FSP only records).
+  Renamed for Umbral: RECORD (see §6 — an actor asserts, a tool observes; Umbral only records).
 ENTITY — DISPUTED, resolved as: not a primitive TYPE, but identity is a REQUIREMENT.
   Pass-1: entities are just subject positions (RDF, Dung, TMS). Pass-2/3: identity is
   never derivable from content (FRBR WORK, PREMIS objectIdentifier, Kafka key). Both are
@@ -171,7 +171,7 @@ FAL-1  SUPERSESSION -> RELATION is lossy. A later decision can REPEAL (old rule 
     force), OVERRIDE (old decision defeated but stands as record), REFINE (partially
     change), or REINSTATE (A supersedes B supersedes A — VISION.md's own N1-N3 history is
     a local instance). A bare "supersedes" edge cannot distinguish these, and the failure
-    mode — an AI reading a repealed rule as binding — is exactly the hazard FSP exists to
+    mode — an AI reading a repealed rule as binding — is exactly the hazard Umbral exists to
     prevent. Repair: supersession is a typed validity EVENT recorded between records
     (which the record model represents naturally), not an undifferentiated relation.
 FAL-2  DECISION AUTHORITY -> ATTRIBUTION QUALIFIER conflates who MADE a record with who may
@@ -181,9 +181,9 @@ FAL-2  DECISION AUTHORITY -> ATTRIBUTION QUALIFIER conflates who MADE a record w
     needs standing-over-time, which silently smuggles Time back in. Repair: standing is
     first-class record content (who may decide, within what scope, until when), never
     derived from attribution.
-FAL-3  FRESHNESS -> DERIVED STATE is circular exactly where FSP most needs it. Derivation
+FAL-3  FRESHNESS -> DERIVED STATE is circular exactly where Umbral most needs it. Derivation
     needs a change-log; outside Git-tracked corpora none exists, and MC §51 (via
-    VISION.md) REQUIRES FSP to work without Git. Repair: freshness is derived only where
+    VISION.md) REQUIRES Umbral to work without Git. Repair: freshness is derived only where
     a change-log exists and CAPTURED at write time everywhere else. The same pass also
     demoted two prior claims: currency-as-stored-fact (staleness vs change history is
     mechanically derivable where history exists) and unknown-actor-inside-Git (the
@@ -221,7 +221,7 @@ One primitive type, one supporting concept, two discipline rules:
 
 Anthropomorphism check (mandate §5): the model contains no belief, knowledge, truth or
 confidence term. Records carry status vocabulary and source roles; "observed" vs
-"asserted" distinguishes tool-captured from actor-stated; FSP computes projections and
+"asserted" distinguishes tool-captured from actor-stated; Umbral computes projections and
 reports them as projections. Epistemic information without epistemic agency — with the
 ATMS as formal precedent that status-as-derived-state does not require a believing system.
 
@@ -266,7 +266,7 @@ verdict: that attack absorbs negative-constraint INSTANCES, CI-enforceable rules
 mechanics — and has NO form for social facts, historical causes, or resolution status).
 
 ================================================================================
-8. INFORMATION HYGIENE — WHAT FSP DELIBERATELY FORGETS
+8. INFORMATION HYGIENE — WHAT Umbral DELIBERATELY FORGETS
 ================================================================================
 Not durable project reality: chain-of-thought, raw prompts, transient chat, tool
 invocation logs, passive telemetry, routine operational noise, participant-local
@@ -280,7 +280,7 @@ retroactively. (Class: INFERENCE, from mandate §12 analysis + pass-4.)
 9. REMAINING UNCERTAINTY
 ================================================================================
 UNKNOWN-1 (pass-1): no primary source verifies that a self-contained plain-file record
-  model survives FSP's disappearance as readable files without FSP — nanopublications
+  model survives Umbral's disappearance as readable files without Umbral — nanopublications
   are the closest prior art (self-contained, hash-addressed), but the file-durability
   requirement is untested. -> Q22.
 UNKNOWN-2 (pass-3): whether single-writer causal markers (HLC / writer+sequence) suffice
@@ -288,7 +288,7 @@ UNKNOWN-2 (pass-3): whether single-writer causal markers (HLC / writer+sequence)
   unsettled — though record topology already preserves concurrency as coexisting
   records, so this affects derived merging only, not the durable model. -> Q23.
 UNKNOWN-3 (own): status vocabularies are domain-closed (USLM legal set, ADR set); whether
-  FSP needs a universal status set, per-scope sets, or none is open. -> Q24.
+  Umbral needs a universal status set, per-scope sets, or none is open. -> Q24.
 UNKNOWN-4 (own): MIN-1 demonstrates field necessity only within its own fixtures
   (circularity caveat, RM-18); independent confirmation requires E-MIN-1 (§11).
 
@@ -304,7 +304,7 @@ OBJ-B (anthropomorphism risk): "status" and "stance-like" fields invite readers 
 OBJ-C (capture burden): R1 makes write-time capture mandatory; that is a cost on every
   participant and may push casual users away. Unquantified.
 OBJ-D (vocabulary drift): closed status vocabularies rot (USLM's set is legal-specific);
-  FSP would need its own governance for the vocabulary it records. (DOC-FRICTION
+  Umbral would need its own governance for the vocabulary it records. (DOC-FRICTION
   precedent: the project's own ID-namespace drift.)
 
 ================================================================================

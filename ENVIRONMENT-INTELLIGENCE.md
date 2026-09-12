@@ -38,7 +38,7 @@ against assuming it is. Tested against the evidence, the honest answer has three
 
 (c) THE DIFFERENTIATOR, STATED PRECISELY AND WITHOUT INFLATION: environment intelligence is
     intelligence about an environment that is NOT OWNED BY ANY PARTICIPANT IN IT — not by the
-    model, not by the vendor, and not by FSP itself. FSP is a participant that maintains a
+    model, not by the vendor, and not by Umbral itself. Umbral is a participant that maintains a
     view, not the owner of the view.
     Classification: **POSSIBLY NOVEL** as a constraint combination; **NEW HYPOTHESIS** as a
     product concept. The claim of novelty rests entirely on the empty cell identified in
@@ -47,7 +47,7 @@ against assuming it is. Tested against the evidence, the honest answer has three
     concept is a re-description of observability plus provenance, and should be dropped.
 
 WHAT IT IS NOT (each of these was tested and rejected as the primary framing):
-  - Not "an intelligence layer" in the AI sense: FSP does not reason about solutions,
+  - Not "an intelligence layer" in the AI sense: Umbral does not reason about solutions,
     code, architecture or strategy. It knows about the environment. That boundary is
     load-bearing and must stay explicit (mandate §3).
   - Not observability alone: observability answers "what is the system doing"; this must also
@@ -62,7 +62,7 @@ WHAT IT IS NOT (each of these was tested and rejected as the primary framing):
 --------------------------------------------------------------------------------
 H15 — ENVIRONMENT INTELLIGENCE AS A PRODUCT-LEVEL CONCEPT
 --------------------------------------------------------------------------------
-Claim: FSP's product identity can be stated as "the environment's own account of itself",
+Claim: Umbral's product identity can be stated as "the environment's own account of itself",
 which is separate from model intelligence and from the user's authority.
 Evidence: the matrix in research/ENVIRONMENT-INTELLIGENCE-RESEARCH.md §G; the /proc
 precedent (EI-6) as the only shipped example of reality exposed as ordinary files.
@@ -74,7 +74,7 @@ Status: SPECULATIVE. Not a decision.
 --------------------------------------------------------------------------------
 H16 — SELF-DESCRIPTION LAYER
 --------------------------------------------------------------------------------
-Claim: an unknown AI should be able to become a competent participant by learning FSP
+Claim: an unknown AI should be able to become a competent participant by learning Umbral
 progressively, rather than by ingesting the SDK or the documentation corpus.
 Evidence: capability discovery is standard practice (EI-1..EI-10). Self-description for
 AGENTS exists (A2A agent card, EI-8). Progressive disclosure is a designed behaviour of a
@@ -83,7 +83,7 @@ first-order determinant of agent success, worsening as candidate count grows (EI
 Novelty: **EXISTING PATTERN** as a mechanism. The residual, genuinely unsolved part is:
   (i) a description that travels with the user's files and works with no live process;
   (ii) a description that states AUTHORITY and MUTABILITY, not just capability;
-  (iii) a description addressed to a participant that does not know FSP exists.
+  (iii) a description addressed to a participant that does not know Umbral exists.
 Falsified by: E-CO-6a — a fresh model given only the self-description surface fails to
 identify what is mutating, what needs confirmation, and what it is authorized to do. If
 models cannot extract the safety floor from the surface, the surface is worse than useless.
@@ -97,7 +97,7 @@ floor of facts that must NEVER be deferred.
 Evidence: the principle is 20 years old and human-oriented (EI-11); agent platforms have
 already adapted it (EI-9, EI-10); the economic premise is confirmed (50,000+ tokens of tool
 definitions before the agent reads a request, EI-10).
-Novelty: ADAPTATION. The FSP-specific contribution is the floor, not the disclosure.
+Novelty: ADAPTATION. The Umbral-specific contribution is the floor, not the disclosure.
 PROPOSED SAFETY FLOOR (always disclosed, in the first response, at every tier):
   1. what the participant is currently AUTHORIZED to do (not merely what it may request);
   2. which capabilities are MUTATING vs read-only;
@@ -118,13 +118,13 @@ H18 — TIERED INTROSPECTION (ORIENT / EXPLAIN / DIAGNOSE)
 Claim: three levels of self-report — orientation, operational explanation, deep diagnosis.
 Evidence: the tiering is EXISTING PATTERN in operations (EI-15 liveness/readiness probes;
 EI-16 `git fsck`, `npm doctor`; EI-5 JMX; EI-1/EI-2 API discovery and `kubectl explain`).
-Two findings from the evidence that FSP's proposal does not yet have:
+Two findings from the evidence that Umbral's proposal does not yet have:
   (i) The established Basic tier separates "is it alive" from "is it able to serve"
-      (liveness vs readiness, EI-15). FSP's Basic tier conflates them. This is a real gap,
+      (liveness vs readiness, EI-15). Umbral's Basic tier conflates them. This is a real gap,
       and it is the gap that matters most to a participant deciding whether to trust a
       report.
   (ii) The established Diagnostic tier is USER-INVOKED and READ-ONLY (`fsck`, `doctor`).
-      FSP should adopt that, and the proposal should say so explicitly.
+      Umbral should adopt that, and the proposal should say so explicitly.
 Novelty: EXISTING PATTERN as a tiering; ADAPTATION in that the tiers are addressed to an AI
 participant, not only to an operator.
 On naming (mandate §7 asks whether Basic/Advanced/Diagnostic are right): the words carry
@@ -136,12 +136,12 @@ Status: REASONED.
 --------------------------------------------------------------------------------
 H19 — DOCUMENTATION DESCRIBES INTENT; INTROSPECTION DESCRIBES ACTUALITY
 --------------------------------------------------------------------------------
-Claim: these are different things and must not be conflated in FSP's own interface.
+Claim: these are different things and must not be conflated in Umbral's own interface.
 Evidence: EXISTING PATTERN. This is the documentation/telemetry distinction, and the gap
 between them is what configuration management calls DRIFT (declared state vs observed
-state). FSP would apply drift detection to knowledge and interpretation rather than to
+state). Umbral would apply drift detection to knowledge and interpretation rather than to
 configuration — that application is the ADAPTATION.
-Why it matters to FSP: the project has already paid for this lesson internally. Every
+Why it matters to Umbral: the project has already paid for this lesson internally. Every
 documentation failure found by EXP-DOC-1 was a currency or provenance failure — a document
 asserting an outdated actuality. A file that could report its own drift would have prevented
 all of them.
@@ -151,14 +151,14 @@ Status: REASONED.
 --------------------------------------------------------------------------------
 H20 — MACHINE-FIRST CANONICAL COMMUNICATION, WITH A CONFIDENCE WARNING
 --------------------------------------------------------------------------------
-Claim: FSP's canonical output should be structured, with the AI as translator to the human.
+Claim: Umbral's canonical output should be structured, with the AI as translator to the human.
 Evidence: structured interfaces are the norm for machine participants (EI-1..EI-10); model
 self-report of limitations changes human trust calibration (EI-27).
 THE WARNING (this is the sharpest new design constraint this cycle produced):
   Confidence numbers are the most dangerous element in the entire proposal. A number looks
-  like knowledge. Displaying "confidence: 0.21" asserts a CALIBRATION that FSP will not have
+  like knowledge. Displaying "confidence: 0.21" asserts a CALIBRATION that Umbral will not have
   measured — uncertain-KG research shows point estimates are easy and calibrated uncertainty
-  is an open, recent problem (EI-19). FSP would be manufacturing precision, which violates
+  is an open, recent problem (EI-19). Umbral would be manufacturing precision, which violates
   the zero-fabrication rule in a way that is hard to notice because it looks quantitative.
   PROPOSED RULE (NEW HYPOTHESIS, M9): represent epistemic status CATEGORICALLY
   (OBSERVED / INFERRED / ASSUMED / UNKNOWN / DISPUTED) by default, and attach a numeric
@@ -169,16 +169,16 @@ calibration precondition for numeric confidence).
 Status: REASONED for the rule; SPECULATIVE for whether users want any of it.
 
 --------------------------------------------------------------------------------
-H21 — FSP MAY HOLD A STANCE WITHOUT HOLDING AUTHORITY
+H21 — Umbral MAY HOLD A STANCE WITHOUT HOLDING AUTHORITY
 --------------------------------------------------------------------------------
-Claim: FSP may expose its own assessment (e.g. "A and B: not related, inferred, basis: ...")
+Claim: Umbral may expose its own assessment (e.g. "A and B: not related, inferred, basis: ...")
 while remaining one participant among several, never the arbiter.
 Evidence: the theory is old and mature — truth maintenance with justifications (EI-17),
 belief revision (EI-18), argumentation semantics for competing claims (EI-18) — and there is
 a working social precedent for holding contested claims visibly (EI-20).
-Novelty: COMBINATION. FSP is not inventing a stance concept; it is deciding whether to
+Novelty: COMBINATION. Umbral is not inventing a stance concept; it is deciding whether to
 embody a 1979 idea in a filesystem.
-THE SHARP RISK (objection OBJ-11, taken seriously): a stance IS an implicit authority. "FSP says
+THE SHARP RISK (objection OBJ-11, taken seriously): a stance IS an implicit authority. "Umbral says
 not related" will be read as fact by both models and humans, and by the time anyone notices,
 it has shaped a decision. Two conditions follow, and they are REASONED requirements if this
 hypothesis is ever adopted:
@@ -277,7 +277,7 @@ SPLIT answer, and forcing unity would be a mistake:
 (C) SEPARATE — for one piece, and this is the non-obvious finding. **Self-description is
     NOT a component of shared environment reality.** It describes the INSTRUMENT, not the
     environment. Environment intelligence is about the project; self-description is about
-    FSP. Unifying them would make FSP's own interface part of the project's model of reality,
+    Umbral. Unifying them would make Umbral's own interface part of the project's model of reality,
     which is exactly the category error the documentation architecture already rejects
     (structure must not become product architecture). They should be documented together
     (they are discovered together) and kept conceptually separate.
@@ -293,7 +293,7 @@ RESULTING SHAPE, stated in one line:
     └── introspection: the instrument's report on itself (H18, H19)
   MAINTENANCE (separate role, consumes both)       (H23)
 HARD REQUIREMENT attached to this shape: the unification is CONCEPTUAL ONLY. Each piece must
-remain independently droppable, because FSP must degrade (O9): if self-description
+remain independently droppable, because Umbral must degrade (O9): if self-description
 disappears, the files must still be intelligible; if the engine is off, the record must still
 be readable. A unified abstraction that becomes a single artefact would violate this.
 
@@ -307,7 +307,7 @@ Environment intelligence       | COMBINATION        | the position of the knowle
                                |                    | unknown participants. Not the content.
 Self-description layer         | EXISTING PATTERN   | nothing, as a mechanism. Residual: works
                                | (+ NEW HYPOTHESIS  | with no process, states authority, aimed
-                               | for the residual)  | at a participant that does not know FSP
+                               | for the residual)  | at a participant that does not know Umbral
 Progressive disclosure         | ADAPTATION         | the safety floor (H17), not the deferral
 Safety floor (5 facts)         | POSSIBLY NOVEL     | the specific set that must never defer
 Tiered introspection           | EXISTING PATTERN   | the AI-addressed tiering; the liveness/
@@ -317,7 +317,7 @@ Doc-vs-introspection           | ADAPTATION         | applying drift detection t
 Machine-first + categorical    | COMBINATION        | the calibration precondition for numeric
   epistemic labels             |                    | confidence (M9). The precondition is the
                                |                    | only defensibly new part.
-FSP stance                     | COMBINATION        | 1979 TMS ideas embodied in files; the
+Umbral stance                     | COMBINATION        | 1979 TMS ideas embodied in files; the
                                |                    | no-arbiter constraint is the difference
 AI activity history            | EXISTING PATTERN   | the write/read split (M10) is the
                                |                    | defensible new part, and it CONTRADICTS
@@ -374,19 +374,19 @@ OBJ-5 "Just Git + provenance."
 
 OBJ-6 "Just agent memory."
    Wrong on the axis that matters: agent memory is per-vendor, per-session-scoped, and not
-   the user's (CO-4..CO-6). It solves continuity INSIDE one provider. FSP's problem is
+   the user's (CO-4..CO-6). It solves continuity INSIDE one provider. Umbral's problem is
    continuity ACROSS providers and across the provider's absence.
 
 OBJ-7 "Just a knowledge graph."
    Correct as a warning, wrong as a reduction. A graph is a possible internal representation
-   of relations; it cannot carry authority, and it is not portable in the sense FSP needs.
+   of relations; it cannot carry authority, and it is not portable in the sense Umbral needs.
    The project has already refused to make the graph the authority (A1/A2).
 
 OBJ-8 "The model can simply read the files itself."
    TRUE and it is the single most important objection. Reading the files gives content.
    It does not give standing, currency, or attribution — and the model cannot compute those
    from content alone (it cannot know that a decision was superseded, or that another
-   participant is mid-edit). Verdict: OBJ-8 defines the boundary. Any FSP feature that only
+   participant is mid-edit). Verdict: OBJ-8 defines the boundary. Any Umbral feature that only
    re-presents content the model could read is worthless; the value must be in what reading
    cannot produce. This should become a design test applied to every proposed capability.
 
@@ -402,7 +402,7 @@ OBJ-10 "Progressive disclosure will hide information the AI needs."
    The safety floor (H17) is the designed answer; E-CO-6a is the test of whether it works.
    Verdict: partially mitigated by design, unproven empirically.
 
-OBJ-11 "FSP's own stance is an implicit authority."
+OBJ-11 "Umbral's own stance is an implicit authority."
    FAIR AND DANGEROUS. This is the objection most likely to be right. Mitigations in H21
    (participant-claim labelling, no outranking) reduce but do not eliminate it. Verdict:
    H21 should probably be rejected unless E-CO-9 shows a measurable benefit; the burden of
@@ -487,8 +487,8 @@ independent.
     list of things to know — every item is established elsewhere. REASONED.
  2. Is Self-Description a real missing capability? NO as a mechanism (MCP, A2A, Skills,
     K8s discovery, D-Bus, JMX, OpenAPI all exist). YES for a residual: no process, carries
-    authority, aimed at a participant that does not know FSP. ESTABLISHED + REASONED.
- 3. Is Progressive Disclosure useful for FSP? YES, as an ADAPTATION of an established
+    authority, aimed at a participant that does not know Umbral. ESTABLISHED + REASONED.
+ 3. Is Progressive Disclosure useful for Umbral? YES, as an ADAPTATION of an established
     principle (EI-11), with a non-negotiable safety floor. REASONED.
  4. What must an unknown AI know before interacting? Its own authority; what is mutating;
     what needs confirmation; what leaves the machine; what is unknown or stale; and how to
@@ -499,7 +499,7 @@ independent.
  7. Is ORIENT/EXPLAIN/DIAGNOSE useful? YES as tiers (EXISTING PATTERN in ops), with two
     corrections: separate liveness from readiness in ORIENT, and keep DIAGNOSE user-invoked
     and read-only. Naming NOT finalized.
- 8. Should FSP expose its own stance? OPEN, and probably NO. It is an implicit authority
+ 8. Should Umbral expose its own stance? OPEN, and probably NO. It is an implicit authority
     (OBJ-11) and the burden of proof is on the hypothesis.
  9. How should certainty be represented? Categorically (OBSERVED/INFERRED/ASSUMED/UNKNOWN/
     DISPUTED) by default; numeric confidence only where calibration has been measured (M9).
@@ -529,7 +529,7 @@ independent.
     running in parallel on the currency dimension.
 19. What could falsify this entire direction? (a) E-CO-1 shows staleness harms no one who
     matters → currency dies. (b) E-CO-6a shows models cannot extract the safety floor from a
-    self-description surface → self-description dies. (c) OBJ-8 wins: if everything FSP would
+    self-description surface → self-description dies. (c) OBJ-8 wins: if everything Umbral would
     expose is already obtainable by reading the files, the whole layer is unnecessary.
 
 ================================================================================

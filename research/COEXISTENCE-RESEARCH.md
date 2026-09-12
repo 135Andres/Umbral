@@ -63,7 +63,7 @@ CO-4  Agent Client Protocol (ACP, Zed) and IBM's Agent Communication Protocol (A
       the agent owns its runtime). IBM's ACP standardised agent interoperability over REST;
       the repository now states ACP is part of A2A under the Linux Foundation.
       Relevance: the protocol landscape is CONVERGING (two ACPs, one absorbed into A2A).
-      For FSP this is a warning against owning a protocol and an argument for owning
+      For Umbral this is a warning against owning a protocol and an argument for owning
       conventions and local mechanisms instead.
 
 CO-5  Instruction-file conventions (AGENTS.md, CLAUDE.md, GEMINI.md, .cursor/rules, Skills)
@@ -110,7 +110,7 @@ CO-7  Staleness of agent context and memory (the closest prior art to this stage
       MEMORY, not at the level of a shared filesystem that ordinary tools also write to.
 
 CO-8  Coordination models predating LLMs (still the best conceptual vocabulary)
-      Sources: blackboard architecture (the FSP corpus already references it in S3/S6);
+      Sources: blackboard architecture (the Umbral corpus already references it in S3/S6);
       Contract Net Protocol (Smith, 1980); Linda / tuple spaces (Gelernter).
       Marker: SNIPPET-LEVEL for the primary papers; VERIFIED for the concepts' existence
       and definitions.
@@ -118,7 +118,7 @@ CO-8  Coordination models predating LLMs (still the best conceptual vocabulary)
       coordinate by reading and writing state; contract net assigns tasks by announcement
       and bidding; tuple spaces provide associative shared memory decoupled from the
       processes using it.
-      Relevance: FSP's coexistence problem is a NEW INSTANCE of these old patterns, with
+      Relevance: Umbral's coexistence problem is a NEW INSTANCE of these old patterns, with
       three differences that matter: (1) participants are probabilistic, not deterministic;
       (2) the shared medium is the user's own filesystem, not an application's memory;
       (3) one participant (the human) holds authority the others cannot have.
@@ -136,7 +136,7 @@ CO-9  Concurrency control for multi-agent systems (research, 2026)
       Relevance: HIGHEST. AgentRoom is the closest published prior art to a "coexistence
       substrate" — and it is (a) a research prototype, (b) built on a CRDT workspace that
       is not the user's filesystem, and (c) requiring agents to use its MCP tools. That is
-      exactly the design space FSP must differentiate inside or decide it cannot beat.
+      exactly the design space Umbral must differentiate inside or decide it cannot beat.
 
 CO-10  Why multi-agent systems fail
       Sources: "Why Do Multi-Agent LLM Systems Fail?" (arXiv:2503.13657) and the MAST
@@ -168,7 +168,7 @@ CO-12  Semantic file systems (the 1991 attempt)
       Claims: semantic file systems provide associative access to files by extracting
       attributes with file-type transducers and exposing virtual directories.
       Relevance: the same idea, thirty-five years earlier, and it did not displace the
-      hierarchical filesystem. The FSP corpus already treats this as a design constraint
+      hierarchical filesystem. The Umbral corpus already treats this as a design constraint
       (S1/S8); it belongs in this file because it is the precedent for "put semantics in the
       filesystem layer".
 
@@ -181,7 +181,7 @@ CO-13  W3C PROV (PROV-DM / PROV-O)
       Claims: provenance is information about entities, activities and people involved in
       producing a thing; PROV-DM is the conceptual model, PROV-O its OWL encoding.
       Relevance: the standard vocabulary for "who/what/why" already exists and is stable.
-      The FSP corpus already cites it (S4, S6). What does NOT exist is a convention for
+      The Umbral corpus already cites it (S4, S6). What does NOT exist is a convention for
       attaching it to ordinary files in a way that survives tools which know nothing about
       it.
 
@@ -191,9 +191,9 @@ CO-14  in-toto attestations
       Claims: a specification for generating verifiable claims about how an artifact was
       produced, verifying that each step was carried out as planned and by authorized
       parties.
-      Relevance: a mature model for "attested chain of custody" that FSP could borrow
+      Relevance: a mature model for "attested chain of custody" that Umbral could borrow
       conceptually (claims, steps, authorization) without importing the machinery. Note the
-      same caveat as C2PA in the FSP corpus: a valid attestation proves origin, not truth.
+      same caveat as C2PA in the Umbral corpus: a valid attestation proves origin, not truth.
 
 CO-15  Agent identity (SPIFFE/SPIRE, delegated authorization)
       Sources: Google Cloud "Agent Identity" documentation (SPIFFE-based);
@@ -208,7 +208,7 @@ CO-15  Agent identity (SPIFFE/SPIRE, delegated authorization)
       the "which agent did this" half of provenance; silent on the epistemic half.
 
 CO-16  Version control as coordination (the existing answer to multi-writer files)
-      Sources: the FSP corpus already covers Git/Jujutsu/Fossil at length (S6, S11);
+      Sources: the Umbral corpus already covers Git/Jujutsu/Fossil at length (S6, S11);
       Kleppmann et al., "A Highly-Available Move Operation for Replicated Trees"
       (IEEE TPDS 2021; trvedata/move-op) for the CRDT tree case.
       Marker: VERIFIED for the papers and projects; the corpus entries are as previously
@@ -230,7 +230,7 @@ CO-17  Mixed-initiative interaction
       deciding when to act, when to ask, and when to stay out of the way, weighing the cost
       of failure against the cost of interruption.
       Relevance: the classical statement of the human-control problem this stage is about.
-      It supplies the criterion FSP's authority model must satisfy: automation must be
+      It supplies the criterion Umbral's authority model must satisfy: automation must be
       interruptible and its failures must be cheap, not merely "permissioned".
 
 CO-18  Adjacent products claiming "agent-native workspace"
@@ -244,7 +244,7 @@ CO-18  Adjacent products claiming "agent-native workspace"
       Relevance: HIGH for differentiation. The "many agents in one workspace" space is
       already occupied at the orchestration/terminal level. What none of them claims is the
       user's own filesystem remaining the substrate with plain-file, provider-neutral
-      conventions and a rebuildable projection. This is where FSP must differentiate or
+      conventions and a rebuildable projection. This is where Umbral must differentiate or
       decline to compete.
 
 ================================================================================
@@ -254,7 +254,7 @@ WHAT THIS EVIDENCE DOES NOT SETTLE
   design-time concern that rarely bites (no study found either way). See experiment E-CO-1.
 - Whether an ordinary user with two or three AI subscriptions experiences any of this, or
   whether it is felt only by developers running concurrent agents.
-- Whether FSP's plain-file constraint is compatible with the coordination primitives that
+- Whether Umbral's plain-file constraint is compatible with the coordination primitives that
   actually work (claims, leases, validity) or whether those require a live process.
-- Whether the convergence of A2A/MCP will absorb the problem before FSP could ship
+- Whether the convergence of A2A/MCP will absorb the problem before Umbral could ship
   anything (CO-3, CO-4, CO-5).
