@@ -1,0 +1,22 @@
+[package]
+name = "umbral"
+version = "0.1.0"
+edition = "2021"
+description = "Umbral v0.1 — a local, read-only workspace observation instrument (development code; NOT the product architecture)"
+publish = false
+
+# Stack adopted for v0.1 ONLY (UD-014). Explicitly scoped, explicitly reversible, and
+# explicitly NOT an inheritance from the V0 experiment or a product technology choice.
+# `fsp-check/` remains independent and frozen.
+[dependencies]
+blake3 = "1.8.7"
+rusqlite = { version = "0.40.2", features = ["bundled"] }
+walkdir = "2.5.0"
+
+[dev-dependencies]
+proptest = "1.11.0"
+tempfile = "3.27.0"
+# Same crate and features as the runtime dependency, so this adds nothing to the build. It
+# is listed so tests can deliberately corrupt a log and prove that `check` reports it —
+# a test that cannot fail proves nothing.
+rusqlite = { version = "0.40.2", features = ["bundled"] }

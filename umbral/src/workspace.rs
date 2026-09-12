@@ -1,0 +1,288 @@
+//! Workspace resolution: one observed root plus its local record.
+//!
+//! # Where state lives
+//!
+//! `$XDG_DATA_HOME/umbral/ws-<id>/`, falling back to `~/.local/share/umbral/ws-<id>/`.
+//! Never inside the observed tree. The state directory is the only thing this program ever
+//! writes to.
+//!
+//! # How the identifier is derived, exactly
+//!
+//! 1. The root is canonicalised with `std::fs::canonicalize`, which makes it absolute and
+//!    resolves symlinks.
+//! 2. The canonical path's **raw OS bytes** are taken (on Unix, `OsStr::as_bytes` — no lossy
+//!    UTF-8 conversion, so a path with non-UTF-8 bytes still yields a stable identifier).
+//! 3. `BLAKE3` is computed over exactly those bytes.
+//! 4. The first 8 bytes of the digest are rendered as 16 lowercase hex characters, and the
+//!    directory is named `ws-<those 16 characters>`.
+//!
+//! Consequences, stated plainly:
+//!
+//! - The same canonical root always produces the same identifier.
+//! - Moving or renaming the root produces a different identifier, so it becomes a different
+//!   workspace with an empty history. This is a deliberate consequence of not writing
+//!   anything into the user's tree: there is no marker file to follow.
+//! - Nothing is written inside the root, not even to identify it.
+//!
+//! # What this is NOT
+//!
+//! This is v0.1's mechanism for locating a workspace's local record. It is **not** the
+//! definitive global identity of a workspace in Umbral, it is not a content identifier, and
+//! it is replaceable. It is not an architecture decision.
+
+use std::path::{Path, PathBuf};
+
+use crate::log::SCHEMA_VERSION;
+
+pub const TOOL_VERSION: &str = env!("CARGO_PKG_VERSION");
+const WORKSPACE_FILE: &str = "workspace.json";
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Workspace {
+    /// The root as the user gave it.
+    pub root: PathBuf,
+    /// The canonicalised root — the basis of the identifier.
+    pub canonical: PathBuf,
+    /// The 16-hex-character identifier.
+    pub id: String,
+    /// Where this workspace's record lives. Outside `root`, always.
+    pub state_dir: PathBuf,
+}
+
+#[derive(Debug)]
+pub enum WorkspaceError {
+    RootMissing(PathBuf),
+    NotADirectory(PathBuf),
+    AlreadyInitialised(PathBuf),
+    NotInitialised(PathBuf),
+    UnknownSchema(String),
+    Io(std::io::Error),
+    Json(String),
+}
+
+impl std::fmt::Display for WorkspaceError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            WorkspaceError::RootMissing(p) => write!(f, "root does not exist: {}", p.display()),
+            WorkspaceError::NotADirectory(p) => {
+                write!(f, "root is not a directory: {}", p.display())
+            }
+            WorkspaceError::AlreadyInitialised(p) => {
+                write!(f, "workspace already initialised: {}", p.display())
+            }
+            WorkspaceError::NotInitialised(p) => {
+                write!(f, "workspace is not initialised: {}", p.display())
+            }
+            WorkspaceError::UnknownSchema(v) => {
+                write!(f, "unknown state schema version: {v}")
+            }
+            WorkspaceError::Io(e) => write!(f, "io: {e}"),
+            WorkspaceError::Json(m) => write!(f, "malformed workspace record: {m}"),
+        }
+    }
+}
+
+impl std::error::Error for WorkspaceError {}
+
+impl From<std::io::Error> for WorkspaceError {
+    fn from(e: std::io::Error) -> Self {
+        WorkspaceError::Io(e)
+    }
+}
+
+/// `$XDG_DATA_HOME/umbral`, or `~/.local/share/umbral`.
+pub fn state_root() -> Result<PathBuf, WorkspaceError> {
+    if let Some(dir) = std::env::var_os("XDG_DATA_HOME") {
+        if !dir.is_empty() {
+            return Ok(PathBuf::from(dir).join("umbral"));
+        }
+    }
+    let home = std::env::var_os("HOME")
+        .ok_or_else(|| WorkspaceError::Io(std::io::Error::other("HOME is not set")))?;
+    Ok(PathBuf::from(home)
+        .join(".local")
+        .join("share")
+        .join("umbral"))
+}
+
+/// The canonical bytes of a root. Raw OS bytes, never lossily converted.
+fn canonical_bytes(canonical: &Path) -> Vec<u8> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::ffi::OsStrExt;
+        canonical.as_os_str().as_bytes().to_vec()
+    }
+    #[cfg(not(unix))]
+    {
+        canonical.to_string_lossy().as_bytes().to_vec()
+    }
+}
+
+/// The 16-hex-character workspace identifier for a canonical root.
+pub fn workspace_id(canonical: &Path) -> String {
+    let digest = blake3::hash(&canonical_bytes(canonical));
+    digest.as_bytes()[..8]
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
+
+pub fn state_dir_for(canonical: &Path) -> Result<PathBuf, WorkspaceError> {
+    Ok(state_root()?.join(format!("ws-{}", workspace_id(canonical))))
+}
+
+fn canonicalise(root: &Path) -> Result<PathBuf, WorkspaceError> {
+    let meta = std::fs::symlink_metadata(root).map_err(|e| match e.kind() {
+        std::io::ErrorKind::NotFound => WorkspaceError::RootMissing(root.to_path_buf()),
+        _ => WorkspaceError::Io(e),
+    })?;
+    if !meta.is_dir() {
+        return Err(WorkspaceError::NotADirectory(root.to_path_buf()));
+    }
+    Ok(std::fs::canonicalize(root)?)
+}
+
+/// The JSON record written at `init`. Deliberately minimal: it exists so `workspaces` can
+/// list what exists, and so `open` can detect a version it does not understand.
+fn render_record(ws: &Workspace, created_at_ns: i64) -> String {
+    let esc = |s: &str| s.replace('\\', "\\\\").replace('"', "\\\"");
+    format!(
+        "{{\n  \"root\": \"{}\",\n  \"canonical\": \"{}\",\n  \"id\": \"{}\",\n  \"created_at_ns\": {},\n  \"tool_version\": \"{}\",\n  \"schema_version\": \"{}\"\n}}\n",
+        esc(&ws.root.to_string_lossy()),
+        esc(&ws.canonical.to_string_lossy()),
+        ws.id,
+        created_at_ns,
+        TOOL_VERSION,
+        SCHEMA_VERSION
+    )
+}
+
+fn json_int_field(text: &str, field: &str) -> Option<i64> {
+    let key = format!("\"{field}\"");
+    let start = text.find(&key)? + key.len();
+    let rest = &text[start..];
+    let colon = rest.find(':')? + 1;
+    let rest = rest[colon..].trim_start();
+    let digits: String = rest
+        .chars()
+        .take_while(|c| c.is_ascii_digit() || *c == '-')
+        .collect();
+    digits.parse().ok()
+}
+
+fn json_string_field(text: &str, field: &str) -> Option<String> {
+    let key = format!("\"{field}\"");
+    let start = text.find(&key)? + key.len();
+    let rest = &text[start..];
+    let colon = rest.find(':')? + 1;
+    let rest = rest[colon..].trim_start();
+    let rest = rest.strip_prefix('"')?;
+    let end = rest.find('"')?;
+    Some(rest[..end].to_string())
+}
+
+/// Create a workspace record. Refuses to overwrite an existing one — re-initialising in
+/// silence would discard a history without saying so.
+pub fn init(root: &Path) -> Result<Workspace, WorkspaceError> {
+    let canonical = canonicalise(root)?;
+    let state_dir = state_dir_for(&canonical)?;
+    if state_dir.join(WORKSPACE_FILE).exists() {
+        return Err(WorkspaceError::AlreadyInitialised(root.to_path_buf()));
+    }
+    std::fs::create_dir_all(&state_dir)?;
+
+    let ws = Workspace {
+        root: root.to_path_buf(),
+        canonical: canonical.clone(),
+        id: workspace_id(&canonical),
+        state_dir,
+    };
+
+    let now_ns = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos() as i64)
+        .unwrap_or(0);
+
+    std::fs::write(
+        ws.state_dir.join(WORKSPACE_FILE),
+        render_record(&ws, now_ns),
+    )?;
+    Ok(ws)
+}
+
+/// Open an existing workspace. Never creates one.
+pub fn open(root: &Path) -> Result<Workspace, WorkspaceError> {
+    let canonical = canonicalise(root)?;
+    let state_dir = state_dir_for(&canonical)?;
+    let record_path = state_dir.join(WORKSPACE_FILE);
+    if !record_path.exists() {
+        return Err(WorkspaceError::NotInitialised(root.to_path_buf()));
+    }
+    let text = std::fs::read_to_string(&record_path)?;
+    let schema = json_string_field(&text, "schema_version")
+        .ok_or_else(|| WorkspaceError::Json("missing schema_version".into()))?;
+    if schema != SCHEMA_VERSION {
+        return Err(WorkspaceError::UnknownSchema(schema));
+    }
+    Ok(Workspace {
+        root: root.to_path_buf(),
+        canonical: canonical.clone(),
+        id: workspace_id(&canonical),
+        state_dir,
+    })
+}
+
+impl Workspace {
+    /// The log file for this workspace.
+    pub fn log_path(&self) -> PathBuf {
+        self.state_dir.join("observations.sqlite")
+    }
+
+    /// The workspace record file.
+    pub fn record_path(&self) -> PathBuf {
+        self.state_dir.join(WORKSPACE_FILE)
+    }
+}
+
+/// A workspace that exists on disk, as reported by `workspaces`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WorkspaceEntry {
+    pub id: String,
+    pub canonical: PathBuf,
+    pub created_at_ns: i64,
+    pub tool_version: String,
+}
+
+/// Every workspace record under the state root. Read-only.
+pub fn list() -> Result<Vec<WorkspaceEntry>, WorkspaceError> {
+    let root = state_root()?;
+    if !root.exists() {
+        return Ok(Vec::new());
+    }
+    let mut out: Vec<WorkspaceEntry> = Vec::new();
+    for entry in std::fs::read_dir(&root)? {
+        let entry = entry?;
+        let name = entry.file_name().to_string_lossy().to_string();
+        let Some(id) = name.strip_prefix("ws-") else {
+            continue;
+        };
+        let record = entry.path().join(WORKSPACE_FILE);
+        if !record.exists() {
+            continue;
+        }
+        let text = std::fs::read_to_string(&record)?;
+        let Some(canonical) = json_string_field(&text, "canonical") else {
+            continue;
+        };
+        let created_at_ns = json_int_field(&text, "created_at_ns").unwrap_or(0);
+        let tool_version = json_string_field(&text, "tool_version").unwrap_or_default();
+        out.push(WorkspaceEntry {
+            id: id.to_string(),
+            canonical: PathBuf::from(canonical),
+            created_at_ns,
+            tool_version,
+        });
+    }
+    out.sort_by(|a, b| a.id.cmp(&b.id));
+    Ok(out)
+}
