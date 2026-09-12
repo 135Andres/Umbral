@@ -8,6 +8,20 @@ A local, read-only tool. You point it at a directory you own, it records what is
 later it tells you what is known, when it was known, and what changed — labelling every
 statement as `observed`, `derived`, `ambiguous` or `unknown`.
 
+The distinction is drawn at **who produced the value**, so a reader can tell from the output
+alone what came from their filesystem and what the tool produced:
+
+- **`observed`** — the filesystem reported it for an entry during this run: `canonical`, `kind`,
+  `size`, `mtime`. Those four, and no others.
+- **`derived`** — the tool produced it: content fingerprints, stability verdicts, run
+  identifiers, the run's own timestamps, workspace identifiers, composed paths, counts, and
+  configuration echoed back.
+- **`ambiguous`** — the evidence permits more than one reading, with the reason named.
+- **`unknown`** — the tool does not have the information.
+
+The set of fields allowed on an `observed` line is a constant (`OBSERVED_FIELDS` in
+`src/report.rs`) and is enforced by a test, so the distinction cannot decay by inattention.
+
 ## What this is NOT
 
 - **Not the product.** This is development code for one version. Nothing here is a selected

@@ -8,7 +8,7 @@ cross-cutting document that would decay.
 
 | Version | Goal | Status | Record |
 |---|---|---|---|
-| v0.1 | A person can point the tool at a directory they own, record what is there, and read back what is known, when it was known, and what changed. | Reader protocol executed; **A1 not satisfied**; two findings await an owner disposition. **Not declared complete** | [`v0.1.md`](v0.1.md) |
+| v0.1 | A person can point the tool at a directory they own, record what is there, and read back what is known, when it was known, and what changed. | Reader protocol executed; **A1 not satisfied**; one finding corrected, one fixed by amending the protocol; a second run is pending. **Not declared complete** | [`v0.1.md`](v0.1.md) |
 
 ## What "status" means here
 
