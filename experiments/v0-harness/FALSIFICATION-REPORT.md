@@ -59,6 +59,20 @@ end-to-end. This also means the increment-6 report's list of generated operation
 ("delete file / directory") was inaccurate: directory deletion was specified but not
 generated.
 
+Coverage, stated precisely (three different things, not one):
+
+  - **Modelled by the harness** (variants with an apply arm and a precondition): create
+    file, write, append, truncate, rename file, rename directory, delete file, delete
+    directory, recreate, atomic replace, create symlink, remove symlink, create hard link,
+    remove hard link. Fourteen operations.
+  - **Actually produced by the property-test strategy**: all of the above **except delete
+    directory**. The strategy never emits `Op::DeleteDir`; clippy reports it as never
+    constructed, which is how the gap was found.
+  - **Exercised end-to-end against a real filesystem by the generated sequences**: the
+    thirteen operations above, plus rename, delete-and-recreate, atomic save, hard-link
+    creation and symlink creation/removal as targeted tests. Directory deletion is covered
+    by no test in V0.
+
 Disposition: **recorded, not patched.** V0 is frozen; adding the generator case would
 change the evidence rather than describe it. The gap is a limitation of V0's falsification
 coverage, not a falsified property — nothing in the results is retracted, but SC-1's claim

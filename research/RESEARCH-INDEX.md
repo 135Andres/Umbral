@@ -17,15 +17,17 @@ AUTHORITY STATUS OF THE WHOLE CORPUS
     OPEN-QUESTIONS.md and ARCHITECTURE-HYPOTHESES.md).
 
 -------------------------------------------------------------------------------
-S0  Project mandate + workspace bootstrap brief + PROJECT MASTER CONTEXT
+S0  Project mandate + workspace bootstrap brief + Master Context
     Provides: the product framing (filesystem-first, local-first, AI-native, no mandated
     taxonomy), the classification system in use here, the epistemic rules, and the
     founding product charter.
-    RECOVERY (2026-09-10 audit): the full PROJECT MASTER CONTEXT was found in Hermes
-    session history and archived verbatim at research/sources/PROJECT-MASTER-CONTEXT.md
-    (recovered from the project's original working session (2026-09-10); the raw agent session identifier is deliberately not published). The earlier note that it
-    existed only as a theme index is obsolete. MC is now the primary user-intent source
-    for this repository (cited as "MC §n" throughout the project files).
+    RECOVERY (2026-09-10 audit): the full Master Context was recovered from the project's
+    original working session (2026-09-10) and archived verbatim. It is PRIVATE — the
+    owner's founding charter — and is deliberately not part of this repository, so its
+    `MC §n` citations cannot be checked here. The earlier note that it existed only as a
+    theme index is obsolete. MC is the primary user-intent source for this repository
+    (cited as "MC §n" throughout the project files); the canonical documents are its public
+    representation.
     Status: USER INTENT for the product framing and epistemic rules; MC statements are
     user-owned vision whose architecture-level items remain hypotheses by MC's own
     declaration (§16, §42, §52).
@@ -142,8 +144,9 @@ S11 Desconstrucción Crítica y Validación Adversarial (adversarial critique)
 -------------------------------------------------------------------------------
 GAPS IN THE CORPUS
 -------------------------------------------------------------------------------
-  1  [RESOLVED 2026-09-10] The master context document was recovered from session
-     history and archived at research/sources/PROJECT-MASTER-CONTEXT.md.
+  1  [RESOLVED 2026-09-10] The master context document was recovered from the project's
+     original working session and archived verbatim. It is private and is not part of this
+     repository (see S0).
   2  S1-S11 full texts are NOT archived in this repository. They exist verbatim in the
      conversation history of the session that produced this repository (the ingestion
      session) and can be archived under research/sources/ on request. Until then,

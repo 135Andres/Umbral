@@ -108,7 +108,8 @@ authoritative.
 DT1 CHARTER (source of user intent)
    Purpose: the user's own founding statements. A: USER. L: immutable (verbatim archive).
    W: user only. AI: yes, as USER INTENT — never as an architecture decision.
-   Home: research/sources/. Current instance: PROJECT-MASTER-CONTEXT.md (MC §n).
+   Home: research/sources/ — private; not part of the public edition. Current instance:
+   the owner's founding charter, cited as `MC §n`.
 
 DT2 CANONICAL KNOWLEDGE (current truth about the product)
    Purpose: the smallest set of documents that state what Umbral is, must hold, needs, and

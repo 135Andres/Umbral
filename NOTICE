@@ -1,0 +1,8 @@
+Umbral
+Copyright 2026 Andrés Félix
+
+This repository is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It contains no third-party source code. The frozen V0 prototype in fsp-check/ declares its
+dependencies in fsp-check/Cargo.toml and fsp-check/Cargo.lock; those crates are not
+distributed here and carry their own licenses.

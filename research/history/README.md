@@ -11,11 +11,14 @@ reported that frozen records sitting beside living research artifacts, distingui
 by a status line, let them reach pre-recovery answers (DOC-FRICTION-010/012). Making
 history a location removes the need to read a header before trusting a file.
 
-Contents:
-  INGEST-NOTES.md ................ the first bootstrap's ingestion record (pre-Master
-                                   Context; its stale statements are enumerated in-file)
-  AUDIT-2026-09-10.md ............ first project-intelligence audit + documentation audit
-  STAGE-2026-09-10-exp1-dogfood.md  drift check, decisions required, next action for the
-                                   EXP-1 / dogfood stage
+Contents: one file per stage, named `STAGE-<date><suffix>-<topic>.md`, plus the two
+audit records (`INGEST-NOTES.md`, `AUDIT-2026-09-10.md`). The set is listed by the
+filesystem, not here — an enumeration in this file would drift out of date, which is the
+defect this directory exists to prevent.
+
+A note for readers: some records here describe material that was in the working repository
+at the time but is **not part of the public edition** — most notably the owner's founding
+charter, which these records name and cite. Their statements were true when written and are
+left as written; the charter itself is private and its text is not published.
 
 Living research artifacts stay in research/ (RESEARCH-INDEX, DOC-ARCHITECTURE-RESEARCH).

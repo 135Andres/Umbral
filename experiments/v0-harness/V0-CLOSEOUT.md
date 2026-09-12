@@ -243,5 +243,11 @@ the V1 handoff rather than patched into the frozen prototype.
 
 --------------------------------------------------------------------------------
 Provenance: all claims in this record cite named tests, benchmark records, or the
-falsification report in this directory. Commits: 6887708 (scan) → 05179db (identity) →
-d7ca7da (hash) → aa3e80f (store) → f38963d (reconcile) → 1f6d13f (harness) → this record.
+falsification report in this directory. The work was committed as six increments in order —
+scan → identity → hash → store → reconcile → harness — followed by this closeout record.
+
+Commit hashes are deliberately not cited: the repository's history was rewritten once,
+before its first public release, to remove a document that is not part of the public
+edition (see README, "Naming and sources"). That rewrite changed every commit hash, so any
+hash written here would have been wrong from the day it was published. The increment order
+and their contents are unchanged and verifiable in the history.
