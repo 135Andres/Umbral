@@ -172,3 +172,16 @@ interpretation (Unchanged entries are statements of sameness, not changes), SC-5
 evidence recorded, question remains OPEN. Benchmarks also observed WAL growth exceeding
 the DB file without checkpointing (accepted V0 limitation, not a decision input).
 68/68 tests green; clippy 0; fmt ok.
+
+--- AMENDMENT 9: V0 formal closeout and scope freeze (user mandate, same day) ---
+experiments/v0-harness/V0-CLOSEOUT.md: final evidence audit (SC-1 PASS, SC-2 PASS,
+SC-3 PASS process-kill scope, SC-4 PASS with recorded interpretation, SC-5 PARTIAL as
+`storage/evidence exists, reader-facing reconstruction surface absent`), non-
+anthropomorphic formal scope statement (observed/recorded/derived/inferred vocabulary),
+explicit IN SCOPE / OUT OF SCOPE freeze, Q25 kept OPEN with what-is-known list (WAL
+growth explicitly NOT read as JSONL need), SC-5 registered as observability gap for V1,
+methodology lesson from the four harness corrections preserved, V1 handoff input lists
+(must-resolve / observability / later), final red-team result: NO NEW BLOCKER FOUND.
+V0 STATUS: PARTIAL — core falsified without implementation failure in tested scope;
+PARTIAL derives exclusively from SC-5, which is outside the V0 functional mandate.
+No functional code modified. V0 frozen.

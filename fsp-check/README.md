@@ -25,6 +25,12 @@ tested** (2026-09-11).
 Increment 6 — HARNESS (independent oracle, generated sequences, falsification,
 benchmarks): **done** (2026-09-11). See `../experiments/v0-harness/`.
 
+V0 CLOSED AND FROZEN (2026-09-11): STATUS PARTIAL — core demonstrated within declared
+scope, no implementation failure produced by falsification; SC-5 (reader surface) is the
+recorded gap, handed to V1. Formal scope statement and freeze:
+`../experiments/v0-harness/V0-CLOSEOUT.md`. No further functional changes to this crate
+absent contradicting evidence.
+
 - `cargo test` 68/68 pass · clippy clean · fmt clean.
 - `examples/bench.rs`: benchmarks (evidence only, no thresholds);
   `tests/harness_falsification.rs`: independent ReferenceState oracle (models

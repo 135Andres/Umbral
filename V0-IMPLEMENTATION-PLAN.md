@@ -30,10 +30,13 @@ FSP can:
 
 fsp-check is an EXPERIMENTAL BASE, not FSP. It implements no product surface.
 
-PROJECT STATE (2026-09-11, after user confirmation of §8/§9): READY FOR V0
-IMPLEMENTATION — documentally prepared to begin. This means nothing more: FSP is not
-designed, no final architecture or full stack is decided, no hypothesis is demonstrated,
-Project Reality is not resolved.
+PROJECT STATE (2026-09-11, closeout): **V0 CLOSED AND FROZEN — STATUS: PARTIAL.**
+All six increments implemented and falsified through an independent oracle; final
+criteria evaluation §15; formal scope statement, freeze lists, Q25 state, SC-5 gap
+record and V1 handoff in experiments/v0-harness/V0-CLOSEOUT.md. V0 is frozen except
+where new evidence contradicts an already-made claim. As always: FSP is not designed,
+no final architecture or full stack is decided, no hypothesis is demonstrated, Project
+Reality is not resolved.
 
 ================================================================================
 2. SCOPE
