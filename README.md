@@ -132,8 +132,10 @@ Rules that follow from it:
   agents that maintain this repository.
 - **Research does not override the owner.** A recommendation stays a recommendation.
 - **Conflicts are preserved**, never silently resolved.
-- **Every claim cites a source**: `MC §n`, `UD-nnn`, `A-n`, `R-n`, `C-n`, `P-n`, `H-n`,
-  `Q-n`, `T-n`, `EXP-n`. Unidentifiable origin is marked `UNKNOWN`.
+- **Every claim cites a source** — an ID from one of the project's namespaces, or an
+  explicit `UNKNOWN` where the origin cannot be identified. Which namespaces exist, and
+  which document owns each one, are recorded in one place:
+  [`docs/IDENTIFIERS.md`](docs/IDENTIFIERS.md).
 - **Evidence is kept when it is unflattering.** Negative results, rejected hypotheses and
   superseded decisions stay in the record.
 
