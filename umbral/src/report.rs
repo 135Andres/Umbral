@@ -388,6 +388,97 @@ fn observed_path(o: &Observation) -> ObservedPath {
     }
 }
 
+// ---------------------------------------------------------------------------------------
+// Rendering a path as text.
+//
+// A path is a byte string, not text, and on Linux it need not be valid UTF-8. The output is
+// text, so such a path cannot be shown literally. It is rendered with a defined, reversible
+// escape rather than being refused or mangled:
+//
+//   - a byte that is not part of a valid UTF-8 sequence becomes `\xNN` (uppercase hex);
+//   - a literal backslash becomes `\\`, so an escape can never be mistaken for a name that
+//     happens to contain the same characters.
+//
+// When either escape fires, `escaped` is true and the caller emits `path_notes`, so a reader
+// is never left believing the rendered form is what is on disk. For a path that is valid
+// UTF-8 and contains no backslash the rendering is the path itself and the output is
+// unchanged.
+// ---------------------------------------------------------------------------------------
+
+/// A path rendered for text output, with whether the rendering is the path itself.
+#[derive(Debug, Clone)]
+pub struct RenderedPath {
+    pub text: String,
+    pub escaped: bool,
+}
+
+/// Render a path as text. Never fails: a path that is not valid UTF-8 is escaped, not refused.
+pub fn render_path(p: &Path) -> RenderedPath {
+    let bytes = path_key(p);
+    match std::str::from_utf8(&bytes) {
+        Ok(s) if !s.contains('\\') => RenderedPath {
+            text: s.to_string(),
+            escaped: false,
+        },
+        _ => RenderedPath {
+            text: escape_path_bytes(&bytes),
+            escaped: true,
+        },
+    }
+}
+
+/// The note that records an escaped rendering. `None` when the path rendered literally.
+pub fn path_notes(pairs: &[(&str, &RenderedPath)]) -> Vec<Line> {
+    pairs
+        .iter()
+        .filter(|(_, r)| r.escaped)
+        .map(|(field, _)| {
+            Line::derived(format!(
+                "{field}-encoding=escaped  reason=path-is-not-valid-utf8"
+            ))
+        })
+        .collect()
+}
+
+/// Escape every byte that cannot stand in text, decoding the sequences that can.
+fn escape_path_bytes(bytes: &[u8]) -> String {
+    let mut out = String::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        let b = bytes[i];
+        if b == b'\\' {
+            out.push_str("\\\\");
+            i += 1;
+            continue;
+        }
+        if b < 0x80 {
+            out.push(b as char);
+            i += 1;
+            continue;
+        }
+        // Decode exactly one valid multi-byte sequence, or escape the single byte. `from_utf8`
+        // on the slice is the only decoder used, so this cannot disagree with the standard.
+        let need = match b {
+            0xF0..=0xF7 => 4,
+            0xE0..=0xEF => 3,
+            0xC0..=0xDF => 2,
+            _ => 0,
+        };
+        if need > 1 && i + need <= bytes.len() {
+            if let Ok(s) = std::str::from_utf8(&bytes[i..i + need]) {
+                if s.chars().count() == 1 {
+                    out.push_str(s);
+                    i += need;
+                    continue;
+                }
+            }
+        }
+        out.push_str(&format!("\\x{b:02X}"));
+        i += 1;
+    }
+    out
+}
+
 fn observation_set(
     log: &dyn ObservationLog,
     run: &RunMeta,
@@ -437,9 +528,11 @@ pub fn observe_summary(
     // Everything here describes the run the tool just performed, so all of it is the tool's
     // own output. The one exception is the canonical root: that is the filesystem's answer
     // about where the observed path really is.
-    vec![
-        Line::observed(format!("canonical={}", ws.canonical.display())),
-        Line::derived(format!("run={}  root={}", run.id, ws.root.display())),
+    let canonical = render_path(&ws.canonical);
+    let root = render_path(&ws.root);
+    let mut out = vec![
+        Line::observed(format!("canonical={}", canonical.text)),
+        Line::derived(format!("run={}  root={}", run.id, root.text)),
         Line::derived(format!("run={}  entries={}", run.id, run.entries)),
         Line::derived(format!("run={}  content-verified={}", run.id, verified)),
         Line::derived(format!(
@@ -453,7 +546,9 @@ pub fn observe_summary(
             format_unix_ns(run.finished_at_ns)
         )),
         Line::derived(format!("run={}  complete={}", run.id, run.complete())),
-    ]
+    ];
+    out.extend(path_notes(&[("canonical", &canonical), ("root", &root)]));
+    out
 }
 
 // ---------------------------------------------------------------------------------------
@@ -465,12 +560,12 @@ pub fn status(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, cra
     // The canonical root is the filesystem's answer; the workspace identifier is a
     // fingerprint the tool computed over it, and the state path is composed from the data
     // home plus that identifier. Only the first is observed.
-    out.push(Line::observed(format!(
-        "canonical={}",
-        ws.canonical.display()
-    )));
-    out.push(Line::derived(format!("root={}", ws.root.display())));
+    let canonical = render_path(&ws.canonical);
+    let root = render_path(&ws.root);
+    out.push(Line::observed(format!("canonical={}", canonical.text)));
+    out.push(Line::derived(format!("root={}", root.text)));
     out.push(Line::derived(format!("workspace-id={}", ws.id)));
+    out.extend(path_notes(&[("canonical", &canonical), ("root", &root)]));
 
     let Some(run) = log.latest_run()? else {
         out.push(Line::unknown("observations=none  reason=no-run-recorded"));
@@ -599,16 +694,18 @@ pub fn changes(
         .iter()
         .filter(|m| m.kind != MutationKind::Unchanged)
     {
-        out.push(mutation_line(m));
+        out.extend(mutation_line(m));
     }
 
     Ok(out)
 }
 
-fn mutation_line(m: &Mutation) -> Line {
-    let mut parts = vec![format!("path={}", m.path.display())];
-    if let Some(old) = &m.old_path {
-        parts.push(format!("old-path={}", old.display()));
+fn mutation_line(m: &Mutation) -> Vec<Line> {
+    let path = render_path(&m.path);
+    let old = m.old_path.as_ref().map(|p| render_path(p));
+    let mut parts = vec![format!("path={}", path.text)];
+    if let Some(o) = &old {
+        parts.push(format!("old-path={}", o.text));
     }
     if let Some(b) = m.evidence.content_changed {
         parts.push(format!("content-changed={b}"));
@@ -621,10 +718,17 @@ fn mutation_line(m: &Mutation) -> Line {
     }
     parts.push(format!("scan-complete={}", m.evidence.complete_scan));
     let text = parts.join("  ");
-    match m.kind {
+    let line = match m.kind {
         MutationKind::Ambiguous => Line::ambiguous(format!("{}  {text}", m.kind.as_str())),
         _ => Line::derived(format!("{}  {text}", m.kind.as_str())),
+    };
+    let mut notes = path_notes(&[("path", &path)]);
+    if let Some(o) = &old {
+        notes.extend(path_notes(&[("old-path", o)]));
     }
+    let mut out = vec![line];
+    out.extend(notes);
+    out
 }
 
 // ---------------------------------------------------------------------------------------
@@ -638,11 +742,14 @@ pub fn show(
 ) -> Result<Vec<Line>, crate::log::LogError> {
     let _ = ws;
     let obs = log.observations_for_path(rel)?;
+    let rel_rendered = render_path(rel);
     if obs.is_empty() {
-        return Ok(vec![Line::unknown(format!(
+        let mut out = vec![Line::unknown(format!(
             "path={}  reason=not-observed-in-any-run",
-            rel.display()
-        ))]);
+            rel_rendered.text
+        ))];
+        out.extend(path_notes(&[("path", &rel_rendered)]));
+        return Ok(out);
     }
 
     let runs = log.runs()?;
@@ -720,11 +827,12 @@ pub fn show(
         let set_b = ObservationSet::new(vec![observed_path(b)], complete);
         let rec = reconcile(&set_a, &set_b);
         for m in &rec.mutations {
-            let line = mutation_line(m);
-            out.push(Line {
-                label: line.label,
-                text: format!("run={} -> {}  {}", a.run_id, b.run_id, line.text),
-            });
+            for line in mutation_line(m) {
+                out.push(Line {
+                    label: line.label,
+                    text: format!("run={} -> {}  {}", a.run_id, b.run_id, line.text),
+                });
+            }
         }
     }
 
@@ -744,7 +852,9 @@ pub fn check(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, crat
     let mut out = Vec::new();
     // The state path is composed from the data home and the workspace identifier, and the
     // counts are aggregates over the log. Both are the tool's own output.
-    out.push(Line::derived(format!("state={}", ws.log_path().display())));
+    let state = render_path(&ws.log_path());
+    out.push(Line::derived(format!("state={}", state.text)));
+    out.extend(path_notes(&[("state", &state)]));
 
     let (runs_n, obs_n) = log.counts()?;
     out.push(Line::derived(format!(

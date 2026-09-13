@@ -157,6 +157,11 @@ fn an_unreadable_file_is_recorded_as_not_verified() {
 
 // ---------------------------------------------------------------------------------------
 // Non-UTF-8 paths
+//
+// A path on Linux is a byte string and need not be valid UTF-8. These tests pass such paths
+// to the binary as OS-native arguments, which is the only way to exercise them: `&str`
+// cannot carry one, and converting the path to `&str` before passing it tests a different
+// input than the one the test names.
 // ---------------------------------------------------------------------------------------
 
 #[cfg(unix)]
@@ -169,19 +174,135 @@ fn non_utf8_paths_round_trip_through_the_cli() {
     let name = OsStr::from_bytes(b"caf\xe9-\xff.txt");
     fs::write(s.root().join(name), "bytes").unwrap();
 
-    s.init_and_observe();
-    let r = s.root().to_string_lossy().to_string();
+    let root = s.root().as_os_str();
+    s.init_and_observe_os(root);
 
-    let status = s.run_ok(&["status", r.as_str()]);
+    let status = s.run_os_ok(&[OsStr::new("status"), root]);
     assert!(status.contains("files=1"), "got:\n{status}");
     assert_all_labelled(&status);
 
     // Looking it up with the same raw bytes finds it.
-    let out = s.run(&["show", r.as_str(), name.to_str().unwrap_or_default()]);
-    // The lossy rendering may not match the stored bytes, so either it is found or it is
-    // honestly reported as not found — never silently reported as a different file.
+    //
+    // This is the assertion the previous version of this test did not make. It converted the
+    // name with `to_str().unwrap_or_default()`, which for this name yields `None` and so
+    // silently substituted the empty string — the test then passed while `show` panicked on
+    // the path it claimed to cover (F-V01-5). The file exists and was observed, so the answer
+    // must be its history, not "never observed".
+    let out = s.run_os(&[OsStr::new("show"), root, name]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "show must not fail on a path that is not valid UTF-8\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&out.stdout),
+        String::from_utf8_lossy(&out.stderr)
+    );
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert_all_labelled(&stdout);
+    assert!(
+        !stdout.contains("not-observed-in-any-run"),
+        "the file was observed, so it must be found:\n{stdout}"
+    );
+    assert!(
+        stdout.contains("hash="),
+        "the observation must carry content evidence:\n{stdout}"
+    );
+}
+
+/// The empty path is a real input, and it is not the same input as a non-UTF-8 path. Keeping
+/// them apart is the point of the test above.
+#[cfg(unix)]
+#[test]
+fn the_empty_path_is_answered_and_is_not_the_non_utf8_case() {
+    use std::ffi::OsStr;
+
+    let s = Sandbox::new();
+    s.write("a.txt", "bytes");
+    let root = s.root().as_os_str();
+    s.init_and_observe_os(root);
+
+    let out = s.run_os_ok(&[OsStr::new("show"), root, OsStr::new("")]);
+    assert!(
+        out.contains("not-observed-in-any-run"),
+        "an empty path names nothing, and must be reported as never observed:\n{out}"
+    );
+    assert_all_labelled(&out);
+}
+
+/// A workspace whose root itself is not valid UTF-8: init, observe, status, show and check
+/// all work, and the rendering is escaped rather than mangled.
+#[cfg(unix)]
+#[test]
+fn a_non_utf8_root_works_end_to_end() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+
+    let s = Sandbox::new();
+    let root_name = OsStr::from_bytes(b"ws-\xff\xfe");
+    let root = s.root().join(root_name);
+    fs::create_dir(&root).unwrap();
+    fs::write(root.join("f.txt"), "content").unwrap();
+    let root = root.as_os_str();
+
+    let init = s.run_os_ok(&[OsStr::new("init"), root]);
+    assert_all_labelled(&init);
+    assert!(
+        init.contains("\\xFF\\xFE"),
+        "the root must be rendered with a defined escape, not dropped:\n{init}"
+    );
+    assert!(
+        init.contains("path-is-not-valid-utf8"),
+        "the reader must be told the rendering is not the literal path:\n{init}"
+    );
+
+    let observe = s.run_os_ok(&[OsStr::new("observe"), root]);
+    assert!(observe.contains("entries=1"), "got:\n{observe}");
+    assert_all_labelled(&observe);
+
+    let status = s.run_os_ok(&[OsStr::new("status"), root]);
+    assert!(status.contains("files=1"), "got:\n{status}");
+    assert_all_labelled(&status);
+
+    let check = s.run_os_ok(&[OsStr::new("check"), root]);
+    assert!(check.contains("consistent=true"), "got:\n{check}");
+    assert_all_labelled(&check);
+
+    // And a path inside that root can still be named and read.
+    let show = s.run_os_ok(&[OsStr::new("show"), root, OsStr::new("f.txt")]);
+    assert!(show.contains("hash="), "got:\n{show}");
+    assert_all_labelled(&show);
+}
+
+/// A change involving a non-UTF-8 path is reported, with the path escaped and the escape
+/// declared.
+#[cfg(unix)]
+#[test]
+fn changes_through_a_non_utf8_path_are_reported_and_escaped() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+
+    let s = Sandbox::new();
+    let name = OsStr::from_bytes(b"odd-\xff.txt");
+    fs::write(s.root().join(name), "before").unwrap();
+    let root = s.root().as_os_str();
+    s.init_and_observe_os(root);
+
+    fs::write(s.root().join(name), "after, longer").unwrap();
+    s.run_os_ok(&[OsStr::new("observe"), root]);
+
+    let changes = s.run_os_ok(&[OsStr::new("changes"), root]);
+    assert_all_labelled(&changes);
+    assert!(
+        changes.contains("modified") && changes.contains("content-changed=true"),
+        "the modification must be reported:\n{changes}"
+    );
+    assert!(
+        changes.contains("odd-\\xFF.txt"),
+        "the path must be rendered with a defined escape:\n{changes}"
+    );
+    assert!(
+        changes.contains("path-encoding=escaped"),
+        "the escape must be declared:\n{changes}"
+    );
 }
 
 // ---------------------------------------------------------------------------------------
