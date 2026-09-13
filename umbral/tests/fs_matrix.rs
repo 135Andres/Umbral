@@ -309,55 +309,104 @@ fn changes_through_a_non_utf8_path_are_reported_and_escaped() {
 // Inode reuse: RECORDED, not asserted.
 // ---------------------------------------------------------------------------------------
 
-/// The F-6 scenario against a real filesystem. This test **records** whether the freed
-/// `dev`+`ino` was handed to the new file. It asserts only the properties that hold either
-/// way, so it is portable across filesystems — which is exactly what the original V0
-/// assertion failed to be.
+/// The F-6 scenario against a real filesystem, driven end to end through the CLI.
+///
+/// The mutation happens **between two real observations**, because `changes` compares two
+/// recorded runs and nothing else. An earlier version of this test performed the mutation
+/// before the only observation it took, so `changes` correctly answered
+/// `comparison-not-possible reason=only-one-run` and the reuse branch below could never have
+/// passed — on any filesystem. That defect only surfaced on ext4, where the branch is taken.
+///
+/// Whether the filesystem hands the freed `dev`+`ino` to the new file is **recorded, not
+/// assumed**: the test reads the identity either way and asserts the property that holds in
+/// both branches. The branch-specific assertion is therefore portable, which is exactly what
+/// the original V0 assertion failed to be.
 #[test]
 fn inode_reuse_is_recorded_not_asserted() {
     use umbral::scan::scan;
 
     let s = Sandbox::new();
     s.write("bye.txt", "same content");
+    let r = s.root().to_string_lossy().to_string();
+
+    // Observation 1: the BEFORE state, recorded by the product.
+    s.run_ok(&["init", r.as_str()]);
+    s.run_ok(&["observe", r.as_str()]);
+
+    // Probe: what identity does bye.txt carry now? Read-only, so it cannot disturb the run.
     let before = scan(s.root()).unwrap();
-    let first = before
+    let first_id = before
         .entries
         .iter()
         .find(|e| e.path == std::path::Path::new("bye.txt"))
-        .unwrap();
-    let first_id = (first.dev, first.ino);
+        .map(|e| (e.dev, e.ino))
+        .expect("bye.txt must have been observed");
 
+    // The mutation: delete the file, create a different path with byte-identical contents.
     fs::remove_file(s.root().join("bye.txt")).unwrap();
     s.write("new.txt", "same content");
+
     let after = scan(s.root()).unwrap();
-    let second = after
+    let second_id = after
         .entries
         .iter()
         .find(|e| e.path == std::path::Path::new("new.txt"))
-        .unwrap();
-    let second_id = (second.dev, second.ino);
-
+        .map(|e| (e.dev, e.ino))
+        .expect("new.txt must have been observed");
     let reused = first_id == second_id;
     // Recorded as evidence, visible in the test output with `--nocapture`.
     println!("inode-reuse probe: bye.txt={first_id:?} new.txt={second_id:?} reused={reused}");
 
-    // Whatever the filesystem did, the end-to-end behaviour must be honest.
-    s.run_ok(&["init", &s.root().to_string_lossy()]);
-    s.run_ok(&["observe", &s.root().to_string_lossy()]);
-    let r = s.root().to_string_lossy().to_string();
+    // Observation 2: the AFTER state.
+    s.run_ok(&["observe", r.as_str()]);
+
     let changes = s.run_ok(&["changes", r.as_str()]);
     assert_all_labelled(&changes);
-    // Nothing was invented: the tool either reports the disappearance once, or reports that
-    // the evidence does not settle it.
-    let vanished = changes.matches("bye.txt").count();
+
+    // Two runs are recorded, so a comparison must actually have happened. Without this the
+    // assertions below could be satisfied by an answer that compares nothing.
     assert!(
-        vanished <= 1,
-        "bye.txt must be accounted for at most once:\n{changes}"
+        changes.contains("compared") && !changes.contains("comparison-not-possible"),
+        "two runs were observed, so `changes` must compare them:\n{changes}"
     );
+
+    // The property that holds in BOTH branches: the disappearance of bye.txt is accounted for
+    // exactly once — either as a deletion, or as the origin of a rename. Never both, which
+    // would double-count one event, and never neither, which would lose it.
+    let as_deleted = changes
+        .lines()
+        .any(|l| l.contains("deleted") && l.contains("path=bye.txt"));
+    let as_renamed_from = changes.lines().any(|l| l.contains("old-path=bye.txt"));
+    assert!(
+        as_deleted ^ as_renamed_from,
+        "bye.txt must be accounted for exactly once, as deleted XOR as a rename origin\n\
+         deleted={as_deleted} renamed_from={as_renamed_from}\n{changes}"
+    );
+
     if reused {
+        // The same physical object now sits at a different path. Reporting a deletion would
+        // mean inventing one from the path change alone.
         assert!(
-            changes.contains("renamed-or-moved") || changes.contains("ambiguous"),
-            "with a reused identity the tool must not invent a deletion:\n{changes}"
+            as_renamed_from,
+            "with a reused identity the object survives at new.txt, so bye.txt is its \
+             rename origin and is not deleted:\n{changes}"
+        );
+        assert!(
+            !as_deleted,
+            "the tool must not invent a deletion from a reused identity:\n{changes}"
+        );
+    } else {
+        // Nothing ties the two paths together, so the disappearance is a deletion and the new
+        // path is a creation — and neither may be reported as a rename.
+        assert!(
+            as_deleted,
+            "without reuse nothing links the two paths, so bye.txt is deleted:\n{changes}"
+        );
+        assert!(
+            changes
+                .lines()
+                .any(|l| l.contains("created") && l.contains("path=new.txt")),
+            "new.txt is genuinely new without reuse:\n{changes}"
         );
     }
 }
