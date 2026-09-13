@@ -1,13 +1,16 @@
 # EXP-AI-01 — independent reading of a non-UTF-8 path
 
-Status: **PREPARED, NOT RUN.** No participant has received this. The owner delivers it.
+Status: **CLOSED** (2026-09-13) — `PASS WITH DOCUMENTED INSTRUMENT DEFECT`. Two independent
+runs executed and compared; see §8 and [`COMPARISON-AI-01-AI-02.md`](COMPARISON-AI-01-AI-02.md).
+`material-v1` is frozen as this experiment's historical record.
 
 - Mode: **SEMI-BLIND** (objective given, conclusion withheld)
 - Material: [`material.txt`](material.txt) — `exp-ai-01/material-v1`, 2669 bytes,
   sha256 `8ad75576edad4d6c5da84d2c396a1b56d91c8902fe7992d7ba19e202155f2678`
 - Generator: [`capture_material.py`](capture_material.py)
 - Package for delivery: [`prompt-to-participant.md`](prompt-to-participant.md)
-- Evidence class this will produce: **AI-INDEPENDENT** (`UD-015`). It cannot satisfy A1.
+- Run 02 plan (pre-registered): [`plan-run-02.md`](plan-run-02.md)
+- Evidence class produced: **AI-INDEPENDENT** (`UD-015`). It cannot satisfy A1.
 
 ## 1. WHY THIS ONE FIRST
 
@@ -74,7 +77,7 @@ is a different measurement from "what does this output say".
   distinction is recorded here so a later reader does not mistake a clean result for evidence
   about the old defect.
 
-## 6. HOW THE RESULT WILL BE EVALUATED
+## 6. HOW RESULTS ARE EVALUATED
 
 Per question, against the material, not against consensus:
 
@@ -87,36 +90,70 @@ Per question, against the material, not against consensus:
 6. what the answer establishes about legibility, and what it does not;
 7. what remains open.
 
-Divergence between participants, if more than one runs this, is analysed as its own object:
-same material and incompatible readings means something is under-determined, and that is a
-finding about the surface or about the prompt — not an average to be taken.
+Divergence between participants is analysed as its own object: same material and incompatible
+readings means something is under-determined, and that is a finding about the surface or about
+the prompt — not an average to be taken. Applied to the two runs, it produced exactly one
+divergence, on Q2, which traced to this package's material rather than to the tool.
 
 No majority rule. A single participant contradicting the expected reading is not thereby
 wrong, and two agreeing is not thereby right.
 
 ## 7. WHAT A RESULT COULD AND COULD NOT SUPPORT
 
-Could support: that the output is (or is not) readable by a reader with no prior knowledge,
-for the specific things asked; discovery of ambiguities; an unblocking input for a technical
-decision under `UD-015`'s A1-AI.
+Supported: that the output is readable, by a reader with no prior knowledge, for the specific
+things asked; the discovery of ambiguities; an input to a technical decision under `UD-015`'s
+A1-AI.
 
-Could not support: any claim about human legibility; satisfaction of A1; validation of the
-tool's correctness; anything about v0.2, which is not implemented.
+Not supported: any claim about human legibility; satisfaction of A1; validation of the tool's
+correctness; anything about v0.2, which is not implemented.
 
-## 8. STATE
+## 8. STATE — CLOSED
+
+**EXP-AI-01 is closed: `PASS WITH DOCUMENTED INSTRUMENT DEFECT`.**
 
 - No participant has been contacted by Hermes. Hermes does not contact, execute or select one.
-- **One response received** (2026-09-13), delivered by the owner and analysed:
-  [`EVIDENCE-AI-01.md`](EVIDENCE-AI-01.md), raw response in
-  [`response-01-external-ai.txt`](response-01-external-ai.txt).
-- Result: the participant refused to decode the escaped name and named the missing
-  specification, which is the behaviour the experiment was built to detect. It also surfaced
-  two legibility findings (`F-AI01-1`, `F-AI01-2`) and three defects of this package's own
-  material (`P-AI01-1`, `P-AI01-2`, `P-AI01-3`). The defects are the experiment's, not the
-  participant's, and not the product's.
-- Classified **AI-INDEPENDENT / A1-AI**. It does not satisfy A1 and is not presented as doing
+  The owner delivered each run personally (**author-attested delivery condition**, §11 of the
+  comparison — an attestation, not an independent technical verification).
+- **Two responses received and analysed**, each with its raw text preserved verbatim:
+  - Run 01 → [`EVIDENCE-AI-01.md`](EVIDENCE-AI-01.md) · [`response-01-external-ai.txt`](response-01-external-ai.txt)
+  - Run 02 → [`EVIDENCE-AI-02.md`](EVIDENCE-AI-02.md) · [`response-02-external-ai.txt`](response-02-external-ai.txt)
+- **Comparison:** [`COMPARISON-AI-01-AI-02.md`](COMPARISON-AI-01-AI-02.md) — 7 of 8 questions
+  reproduced, 1 partially reproduced, 0 divergent. Classification `AI-CROSS-CHECK`; the
+  comparator is **not blind** and says so.
+- **Result:** two independent readers converged on the central epistemic signals — refusing to
+  decode `\xFF\xFE` while naming the missing decoding specification (Q5), and separating the
+  tool's assertion of completeness from what a reader can independently establish (Q7). The one
+  divergence (Q2) traces to this package's own material, not to the participants and not to the
+  tool: tool output and harness scaffolding were presented in the same captured block.
+- **Findings, none acted on:** `F-AI01-1`, `F-AI01-2` (product legibility, already allocated in
+  this namespace); `P-AI01-1`, `P-AI01-2`, `P-AI01-3` (defects of this package, the author's).
+- **Classified AI-INDEPENDENT / A1-AI.** It does not satisfy A1 and is not presented as doing
   so. See `UD-015`.
-- Recommended next step: one more participant on `material-v1` **unchanged**, so the
-  replication is a replication; then revise the package to `material-v2`. The defects to fix
-  are recorded in `EVIDENCE-AI-01.md` §12.
-- Nothing here has been implemented, committed or pushed.
+- **`material-v1` is frozen** as the historical record of this experiment. The unspecified
+  escape was part of the observed phenomenon and must not be corrected.
+- **Nothing implemented, and no push.** Technical follow-ups are `CANDIDATE TECHNICAL
+  FOLLOW-UP` (comparison §13), not authorized work.
+- **Next step is a project decision**: which of these results should feed v0.2. Implementation
+  requires separate, explicit authorization.
+
+## 9. RESULTS OF RECORD
+
+Summarised from the comparison (§10a, §14); the comparison holds the detail.
+
+Established by **both** runs: the entry accounting; `show` does not name its subject; the two
+paths are written in different forms; the bytes of `\xFF\xFE` cannot be reconstructed from the
+material, because no decoding specification is given; `path-encoding=escaped` does not by
+itself determine a reversible encoding; the completeness assertion is not independently
+checkable from the material; seven `exit=0` values are present and their meaning rests on an
+external convention; `observed`/`derived` are visible labels with inferred semantics.
+
+Established by **one** run only: that the escape declaration is global and names no path; that
+only 3 of 5 file entries are ever named; the original-length omission; the attribution of the
+lowercase rendering to the command line.
+
+Divergent: whether `exit=0` belongs to the output's leading vocabulary — caused by this
+package's unmarked harness scaffolding.
+
+**Not established:** A1; that the tool is correct; the independence of delivery; that the
+escaping is defective in implementation; that `show` must change. `Q25` and `D-PEND-2` remain
+open.
