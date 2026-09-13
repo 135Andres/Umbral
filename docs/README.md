@@ -17,6 +17,9 @@ authority ladder and reading rules live in the [root README](../README.md).
 
 Elsewhere in the repository:
 
+- [`IDENTIFIERS.md`](IDENTIFIERS.md) — registry of the identifier namespaces in use, their owning
+  documents and their ranges, with the known collisions recorded. A derived index: it points at the
+  owners and is not authority.
 - [`research/`](../research/) — evidence: research artifacts, external briefs, source
   index, frozen history
 - [`experiments/`](../experiments/) — experiments and results, including V0's closeout in
