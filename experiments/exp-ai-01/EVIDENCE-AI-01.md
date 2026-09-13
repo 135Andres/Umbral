@@ -185,7 +185,7 @@ boundary right.
 
 - that **some** path in this command's output was rendered in an escaped form;
 - that the reason is that a path is not valid UTF-8;
-- that the tool is aware its rendering is not literal, and says so.
+- that the output explicitly marks the rendering as non-literal.
 
 It does **not** establish:
 
