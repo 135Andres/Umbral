@@ -1,0 +1,66 @@
+$ umbral init /tmp/umbral-check-01/subject
+observed  canonical=/tmp/umbral-check-01/subject
+derived   root=/tmp/umbral-check-01/subject
+derived   workspace-id=708961ca8621766f
+derived   state-dir=/tmp/umbral-check-01/data/umbral/ws-708961ca8621766f
+derived   initialised=true
+exit=0
+
+$ umbral observe /tmp/umbral-check-01/subject
+observed  canonical=/tmp/umbral-check-01/subject
+derived   run=1  root=/tmp/umbral-check-01/subject
+derived   run=1  entries=6
+derived   run=1  content-verified=5
+derived   run=1  content-not-verified=0  reason=unstable-or-unreadable
+derived   run=1  started=2026-09-13T02:33:26.064Z  finished=2026-09-13T02:33:26.064Z
+derived   run=1  complete=true
+exit=0
+
+$ umbral status /tmp/umbral-check-01/subject
+observed  canonical=/tmp/umbral-check-01/subject
+derived   root=/tmp/umbral-check-01/subject
+derived   workspace-id=708961ca8621766f
+derived   last-run=1  started=2026-09-13T02:33:26.064Z  entries=6
+derived   last-run=1  complete=true
+derived   entries=6  files=5  dirs=1  symlinks=0  other=0
+derived   content-verified=5
+derived   content-not-verified=0  reason=unstable-or-unreadable
+derived   content-verification-not-applicable=1  reason=not-a-regular-file
+derived   unobservable-paths=0  reason=not-observed-at-observation-time
+derived   log-runs=1  log-observations=6
+exit=0
+
+$ umbral show /tmp/umbral-check-01/subject notes/one.txt
+derived   run=1  hash=b6748fa64b14  stability=stable
+observed  kind=file  size=10  mtime=2026-09-13T02:33:26.061Z
+exit=0
+
+$ umbral show /tmp/umbral-check-01/subject notes/weird-\xff\xfe.txt
+derived   run=1  hash=ba73f69e9b28  stability=stable
+observed  kind=file  size=6  mtime=2026-09-13T02:33:26.061Z
+exit=0
+
+$ umbral observe /tmp/umbral-check-01/subject
+observed  canonical=/tmp/umbral-check-01/subject
+derived   run=2  root=/tmp/umbral-check-01/subject
+derived   run=2  entries=6
+derived   run=2  content-verified=5
+derived   run=2  content-not-verified=0  reason=unstable-or-unreadable
+derived   run=2  started=2026-09-13T02:33:26.093Z  finished=2026-09-13T02:33:26.093Z
+derived   run=2  complete=true
+exit=0
+
+$ umbral changes /tmp/umbral-check-01/subject
+derived   compared  from-run=1  to-run=2  complete=true
+derived   count  unchanged=4
+derived   count  modified=2
+derived   count  created=0
+derived   count  deleted=0
+derived   count  unobserved=0
+derived   count  renamed-or-moved=0
+derived   count  recreated=0
+derived   count  ambiguous=0
+derived   modified  path=notes/three.txt  content-changed=true  scan-complete=true
+derived   modified  path=notes/weird-\xFF\xFE.txt  content-changed=true  scan-complete=true
+derived   path-encoding=escaped  reason=path-is-not-valid-utf8
+exit=0
