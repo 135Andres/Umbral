@@ -27,6 +27,7 @@
 //! - `3` `observe` only: the run was recorded but incomplete, because some paths could not
 //!   be observed. Present so a script can see incompleteness instead of missing it.
 
+use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -50,17 +51,26 @@ State lives outside <root>, under $XDG_DATA_HOME/umbral/ (fallback ~/.local/shar
 Nothing is ever written inside <root>.";
 
 fn main() -> ExitCode {
-    let args: Vec<String> = std::env::args().collect();
+    // OS-native arguments, deliberately. A path is a byte string, and a file whose name is
+    // not valid UTF-8 is a legal file. `env::args()` would refuse to produce such an argument
+    // at all — it panics — which would make a path the tool can observe impossible to name.
+    let args: Vec<OsString> = std::env::args_os().collect();
     let code = run(&args);
     ExitCode::from(code)
 }
 
-fn run(args: &[String]) -> u8 {
+fn run(args: &[OsString]) -> u8 {
     if args.len() < 2 {
         eprintln!("{USAGE}");
         return 2;
     }
-    let cmd = args[1].as_str();
+    // A command name is part of the tool's own vocabulary, so it is text by construction. An
+    // argument that is not valid UTF-8 is therefore never a command name.
+    let Some(cmd) = args[1].to_str() else {
+        eprintln!("unknown command: (not valid UTF-8)");
+        eprintln!("{USAGE}");
+        return 2;
+    };
 
     match cmd {
         "init" => {
@@ -72,16 +82,22 @@ fn run(args: &[String]) -> u8 {
                     // Only the canonical root is the filesystem's answer. The root as given
                     // is the caller's own argument echoed back, and the workspace
                     // identifier and state path are computed from it.
-                    println!(
-                        "{}",
-                        report::render(&[
-                            report::Line::observed(format!("canonical={}", ws.canonical.display())),
-                            report::Line::derived(format!("root={}", ws.root.display())),
-                            report::Line::derived(format!("workspace-id={}", ws.id)),
-                            report::Line::derived(format!("state-dir={}", ws.state_dir.display())),
-                            report::Line::derived("initialised=true"),
-                        ])
-                    );
+                    let canonical = report::render_path(&ws.canonical);
+                    let given = report::render_path(&ws.root);
+                    let state = report::render_path(&ws.state_dir);
+                    let mut lines = vec![
+                        report::Line::observed(format!("canonical={}", canonical.text)),
+                        report::Line::derived(format!("root={}", given.text)),
+                        report::Line::derived(format!("workspace-id={}", ws.id)),
+                        report::Line::derived(format!("state-dir={}", state.text)),
+                        report::Line::derived("initialised=true"),
+                    ];
+                    lines.extend(report::path_notes(&[
+                        ("canonical", &canonical),
+                        ("root", &given),
+                        ("state-dir", &state),
+                    ]));
+                    println!("{}", report::render(&lines));
                     0
                 }
                 Err(e) => runtime_error(&e),
@@ -92,35 +108,37 @@ fn run(args: &[String]) -> u8 {
             let Some(root) = arg(args, 2) else {
                 return usage("observe <root>");
             };
-            observe(root)
+            observe(Path::new(root))
         }
 
         "status" => {
             let Some(root) = arg(args, 2) else {
                 return usage("status <root>");
             };
-            read_only(root, |ws, log| report::status(ws, log))
+            read_only(Path::new(root), |ws, log| report::status(ws, log))
         }
 
         "changes" => {
             let Some(root) = arg(args, 2) else {
                 return usage("changes <root>");
             };
-            read_only(root, |ws, log| report::changes(ws, log))
+            read_only(Path::new(root), |ws, log| report::changes(ws, log))
         }
 
         "show" => {
             let (Some(root), Some(rel)) = (arg(args, 2), arg(args, 3)) else {
                 return usage("show <root> <path>");
             };
-            read_only(root, |ws, log| report::show(ws, log, Path::new(rel)))
+            read_only(Path::new(root), |ws, log| {
+                report::show(ws, log, Path::new(rel))
+            })
         }
 
         "check" => {
             let Some(root) = arg(args, 2) else {
                 return usage("check <root>");
             };
-            read_only(root, |ws, log| report::check(ws, log))
+            read_only(Path::new(root), |ws, log| report::check(ws, log))
         }
 
         "workspaces" => match workspace::list() {
@@ -133,11 +151,13 @@ fn run(args: &[String]) -> u8 {
                     // Everything in a workspace record except the canonical root was
                     // computed by the tool when the record was written: the identifier, the
                     // creation timestamp, the tool version.
+                    let canonical = report::render_path(&w.canonical);
                     lines.push(report::Line::observed(format!(
                         "canonical={}",
-                        w.canonical.display()
+                        canonical.text
                     )));
                     lines.push(report::Line::derived(format!("workspace-id={}", w.id)));
+                    lines.extend(report::path_notes(&[("canonical", &canonical)]));
                     lines.push(report::Line::derived(format!(
                         "created={}  tool-version={}",
                         report::format_unix_ns(w.created_at_ns),
@@ -158,8 +178,8 @@ fn run(args: &[String]) -> u8 {
     }
 }
 
-fn arg(args: &[String], i: usize) -> Option<&str> {
-    args.get(i).map(String::as_str)
+fn arg(args: &[OsString], i: usize) -> Option<&OsStr> {
+    args.get(i).map(OsString::as_os_str)
 }
 
 fn usage(expected: &str) -> u8 {
@@ -178,14 +198,14 @@ fn runtime_error(e: &dyn std::fmt::Display) -> u8 {
 /// legitimate state — "nothing has been observed" — not an I/O failure, so it is answered
 /// with an empty log rather than an error. The alternative would make `status` fail on a
 /// freshly initialised workspace, which would be a confusing way to say "no observations".
-fn read_only<F>(root: &str, f: F) -> u8
+fn read_only<F>(root: &Path, f: F) -> u8
 where
     F: Fn(
         &workspace::Workspace,
         &dyn ObservationLog,
     ) -> Result<Vec<report::Line>, umbral::log::LogError>,
 {
-    let ws = match workspace::open(Path::new(root)) {
+    let ws = match workspace::open(root) {
         Ok(ws) => ws,
         Err(e) => return runtime_error(&e),
     };
@@ -209,14 +229,14 @@ where
     }
 }
 
-fn observe(root: &str) -> u8 {
-    let ws = match workspace::open(Path::new(root)) {
+fn observe(root: &Path) -> u8 {
+    let ws = match workspace::open(root) {
         Ok(ws) => ws,
         Err(e) => return runtime_error(&e),
     };
 
     let started_at_ns = now_ns();
-    let scan = match scan::scan(Path::new(root)) {
+    let scan = match scan::scan(root) {
         Ok(s) => s,
         Err(e) => return runtime_error(&e),
     };
@@ -227,7 +247,7 @@ fn observe(root: &str) -> u8 {
 
     for entry in &scan.entries {
         let content_obs = if entry.kind == umbral::EntryKind::File {
-            let c = content::observe_content(&Path::new(root).join(&entry.path));
+            let c = content::observe_content(&root.join(&entry.path));
             if c.is_content_verified() {
                 verified += 1;
             } else {
