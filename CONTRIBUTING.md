@@ -178,6 +178,28 @@ What that means in practice:
 If you want to change the prototype's behaviour rather than its evidence, open a proposal
 first.
 
+## 6d. Branches — where a version's work lives
+
+`main` holds **integrated, completed** state. A version is developed on its own branch:
+
+```
+main     integrated versions only
+v0.2     development of v0.2
+```
+
+- Development of a version happens on that version's branch — `v0.2` for v0.2 — and its
+  commits stay there while the version is being built.
+- **Do not develop directly on `main`.** A commit that belongs to an unfinished version does
+  not belong on `main`.
+- The version is integrated by **merge to `main`**, and only after its closure review and the
+  project owner's authorization.
+- CI runs on `main` and on the version branch, so a version's commits are verified while they
+  are written rather than only once they are merged. Version branches are listed explicitly in
+  the [workflows](.github/workflows); adding the next one is a deliberate change to those files.
+
+Each version's goal, non-goals and acceptance criteria live in
+[`docs/versions/`](docs/versions/README.md).
+
 ## 7. Pull requests
 
 A pull request is expected to state: what changed, why, the evidence or tests, the
