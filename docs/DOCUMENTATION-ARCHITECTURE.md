@@ -192,9 +192,13 @@ The two confusions this must prevent, and the mechanism for each:
        research artifact may use decision language.
 
 Enforcement is documentary, not technical: a status line at the top of each document, an
-ID prefix on each claim (A-n, C-n, R-n, J-n, P-n, H-n, Q-n, T-n, UD-n, S-n, MC §n), and
-the routing rule in §10. No metadata schema, no frontmatter, no validator — deliberately,
-until an observed failure demands one.
+ID prefix on each claim, and the routing rule in §10. **This section states the PRINCIPLE**
+— claims carry ID prefixes so that authority and provenance are visible at the point of
+entry. **The INVENTORY has one home**: which prefixes exist, which document owns each one,
+what range each covers and which are ambiguous are recorded in
+[`IDENTIFIERS.md`](IDENTIFIERS.md) — a derived index (DT8), not authority, pointing at the
+documents that define them. This file does not keep a second list. No metadata schema, no
+frontmatter, no validator — deliberately, until an observed failure demands one.
 
 ================================================================================
 4. LIFECYCLE

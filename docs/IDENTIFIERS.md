@@ -17,6 +17,9 @@ identifiers carry — so that a reader, human or agent, can answer three questio
 
 - It is **not authority**. The authority ladder lives in [`../README.md`](../README.md); the
   documents named in the OWNER column are the authority for their own identifiers.
+- It is **the single home for the namespace inventory** — the one place that lists which prefixes
+  exist. [`DOCUMENTATION-ARCHITECTURE.md`](DOCUMENTATION-ARCHITECTURE.md) §3 states the *principle*
+  behind ID prefixes and points here; it keeps no list of its own.
 - It is **not a dictionary of identifiers**. There is no row per `UD-017`, per `P34` or per `Q25`.
   Those definitions live in their owner documents. A registry of ~45 namespaces stays stable for
   months; a dictionary of ~200 identifiers would be stale within a session.
@@ -217,8 +220,9 @@ existed).
 This registry was built by reading the repository, not by copying an earlier audit. Where an earlier
 audit was incomplete, the difference is recorded here rather than silently fixed:
 
-- The prefix list in `docs/DOCUMENTATION-ARCHITECTURE.md` §3 names 10 prefixes. The repository uses
-  the ~45 rows above. §3 remains the authority for the *principle*; this file is the inventory.
+- **The single home for the inventory.** `docs/DOCUMENTATION-ARCHITECTURE.md` §3 states the
+  *principle* — that claims carry ID prefixes — and points here; it keeps no list of its own
+  (changed 2026-09-13, to remove the duplication). This file is that inventory.
 - The ranges of `F-V01` (1–9, not 1–2), `DQ` (two owners), and `S` (two owners) were corrected
   against the files.
 - `INV`, `SC`, `EI`, `CO`, `PASS`, `FAL`, `E-MIN`, `MIN`, `XQ`, `O`, `H-DOC`, `PC`, `A1-AI` and the
