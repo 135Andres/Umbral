@@ -2,7 +2,9 @@
 
 **Classification: EVIDENCIA-B — READER PROTOCOL / AGENT ISOLATED CONTEXT.**
 
-Status: EVIDENCE RECORDED. Registered 2026-09-12.
+Status: EVIDENCE RECORDED AND DISPOSITIONS APPLIED. Registered 2026-09-12; dispositions
+recorded the same day. The dispositions are in §10 — **the answers and the transcript above are
+unmodified**, because they are the evidence.
 
 This run **does not satisfy A1 by itself.** It is **not** an independent human reader, **not** an
 independent human run, and **not** evidence equivalent to an independent third party. Its purpose
@@ -396,11 +398,95 @@ reader, which remains outstanding.
 - It does not correct the D4 weakness.
 - It does not close SC-5, Q25, Q2, Q5, Q1, Q15, 0.7, 0.8, or V1.
 
-## 10. Findings that need a disposition
+## 10. Dispositions
 
-All nine findings are registered and **none has been acted on**. The owner decides whether each is
-corrected inside v0.1, deferred, or declared outside v0.1's contract and the contract narrowed
-explicitly — never narrowed silently.
+All nine findings were registered before any disposition was decided. The owner's dispositions
+follow. **Nothing in §1–§9 was changed as a result**: the transcript, the answers and the
+evaluation are the evidence and are left as they were produced.
 
-The one that is not a matter of judgement: **F-V01-4 is a crash.** A tool that panics on a path it
-can observe is a defect regardless of how the contract is drawn.
+### Corrected in v0.1
+
+**F-V01-4 — corrected.** `show` no longer panics on a path that is not valid UTF-8. The CLI now
+takes OS-native arguments (`std::env::args_os()`), so a path reaches the tool as the bytes the
+filesystem holds rather than being refused. No UTF-8 conversion is invented.
+
+A path is a byte string and the output is text, so where the two disagree the tool now **escapes**
+instead of failing: a byte that is not part of a valid UTF-8 sequence renders as `\xNN`, and a
+literal backslash renders as `\\` so an escape can never be mistaken for a name that contains the
+same characters. The rendering is reversible and defined. Where escaping occurred, one additional
+`derived` line declares it:
+
+```
+observed  canonical=/tmp/ws-\xFF\xFE
+derived   canonical-encoding=escaped  reason=path-is-not-valid-utf8
+```
+
+That note is not decoration: without it a reader could take the escaped form for the name on disk,
+which would be the tool asserting something false about the filesystem. The epistemic contract
+requires the reader be told.
+
+`show` on such a path now exits **0** and returns the real observation. Verified end to end,
+including a workspace whose *root* is not valid UTF-8 (`init`, `observe`, `status`, `changes`,
+`show`, `check` all succeed). No capability was added: no listing command, no new query, no change
+to what is observed.
+
+**F-V01-5 — corrected.** The test now builds the non-UTF-8 name as bytes, passes it as an OS-native
+argument through the same code path the product uses, and asserts that `show` **exits 0**, that the
+file is **found** rather than reported as never observed, and that the answer carries content
+evidence. It fails if the crash returns — demonstrated by reintroducing `env::args()` and watching
+both this test and the non-UTF-8-root test fail with exit 101.
+
+The empty path is now covered by its own test, so the two inputs can never be conflated again.
+
+**The family audit.** Every test file was searched for the pattern that made this test vacuous —
+a value silently substituted when it cannot be represented. **Exactly one instance existed**
+(`fs_matrix.rs:180`, the `unwrap_or_default()` above). No others were found, and no general
+refactor of the test system was performed.
+
+### Protocol amended, product untouched
+
+**P-V01-1 — protocol corrected.** Step 7 now prescribes one `show` per entry, so Q2 is answerable
+with the prescribed commands. No listing command was added to the tool to compensate for a defect
+in the test.
+
+**P-V01-2 — administration corrected.** The sheet now gives the reader an explicit workspace
+containing both the observed directory and the transcript, so no instruction points outside what
+it is allowed to touch. The corrected sheet is
+[`protocol-v2-operational-sheet.md`](protocol-v2-operational-sheet.md), revision 2.1, with the
+changes from 2.0 recorded in it.
+
+### Registered as explicit legibility debt — deliberately NOT fixed
+
+The owner declined to change behaviour for these, and **the contract was not narrowed silently**:
+each is named here as debt, so the gap is recorded rather than implied away.
+
+**F-V01-6 — legibility debt.** `unchanged` states neither its basis nor its scope, and can appear
+beside `observed` lines that seem to contradict it. `reconcile`'s rule (for regular files the
+observable state is size + mtime; for other kinds, identity plus kind) is unchanged, and no
+explanation was added to the output.
+
+**F-V01-7 — legibility debt.** A rename's justification — physical identity — is never shown, so a
+reader cannot distinguish a justified match from a lucky guess. The matching algorithm is
+unchanged, and no evidence line was added.
+
+**F-V01-8, F-V01-9 — outside v0.1, grouped as legibility questions.** Where an observed and a
+derived value coincide, the labels alone do not let the rule be reconstructed; and the output's
+vocabulary is defined nowhere in the output. No glossary, no vocabulary section, and no product
+change. These join F-V01-3's deferred half as one open question: *how much explanation should the
+output carry* — to be evaluated after v0.1, not decided inside it.
+
+### Methodological limitation, preserved
+
+**L-1 — preserved.** It stands as recorded in §8. The isolation was not complete: the reader's
+environment carried project-context text naming this repository. **The isolation was not perfect,
+and this run does not satisfy human independence.** EVIDENCIA-B remains classified as evidence from
+an agent with isolated context — not as an independent human reader, and not as a substitute for
+one.
+
+## 11. A1 remains pending
+
+**A1 is NOT satisfied.** Neither run had an independent human reader: the first was executed by
+the project owner, who had seen the design, and the second by an agent of the same system that
+wrote the code. The D4 weakness of the first run is **not** repaired by the second.
+
+v0.1 is **not declared complete**.
