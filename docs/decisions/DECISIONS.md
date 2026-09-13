@@ -518,6 +518,85 @@ all; withdrawing it would return the objective to an unachievable form.
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-022 — v0.2 output grammar and contract versioning
+Authority: USER (2026-09-13 product-decision mandate "DECISIÓN DE PRODUCTO — GRAMÁTICA Y
+VERSIONADO", confirming the record after Hermes stopped to explain why no existing record
+could host the decisions).
+Statement: the v0.2 output contract adopts, as one related decision set:
+
+1. **G-1 + G-5 as the output grammar family.** G-1 is delimiter + escaping. It is adopted
+   together with the full G-5 canonical-form discipline:
+   - canonical rendering per value (one value, exactly one serialization);
+   - a formally defined escape;
+   - the escape character escaped to itself;
+   - **coverage of the whole valid value domain** — newline, carriage return, tab, other
+     control characters, consecutive whitespace, backslash, non-UTF-8 bytes, delimiter
+     bytes, and their combinations — explicitly NOT limited to the current fixtures;
+   - round-trip as the contractual property: for every valid value V,
+     `parse(serialize(V)) == V`, and for every valid result R, the parse preserves the
+     semantic associations;
+   - explicit rejection of invalid representations, and fail-closed behaviour under
+     ambiguity or malformed representation: if the input cannot be reconstructed
+     unambiguously, no association may be invented. Error semantics are part of the
+     contract: reject on malformed escape, truncated representation, invalid structure; no
+     silent resynchronization; no best-effort reinterpretation; unknown future fields are
+     preserved without interpreting (where the grammar allows); an unknown grammar version
+     is rejected with an explicit reason.
+   The semantic unit of the output is the **result**; the rendered line is only a textual
+   representation, and result boundaries are defined by the grammar, never by terminal
+   rendering.
+
+2. **V2 as the contract-versioning mechanism.** An explicit contract/grammar version in the
+   output header, so that a reader can determine which grammar an output follows from the
+   output/header alone; standalone outputs are interpretable without the external
+   environment. The version functions stay strictly separated — output contract/grammar
+   version ≠ durable schema version ≠ project version ≠ implementation version — and one
+   number must not serve all four.
+
+3. **G-3 is NOT adopted for v0.2** as the primary output. It remains a technically valid
+   alternative that this version does not select; the reason is the product decision to
+   keep the existing textual/human-facing surface.
+
+4. **G-4 (field-per-line) remains ELIMINATED**, on principle: it restores positional
+   association, the failure the EXP-AI-01 evidence recorded.
+
+Why one record: G-1+G-5 and V2 are related contract decisions about the same output
+surface — the grammar states how values are written, and the version mark states how a
+reader knows which grammar it is reading. They were authorized together, they are scoped
+together, and recording them apart would suggest either can vary independently of the
+other, which the design does not support.
+
+Explicitly still OPEN — this record closes none of them: the exact escape specification
+(the concrete escape function, its coverage table, canonical rendering rules); the exact
+header representation; the literal contract version value; M1 vs M2 (the field-set
+carrier); the basis field name; the evidence reference representation; the persistence
+schema; whether B1 is the final applicability mechanism; whether applicability and
+provenance share a representation; whether `ctime` enters the skip condition (D-PEND-2);
+and Q25.
+
+Relationship to existing records, none amended (records are immutable): `UD-017` requires
+that `basis` be traceable and that the output distinguish four outcomes — this record
+fixes how output values are written so such distinctions survive parsing; it does not
+select the basis mechanism. `UD-019` leaves applicability mechanisms open — untouched.
+`UD-020` is untouched. Evidence: the technical design's grammar analysis
+(`docs/candidates/V0.2-TECHNICAL-DESIGN.md` §E.25–E.32b), including the defects found
+there (a two-space delimiter appearing unescaped in values; a newline-bearing path
+destroying the line unit; no contract version anywhere in the output).
+Consequences:
+  - A contractual test suite must demonstrate the round-trip property over the whole
+    domain, with combination cases, and rejection of invalid representations.
+  - The exact escape specification is deliberately a separate technical specification; a
+    change to it does not reopen the family decision unless it violates the properties
+    recorded here.
+  - G-3's non-adoption is version-scoped: it does not prejudice any later version.
+Scope guard: this record does NOT authorize implementation, does NOT select a field name,
+a schema, an encoding beyond the family level, or the version value, and does NOT close
+any item in the OPEN list above.
+Reversibility: medium. The family choice is reversible only by a recorded narrowing, which
+would itself have to be recorded.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -528,7 +607,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (process)    — a commitment about how the project works, not about the product.
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
-                         (UD-016, UD-017, UD-019, UD-020, UD-021.) A scoped commitment expires with its version
+                         (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022.) A scoped commitment expires with its version
                          unless a later record extends it.
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
                          a pointer is added here instead.
