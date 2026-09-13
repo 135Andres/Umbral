@@ -9,8 +9,8 @@ mod common;
 use common::{assert_all_labelled, labels_used, lines, Sandbox};
 use umbral::report::{
     contract_violations, fields_in, first_banned_word, label_contract_violations,
-    label_contract_violations_in_text, unlabelled_lines, Line, BANNED_LEXICON, DERIVED_ONLY_FIELDS,
-    OBSERVED_FIELDS,
+    label_contract_violations_in_text, path_notes, render_path, unlabelled_lines, Label, Line,
+    BANNED_LEXICON, DERIVED_ONLY_FIELDS, OBSERVED_FIELDS,
 };
 
 /// Every line of every command declares exactly one of the four labels.
@@ -374,4 +374,89 @@ fn observed_lines_carry_only_filesystem_facts() {
             );
         }
     }
+}
+
+// ---------------------------------------------------------------------------------------
+// Rendering a path that is not valid UTF-8 (F-V01-4).
+//
+// A path is a byte string. The output is text. Where those disagree, the tool must neither
+// refuse nor mangle: it escapes, reversibly, and says that it did.
+// ---------------------------------------------------------------------------------------
+
+#[cfg(unix)]
+#[test]
+fn a_valid_utf8_path_renders_as_itself() {
+    use std::path::Path;
+    let r = render_path(Path::new("/tmp/ordinary-name.txt"));
+    assert_eq!(r.text, "/tmp/ordinary-name.txt");
+    assert!(
+        !r.escaped,
+        "nothing needed escaping, so nothing must be declared"
+    );
+    assert!(path_notes(&[("canonical", &r)]).is_empty());
+}
+
+#[cfg(unix)]
+#[test]
+fn a_non_utf8_path_is_escaped_and_declared() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+    use std::path::Path;
+
+    let p = Path::new(OsStr::from_bytes(b"/tmp/odd-\xff\xfe.txt"));
+    let r = render_path(p);
+    assert_eq!(r.text, "/tmp/odd-\\xFF\\xFE.txt");
+    assert!(r.escaped);
+
+    let notes = path_notes(&[("canonical", &r)]);
+    assert_eq!(notes.len(), 1);
+    assert_eq!(notes[0].label, Label::Derived);
+    assert!(
+        notes[0].text.contains("path-is-not-valid-utf8"),
+        "the note must give the reason: {}",
+        notes[0].text
+    );
+}
+
+/// The escape is unambiguous: a name that literally contains the characters `\xFF` renders
+/// differently from a name containing the byte `0xFF`, so the rendering cannot be misread.
+#[cfg(unix)]
+#[test]
+fn the_escape_cannot_be_confused_with_a_literal_backslash() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+    use std::path::Path;
+
+    let byte_ff = render_path(Path::new(OsStr::from_bytes(b"a-\xff.txt")));
+    let literal = render_path(Path::new("a-\\xFF.txt"));
+    assert_eq!(byte_ff.text, "a-\\xFF.txt");
+    assert_eq!(literal.text, "a-\\\\xFF.txt");
+    assert_ne!(byte_ff.text, literal.text);
+}
+
+/// Escaping is per byte and only where needed: a valid multi-byte character survives intact
+/// beside an invalid byte, so the rendering stays readable.
+#[cfg(unix)]
+#[test]
+fn valid_multibyte_characters_survive_escaping() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+    use std::path::Path;
+
+    // "café-" plus one invalid byte.
+    let r = render_path(Path::new(OsStr::from_bytes(b"caf\xc3\xa9-\xff")));
+    assert_eq!(r.text, "café-\\xFF");
+    assert!(r.escaped);
+}
+
+/// Every escaped path still produces output that satisfies the label contract, so the fix
+/// does not create a hole in the contract it had to work within.
+#[test]
+fn escaped_path_lines_satisfy_the_label_contract() {
+    use std::path::Path;
+    let r = render_path(Path::new("/tmp/x"));
+    let mut lines = vec![Line::observed(format!("canonical={}", r.text))];
+    lines.extend(path_notes(&[("canonical", &r)]));
+    assert!(label_contract_violations(&lines).is_empty());
+    assert!(unlabelled_lines(&umbral::report::render(&lines)).is_empty());
 }

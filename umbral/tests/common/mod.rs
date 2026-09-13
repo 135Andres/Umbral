@@ -57,6 +57,42 @@ impl Sandbox {
         String::from_utf8_lossy(&out.stdout).into_owned()
     }
 
+    /// Run the binary with OS-native arguments.
+    ///
+    /// Use this whenever an argument is a path. A path is a byte string and need not be valid
+    /// UTF-8; `&str` arguments cannot carry such a path at all, so a test that must exercise
+    /// one has to come through here. A test that converts the path to `&str` first is not
+    /// testing the case it names.
+    pub fn run_os(&self, args: &[&std::ffi::OsStr]) -> Output {
+        Command::new(BIN)
+            .args(args)
+            .env("XDG_DATA_HOME", self.data.path())
+            .env("HOME", self.data.path())
+            .output()
+            .expect("failed to run the umbral binary")
+    }
+
+    /// `run_os`, requiring success and returning stdout.
+    pub fn run_os_ok(&self, args: &[&std::ffi::OsStr]) -> String {
+        let out = self.run_os(args);
+        assert!(
+            out.status.success(),
+            "command {:?} failed with {:?}\nstdout:\n{}\nstderr:\n{}",
+            args.iter().map(|a| a.to_string_lossy()).collect::<Vec<_>>(),
+            out.status.code(),
+            String::from_utf8_lossy(&out.stdout),
+            String::from_utf8_lossy(&out.stderr)
+        );
+        String::from_utf8_lossy(&out.stdout).into_owned()
+    }
+
+    /// `init` then `observe` with an OS-native root, both required to succeed.
+    pub fn init_and_observe_os(&self, root: &std::ffi::OsStr) -> String {
+        use std::ffi::OsStr;
+        self.run_os_ok(&[OsStr::new("init"), root]);
+        self.run_os_ok(&[OsStr::new("observe"), root])
+    }
+
     /// `init` then `observe`, both required to succeed.
     pub fn init_and_observe(&self) -> String {
         self.run_ok(&["init", &self.root().to_string_lossy()]);
