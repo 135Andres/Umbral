@@ -6,6 +6,8 @@
 
 mod common;
 
+use std::fs;
+
 use common::{assert_all_labelled, labels_used, lines, Sandbox};
 use umbral::report::{
     contract_violations, fields_in, first_banned_word, label_contract_violations,
@@ -222,27 +224,81 @@ fn an_empty_workspace_reports_not_comparable() {
 
 /// The four labels are all reachable, so the contract is not a distinction the tool never
 /// makes in practice.
+///
+/// This test previously asserted three of the four: `ambiguous` was named in the test's own
+/// title but never required, and the fixture could not have produced it anyway. A test whose
+/// name claims coverage it does not exercise is the same defect class as F-V01-5. The name is
+/// kept and the coverage is made real.
+///
+/// `ambiguous` here is produced by genuine product behaviour, not by a fabricated output: the
+/// fixture replaces a file atomically with byte-identical contents, so the path is the same but
+/// the physical object is not, and the content evidence cannot tell the two readings apart. The
+/// tool reports that as `ambiguous` with its reason. That is the tool's own verdict on real
+/// evidence, which is the only way a label can legitimately appear.
 #[test]
 fn all_four_labels_are_actually_used() {
     let s = Sandbox::new();
-    s.write("a.txt", "alpha");
+    s.write("a.txt", "same bytes");
     s.write("dup1.txt", "same bytes");
     s.write("dup2.txt", "same bytes");
     s.init_and_observe();
-
     let r = s.root().to_string_lossy().to_string();
+
+    // The classic atomic save, with contents that do not change: a new physical object at the
+    // same path, holding the same bytes. Same path + different identity + identical content is
+    // exactly the case the contract classifies as ambiguous rather than guessing.
+    let tmp = s.root().join(".a.txt.tmp");
+    fs::write(&tmp, "same bytes").unwrap();
+    fs::rename(&tmp, s.root().join("a.txt")).unwrap();
+    s.run_ok(&["observe", r.as_str()]);
+
     let mut used = std::collections::BTreeSet::new();
     for args in [
         vec!["status", r.as_str()],
         vec!["changes", r.as_str()],
         vec!["show", r.as_str(), "a.txt"],
+        // A path that was never observed is how the tool says it does not know.
+        vec!["show", r.as_str(), "never-observed.txt"],
         vec!["check", r.as_str()],
     ] {
         used.extend(labels_used(&s.run_ok(&args)));
     }
-    assert!(used.contains("observed"), "labels used: {used:?}");
-    assert!(used.contains("derived"), "labels used: {used:?}");
-    assert!(used.contains("unknown"), "labels used: {used:?}");
+
+    for label in ["observed", "derived", "ambiguous", "unknown"] {
+        assert!(
+            used.contains(label),
+            "the contract declares `{label}` but no command produced it; labels used: {used:?}"
+        );
+    }
+}
+
+/// The fixture above really does drive `ambiguous` through the tool rather than merely being
+/// named in a test: this pins the mechanism, so that if the fixture stops producing a genuine
+/// ambiguity the test above fails for a visible reason instead of passing on a coincidence.
+#[test]
+fn the_ambiguous_case_in_that_fixture_is_a_real_tool_verdict() {
+    let s = Sandbox::new();
+    s.write("a.txt", "same bytes");
+    s.init_and_observe();
+    let r = s.root().to_string_lossy().to_string();
+
+    let tmp = s.root().join(".a.txt.tmp");
+    fs::write(&tmp, "same bytes").unwrap();
+    fs::rename(&tmp, s.root().join("a.txt")).unwrap();
+    s.run_ok(&["observe", r.as_str()]);
+
+    let changes = s.run_ok(&["changes", r.as_str()]);
+    assert_all_labelled(&changes);
+    assert!(
+        changes
+            .lines()
+            .any(|l| l.starts_with("ambiguous") && l.contains("path=a.txt")),
+        "the replacement must be reported as ambiguous, by the tool, with its reason:\n{changes}"
+    );
+    assert!(
+        changes.contains("reason=DuplicateContentNotIdentity"),
+        "the tool must name why the evidence does not settle it:\n{changes}"
+    );
 }
 
 // ---------------------------------------------------------------------------------------
