@@ -220,6 +220,162 @@ Reversibility: high by design.
 Status: DECIDED (scoped adoption, v0.1 only).
 
 ================================================================================
+UD-015 — Evidence classes for validation, and the separation of A1 from A1-AI
+Authority: USER (2026-09-12 mandate, "NUEVA FASE DE TRABAJO — v0.2 + VALIDACIÓN POR
+MÚLTIPLES INTELIGENCIAS", §2 and §3; resolved in the follow-up mandate of the same date,
+D-PEND-1).
+Statement: validation evidence is classified by WHO produced it, and the classes are never
+converted into one another:
+
+  HUMAN-INDEPENDENT  a person other than the author executes a protocol without
+                     interpretive help from the author.
+  AI-INDEPENDENT     an artificial intelligence executes a protocol with controlled
+                     context, without receiving the expected interpretation or conclusion.
+  AI-CROSS-CHECK     a second AI reviews evidence produced by another AI, without
+                     unnecessarily sharing the earlier interpretation.
+  AUTHOR             evidence produced by the author/developer.
+  AGENT-INTERNAL     evidence produced by Hermes during its own work.
+
+A1 keeps its exact meaning: **HUMAN-INDEPENDENT**. It is not redefined and not weakened.
+A NEW auxiliary criterion is created: **A1-AI = AI-INDEPENDENT**. A1-AI can supply
+legibility evidence for another intelligence, surface ambiguities, and unblock technical
+decisions. It **cannot satisfy A1**.
+
+Authority for the change: USER. The multi-intelligence track is a USER decision.
+Supporting statement: "Yo, Andrés, seré quien delegue manualmente los experimentos a otras
+inteligencias artificiales" and "Una IA no debe convertirse artificialmente en 'humano
+independiente'. Pero una IA independiente tampoco debe ser tratada como evidencia inútil."
+Alternatives considered: (a) replace A1 with a general legibility criterion — REJECTED by
+the user; (b) leave A1 as the only criterion and treat AI runs as informal — REJECTED, it
+would discard usable evidence; (c) keep A1 and add A1-AI alongside it — ADOPTED.
+Evidence: none is claimed for the classes themselves; they are a user commitment about how
+evidence is classified. The first AI-INDEPENDENT run already exists (EVIDENCIA-B).
+Consequences:
+  - EVIDENCIA-B stays classified AI-INDEPENDENT. It is NOT retroactive satisfaction of A1.
+  - The state of A1 in v0.1 is unchanged: NOT SATISFIED. No retrospective rewrite.
+  - A1-AI evidence may unblock technical decisions and discover defects during a version,
+    but the formal satisfaction of a version's A1 requires HUMAN-INDEPENDENT.
+  - No AI is made an automatic judge of another AI; AI-CROSS-CHECK finds discrepancies and
+    is not an authority.
+Scope guard: this record does NOT change A1's wording, does NOT declare A1 satisfied, does
+NOT close Q25, and does NOT authorize the delegation of any specific experiment (each is
+authorized separately by the owner, who delivers it personally).
+Reversibility: high. Removing A1-AI would restore the prior state without touching A1.
+Status: DECIDED (process — how the project validates, not what the product is).
+
+================================================================================
+UD-016 — v0.2 objective: O(changes) for content read and hashing ONLY
+Authority: USER (2026-09-12 v0.2 planning mandate, D1).
+Statement: the objective of v0.2 is to reduce to **O(changes) the reading/hashing of
+content during re-observation**, preserving the verdicts, the evidence, the ambiguity and
+the reconstruction capability of V0/v0.1. It is **not** permitted to claim O(changes) for
+the whole filesystem traversal.
+Supporting statement, verbatim: "Reducir a O(changes) la lectura/hash de contenido durante
+la re-observación, preservando los veredictos, la evidencia, la ambigüedad y la capacidad
+de reconstrucción de V0/v0.1." and "No afirmar O(changes) para el recorrido completo del
+filesystem."
+The distinction the record exists to preserve:
+  O(corpus)   = traversal / metadata inspection of every entry. v0.2 does NOT optimise it.
+  O(changes)  = reading and hashing of content. This is the only thing v0.2 promises.
+Alternatives considered: (a) claim full O(changes) for the process — REJECTED by the user as
+a formulation stronger than what is demonstrable; (b) optimise the traversal too — NOT
+v0.2 (it is a separate concern and would need its own evidence).
+Evidence: v0.1's own measurement (2000 files x 4 KiB): scan 23.9 ms, content read+hash
+102.5 ms, full observation 209.6 ms. The optimisable share is the read/hash part, and its
+proportion varies with the corpus: hashing dominates for large files, traversal for very
+many small ones. Both directions are to be stated in the version record.
+Consequences:
+  - Any claim of the form "cost proportional to change" must name the read/hash scope.
+  - A benchmark that is merely faster is not evidence of the objective; the objective needs
+    counters showing which work was avoided.
+  - Preserving verdicts, evidence, ambiguity and reconstruction is part of the objective,
+    not a side condition: an optimisation that changes a verdict fails v0.2.
+Scope guard: this record does NOT select an architecture, does NOT settle Q25, and does NOT
+authorize any implementation. Implementation is authorized separately.
+Reversibility: high. The objective is a target, not a commitment about the product's shape.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-017 — v0.2 observation basis: a skip is never content verification
+Authority: USER (2026-09-12 v0.2 planning mandate, D2 and D3).
+Statement: the contract grows so that the output distinguishes four outcomes, and `basis`
+is the field that expresses it:
+  - content read and verified in this run;
+  - result obtained through metadata evidence;
+  - content not verified;
+  - errors / UNKNOWN.
+`status` must be able to expose the difference and `show` must expose `basis` where it is
+relevant. `basis` must be traceable to the evidence that produced the result.
+**Mandatory rule:** if Umbral did not read the bytes, it may not present the result as
+content-verified.
+Supporting statement, verbatim: "Si Umbral no leyó los bytes, no puede presentar el
+resultado como content-verified."
+The epistemic chain this record fixes, which no later change may shorten:
+  bytes read            -> content-verified
+  metadata sufficient   -> metadata-stable / equivalent -> NOT content-verified
+  evidence insufficient -> UNKNOWN
+Alternatives considered: (a) express the basis inside the existing labels without a new
+field — REJECTED by the user: it would overload `observed`, which by UD-014's correction
+(F-V01-2) is reserved for what the filesystem itself states per entry; (b) leave the
+contract unchanged and optimise silently — REJECTED: it would narrow the contract silently,
+which this project forbids.
+Evidence: the basis is derived, not observed — it is produced by Umbral. Under the F-V01-2
+rule (observed = only what the filesystem states: canonical, kind, size, mtime), `basis`
+must be labelled `derived` and must remain traceable to the observed fields it rests on.
+Consequences:
+  - The growth of the output contract is declared NOW, before v0.2's acceptance criteria are
+    fixed — deliberately, to avoid the v0.1 pattern of finding a needed distinction after
+    the criteria were frozen (F-V01-1, F-V01-3).
+  - A contractual test is required that FAILS if an entry obtained by skip is counted again
+    as content-verified.
+  - The log must persist whatever the skip decision needs; any schema change is technical
+    and version-scoped (UD-014), and does not settle Q25.
+Scope guard: this record does NOT specify the mechanism, does NOT decide the skip condition
+(see UD-018), and does NOT authorize implementation.
+Reversibility: medium. The contract growth is reversible only by an explicit narrowing,
+which would itself have to be recorded.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-018 — ctime is an optimisation heuristic, never a guarantee of content
+Authority: USER (2026-09-12 v0.2 planning mandate, D3).
+Statement: ctime is approved **only** as a possible optimisation heuristic. It is not a
+guarantee of content equality. It may not be used to assert content-verified. If it is used
+to avoid hashing, the result must explicitly retain that the bytes were not verified.
+Supporting statement, verbatim: "No conviertas una heurística de metadata en una garantía de
+integridad."
+What the evidence supports and what it does not (recorded so the limits travel with the
+decision):
+  - ctime is the inode change time, stamped whenever the inode's metadata changes, and it is
+    NOT settable from userland (Linux kernel documentation). mtime is settable; ctime is not.
+    Therefore a writer that restores size and mtime exactly still moves ctime — which closes
+    the specific false negative v0.1 documents as its `stat` guard's blind spot.
+  - Measured locally (tmpfs and btrfs, kernel 7.1.13): ctime changed in every one of the
+    tested cases — same size with mtime restored, chmod only, hard link created, atomic
+    replacement — and in 600 consecutive writes there was not one collision.
+  - NOT established: that ctime always changes. The kernel's own documentation records that
+    coarse-grained timestamps can make a change invisible within a jiffy, and that
+    multigrain timestamps (which reduce this) are an opt-in per filesystem. ctime is
+    Unix-only and its granularity is filesystem-dependent. ext4 was not measured locally.
+  - Therefore: ctime narrows a known false negative. It does not create an integrity
+    guarantee, and it does not convert metadata into content evidence.
+Alternatives considered: (a) treat ctime as sufficient evidence of content stability —
+REJECTED by the user as a false guarantee of integrity; (b) omit ctime entirely — left open
+as the other legitimate option; (c) admit ctime into the skip condition while the result
+keeps stating that the bytes were not read — ADOPTED as permitted, not required.
+Consequences:
+  - The analysis of ctime's limits and portability must be preserved alongside the mechanism.
+  - Any test that relies on ctime must be classified: if it depends on filesystem behaviour,
+    it is demonstrated against hand-built observation sets, never required of the filesystem.
+  - Adding ctime to a skip condition can only make it stricter (more re-reads), never more
+    permissive. A metadata change that does not alter content (chmod, chown, hard link) will
+    force a re-read, and that cost is accepted.
+Scope guard: this record does NOT decide that ctime enters the skip condition. That question
+(D-PEND-2) remains OPEN. This record fixes only what ctime may and may not be used to claim.
+Reversibility: high.
+Status: DECIDED (process/epistemic constraint), with the mechanism still OPEN.
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -228,6 +384,10 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
                          (UD-013 for the V0 experiment, UD-014 for v0.1).
   DECIDED (intent)     — the intent is committed; the mechanism is still research.
   DECIDED (process)    — a commitment about how the project works, not about the product.
+  DECIDED (scoped to v0.2)
+                       — committed for the named version; explicitly not project-wide.
+                         (UD-016, UD-017.) A scoped commitment expires with its version
+                         unless a later record extends it.
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
                          a pointer is added here instead.
 
