@@ -390,7 +390,12 @@ research/   external evidence and process records
   INGEST-NOTES.md          historical: the initial ingestion record
   AUDIT-<date>.md          dated audits
   DOC-ARCHITECTURE-RESEARCH.md  evidence base for this document
-  sources/                 verbatim, immutable archives (MC, and S1-S11 when archived)
+  sources/                 verbatim, immutable archives (MC, and S1-S11 when archived),
+                           and — per the SOURCE step above — citation records for sources
+                           that cannot be archived verbatim: living documents that change
+                           between versions, or material under a licence this repository
+                           should not copy wholesale. A citation record states which it is
+                           and quotes only what the claims rely on. S12 is the first.
 
 experiments/  created when the first experiment exists. One directory per experiment:
               experiments/<exp-id>/EXP-<id>.md   (spec written BEFORE the run; result and
