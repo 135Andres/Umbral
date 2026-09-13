@@ -105,6 +105,18 @@ tool's correctness; anything about v0.2, which is not implemented.
 
 ## 8. STATE
 
-- No participant has been contacted. Hermes does not contact, execute or select one.
-- No response exists. Nothing has been analysed.
-- The experiment is prepared and waiting for the owner to deliver it.
+- No participant has been contacted by Hermes. Hermes does not contact, execute or select one.
+- **One response received** (2026-09-13), delivered by the owner and analysed:
+  [`EVIDENCE-AI-01.md`](EVIDENCE-AI-01.md), raw response in
+  [`response-01-external-ai.txt`](response-01-external-ai.txt).
+- Result: the participant refused to decode the escaped name and named the missing
+  specification, which is the behaviour the experiment was built to detect. It also surfaced
+  two legibility findings (`F-AI01-1`, `F-AI01-2`) and three defects of this package's own
+  material (`P-AI01-1`, `P-AI01-2`, `P-AI01-3`). The defects are the experiment's, not the
+  participant's, and not the product's.
+- Classified **AI-INDEPENDENT / A1-AI**. It does not satisfy A1 and is not presented as doing
+  so. See `UD-015`.
+- Recommended next step: one more participant on `material-v1` **unchanged**, so the
+  replication is a replication; then revise the package to `material-v2`. The defects to fix
+  are recorded in `EVIDENCE-AI-01.md` §12.
+- Nothing here has been implemented, committed or pushed.
