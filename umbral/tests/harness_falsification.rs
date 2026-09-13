@@ -464,28 +464,22 @@ proptest! {
 
 /// The generator emits every operation kind, including directory deletion. Without this the
 /// coverage claim would be unverified — which is exactly how F-5 happened in V0.
+///
+/// This test **samples the real strategy**. An earlier version enumerated the seven `Op`
+/// variants by hand in a `match i % 7` and asserted their names were present, which proved only
+/// that the enum has seven variants whose names the test already knew. Deleting `RemoveDir`
+/// from `op_strategy()` left it passing — the test named for guarding F-5 could not see F-5
+/// return.
+///
+/// The names below are read off the values the generator actually produced, so the assertion
+/// cannot be satisfied without the generator emitting them.
 #[test]
 fn the_generator_covers_every_operation_kind() {
-    let mut seen = BTreeSet::new();
-    for i in 0..2000u32 {
-        let op = match i % 7 {
-            0 => Op::CreateFile { idx: 0, byte: 1 },
-            1 => Op::WriteFile { idx: 0, byte: 2 },
-            2 => Op::DeleteFile { idx: 0 },
-            3 => Op::RenameFile { from: 0, to: 1 },
-            4 => Op::HardLink { from: 0, to: 1 },
-            5 => Op::RemoveDir { idx: 0 },
-            _ => Op::AtomicReplace { idx: 0, byte: 3 },
-        };
-        seen.insert(
-            format!("{op:?}")
-                .split_whitespace()
-                .next()
-                .unwrap()
-                .to_string(),
-        );
-    }
-    for kind in [
+    use proptest::strategy::{Strategy, ValueTree};
+    use proptest::test_runner::{Config, TestRunner};
+
+    const DRAWS: u32 = 4000;
+    const EXPECTED: [&str; 7] = [
         "CreateFile",
         "WriteFile",
         "DeleteFile",
@@ -493,11 +487,46 @@ fn the_generator_covers_every_operation_kind() {
         "HardLink",
         "RemoveDir",
         "AtomicReplace",
-    ] {
-        assert!(seen.contains(kind), "generator never emits {kind}");
+    ];
+
+    let mut runner = TestRunner::new(Config::default());
+    let mut counts: BTreeMap<String, u32> = BTreeMap::new();
+
+    for _ in 0..DRAWS {
+        let tree = op_strategy()
+            .new_tree(&mut runner)
+            .expect("the operation strategy must produce a value");
+        let op = tree.current();
+        // The name comes from the value the generator produced, not from a list written here.
+        let name = format!("{op:?}")
+            .split_whitespace()
+            .next()
+            .unwrap_or("?")
+            .to_string();
+        *counts.entry(name).or_insert(0) += 1;
     }
+
+    for kind in EXPECTED {
+        assert!(
+            counts.contains_key(kind),
+            "op_strategy() never emitted {kind} in {DRAWS} draws; it produced: {:?}",
+            counts.keys().collect::<Vec<_>>()
+        );
+    }
+
+    // A kind the generator emits but this test does not know about means the list above is
+    // stale, and a coverage claim resting on a stale list is not a coverage claim.
+    assert_eq!(
+        counts.len(),
+        EXPECTED.len(),
+        "the generator emits a kind this test does not name: {:?}",
+        counts.keys().collect::<Vec<_>>()
+    );
+
+    // F-5: directory deletion must not merely be reachable — it must have a non-zero share of
+    // what the generator produces, which is what "must be generated" means.
     assert!(
-        seen.contains("RemoveDir"),
+        counts.get("RemoveDir").copied().unwrap_or(0) > 0,
         "directory deletion must be generated (F-5)"
     );
 }
