@@ -131,6 +131,22 @@ S11 Desconstrucción Crítica y Validación Adversarial (adversarial critique)
     framing of the differentiator as a projection engine.
 
 -------------------------------------------------------------------------------
+S12 Linux kernel documentation — Multigrain Timestamps
+    Scope: inode timestamp semantics — what ctime is, that it is not settable from
+    userland, that coarse-grained timestamps can hide a change inside one jiffy, and
+    that fine-grained (multigrain) timestamps are a per-filesystem opt-in.
+    Status: EXTERNAL TECHNICAL DOCUMENTATION. Describes kernel behaviour; says nothing
+    about Umbral and validates no Umbral design.
+    Home: research/sources/S12-KERNEL-MULTIGRAIN-TIMESTAMPS.md — a REFERENCE RECORD with
+    citation and the minimum quotation, deliberately NOT a verbatim archive (the source
+    is a living document and is under its own licence).
+    Retrieved: 2026-09-12, against local kernel 7.1.13-200.fc44.x86_64.
+    Contributes: the external basis for UD-018 (ctime is an optimisation heuristic and
+    may never be used to assert content-verified) and the limits section of EXP-CTIME.
+    Does NOT contribute: any claim that ctime always changes, or any evidence about
+    ext4 on this project's CI runner — that remains UNKNOWN.
+
+-------------------------------------------------------------------------------
 2026-09-11 CYCLE — MINIMUM MODEL OF PROJECT REALITY (pointer)
 -------------------------------------------------------------------------------
   Evidence RM-1..RM-18 (four independent research passes: knowledge representation,
