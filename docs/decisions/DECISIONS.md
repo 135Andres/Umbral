@@ -431,6 +431,93 @@ be recorded.
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-020 — v0.2 `show`: an entry-scoped value must name its entry
+Authority: USER (2026-09-13 technical-design decision, "S1").
+Statement: where `show` exposes a `basis` associated with an entry, `show` must identify that
+entry unambiguously. The change is the minimum that makes `UD-019`'s applicability requirement
+satisfiable on `show`'s surface, and nothing more.
+Relationship to UD-017 and UD-019, which this record references and does not amend (records are
+immutable):
+  - `UD-017` requires that `show` expose `basis` where it is relevant.
+  - `UD-019` requires that the relation between a `basis` and what it applies to be determinable
+    under the contract, and left the mechanism open.
+  - `UD-019` also recorded CTF-2 (`show` names no path) as DEFERRED, with one design condition:
+    if v0.2 changes `show` to expose `basis`, the new representation must not reproduce the
+    unresolved applicability ambiguity.
+  - Verified in the technical design: `show`'s output names its entry **nowhere** — its
+    `observed kind=… size=… mtime=…` line carries neither a path nor a run. So `show` cannot
+    satisfy `UD-017` and `UD-019` together without naming the entry. This record resolves that
+    impasse in favour of naming it.
+Why this is a decision and not a design detail: it resolves a question `UD-019` left explicitly
+OPEN (S1 vs S2), and it authorizes a scope item that was deferred — pulling the minimum of CTF-2
+into v0.2. Neither can be done implicitly: `V0.2-SCOPE-PROPOSAL.md` and
+`V0.2-TECHNICAL-DESIGN.md` are candidates (DT4) and cannot hold a commitment.
+Alternatives considered: (a) S2 — `show` does not expose a per-entry `basis` in v0.2 —
+REJECTED by the user: it would leave `UD-017`'s obligation partially unmet. (b) Leave `show`
+unchanged and treat the impasse as a legibility debt — REJECTED: the same reasoning as `UD-019`
+alternative (b), the gap would be introduced by v0.2 rather than inherited by it.
+Scope guard — this record does NOT:
+  - redesign `show`; its existing lines, labels and fields are unchanged;
+  - resolve `F-V01-8` or `F-V01-9`, in general or in part;
+  - become a general legibility cleanup, or authorize one;
+  - authorize the path-encoding change (still `RESEARCH FOLLOW-UP`);
+  - authorize implementation.
+CTF-2 itself remains a deferred legibility debt: what this record takes into v0.2 is the minimum
+needed for `basis` applicability, not the debt's own resolution.
+Consequences:
+  - `show` gains, for each entry it reports, a field naming that entry (the mechanism is a
+    design question, exactly as `UD-019` left it for `basis`).
+  - A contractual test is required that FAILS if a `basis` in `show`'s output cannot be
+    attributed to an entry on the same line.
+Reversibility: medium. Reverting means `show` returns to exposing no per-entry `basis`, which
+would re-open the `UD-017`/`UD-019` impasse.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-021 — v0.2 verdict preservation is bounded by the evidence each observation holds
+Authority: USER (2026-09-13 technical-design closure mandate, "F-TD-4").
+Statement: the verdict-equivalence clause of `UD-016` is refined. v0.2 preserves the verdicts,
+the evidence, the ambiguity and the reconstruction capability **within the limits of the
+evidence each observation actually holds**. It does NOT guarantee that an observation which
+reused prior evidence reproduces the verdict a full re-read would have produced.
+What this record does NOT do: it does not reconsider v0.2's objective, and it does not remove or
+weaken the skip. The objective stands. What is corrected is one clause of its formulation.
+Relationship to UD-016, which this record refines and does not amend (records are immutable):
+`UD-016` states the objective and adds "an optimisation that changes a verdict fails v0.2".
+That sentence is **no longer accurate as written**, and the discrepancy is resolved here rather
+than by editing the record. See the partial supersession pointer below.
+The four things this record keeps distinct, because conflating them is how a limitation becomes a
+false guarantee:
+  - **verdict equivalence** — that v0.2's classification of a change equals what a full re-read
+    would produce. **NOT guaranteed.** It holds only where the two observations hold the same
+    evidence.
+  - **reuse of prior evidence** — that a skip may carry a previous run's content reading forward.
+    Permitted, and it must be attributable (see `hash_read_run` below).
+  - **content verification** — that the bytes were read in this run. Only a fresh read qualifies.
+  - **metadata-stable** — that the metadata the predicate rests on matched. It is not content
+    verification and may never be presented as one (`UD-017`).
+Accepted known limitation (`F-TD-4`, recorded in
+`docs/candidates/V0.2-TECHNICAL-DESIGN.md` §G.3):
+  - the skip may retain a previous content reading;
+  - a mutation that preserves the metadata the skip predicate uses may go undetected in that
+    observation;
+  - this is a known and **reachable** limitation of the mechanism, not a hypothetical;
+  - it must **not** be presented as a guarantee of v0.2, and it must not be hidden as a test
+    exception.
+Consequence for persistence: where v0.2 reuses a content result without re-reading bytes, the
+reconstruction must be able to distinguish that result from a new content verification. The
+evidence needed to distinguish at least these three states must be persisted:
+  - the content was actually read and verified;
+  - prior evidence was reused through metadata;
+  - the result is UNKNOWN / error.
+The concrete persistence schema is NOT decided here; the requirement is the distinguishability.
+Scope guard: this record does NOT authorize implementation, does NOT change the objective, does
+NOT remove the skip, does NOT select a persistence schema, and does NOT resolve `D-PEND-2`.
+Reversibility: low in practice. Accepting the limitation is what makes the skip admissible at
+all; withdrawing it would return the objective to an unachievable form.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -441,7 +528,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (process)    — a commitment about how the project works, not about the product.
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
-                         (UD-016, UD-017, UD-019.) A scoped commitment expires with its version
+                         (UD-016, UD-017, UD-019, UD-020, UD-021.) A scoped commitment expires with its version
                          unless a later record extends it.
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
                          a pointer is added here instead.
@@ -459,6 +546,13 @@ SUPERSESSION POINTERS (records are immutable; this is where replacement is recor
       status unchanged (DECIDED, process), still carrying its original flag: it was
       inferred from observed behaviour rather than stated, and was awaiting one
       confirmation (recorded as D8). Still awaiting it.
+  UD-016 ("v0.2 objective: O(changes) for content read and hashing ONLY")
+      superseded **in part** by UD-021 (2026-09-13). UD-016's objective stands unchanged: the
+      reading/hashing of content is what v0.2 reduces, and O(changes) is not claimed for the
+      traversal. What is superseded is one clause of its formulation — "an optimisation that
+      changes a verdict fails v0.2" — which the accepted limitation F-TD-4 shows to be
+      inaccurate as written. Verdict preservation is now bounded by the evidence each
+      observation holds (UD-021). UD-016's text is preserved as written and is not edited.
 
 ================================================================================
 NOT DECIDED (explicitly, by the user's own record — MC §52): final name, final
