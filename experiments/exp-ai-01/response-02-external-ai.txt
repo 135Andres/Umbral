@@ -1,0 +1,45 @@
+=== RAW PARTICIPANT RESPONSE — unmodified. Metadata and analysis: EVIDENCE-AI-02.md ===
+
+Q1
+ANSWER: 6 entries total: 5 files, 1 directory, 0 symlinks, 0 other.
+EVIDENCE: derived   entries=6  files=5  dirs=1  symlinks=0  other=0
+INFERENCE: The counts sum to 6 (5+1+0+0), matching derived   entries=6 and derived   run=1  entries=6 and derived   run=2  entries=6.
+CONFIDENCE: high, because numbers are explicitly stated in one line.
+Q2
+ANSWER: Two distinct words: observed and derived.
+EVIDENCE: observed  canonical=/tmp/umbral-check-01/subject ; observed  kind=file  size=10  mtime=2026-09-13T02:33:26.061Z ; derived   root=/tmp/umbral-check-01/subject ; derived   run=1  entries=6 ; derived   modified  path=notes/three.txt  content-changed=true  scan-complete=true
+INFERENCE: observed lines appear to report directly seen filesystem facts (canonical path, kind/size/mtime). derived lines appear to report tool-computed/stored bookkeeping (root, workspace-id, run numbers, counts, hash/stability, comparison results, encoding). This distinction of meaning is inferred from content, not defined in the material.
+CONFIDENCE: high for the list; medium for the description, because purpose is inferred from usage only.
+Q3
+ANSWER: Command 1 output does not state its path: No. Command 2 output does not state its path: No.
+EVIDENCE: Command 1 $ umbral show /tmp/umbral-check-01/subject notes/one.txt followed only by derived   run=1  hash=b6748fa64b14  stability=stable / observed  kind=file  size=10  mtime=2026-09-13T02:33:26.061Z / exit=0 . Command 2 $ umbral show /tmp/umbral-check-01/subject notes/weird-\xff\xfe.txt followed only by derived   run=1  hash=ba73f69e9b28  stability=stable / observed  kind=file  size=6  mtime=2026-09-13T02:33:26.061Z / exit=0 .
+INFERENCE: The path appears only in the invoked command line, not in any of the following output lines; a reader must associate them by position, not by content.
+CONFIDENCE: high, verified by absence of path substring in those six output lines.
+Q4
+ANSWER: Two paths: notes/three.txt and notes/weird-\xFF\xFE.txt. No, not same form.
+EVIDENCE: derived   modified  path=notes/three.txt  content-changed=true  scan-complete=true ; derived   modified  path=notes/weird-\xFF\xFE.txt  content-changed=true  scan-complete=true
+INFERENCE: First is written with only literal letters/slash/dot. Second contains two 4-character sequences \xFF and \xFE with leading backslash, letter x, and two uppercase hex digits each, interposed between notes/weird- and .txt.
+CONFIDENCE: high, character-for-character comparison.
+Q5
+ANSWER: Can determine almost nothing certain about actual bytes; cannot reconstruct exact byte sequence from output alone. UNKNOWN for exact bytes.
+EVIDENCE: derived   modified  path=notes/weird-\xFF\xFE.txt  content-changed=true  scan-complete=true and derived   path-encoding=escaped  reason=path-is-not-valid-utf8
+INFERENCE: The tool signals non-literal writing, but the material never defines the escaping: whether \xFF means byte 0xFF, whether case matters, whether backslash itself is escapable, which portion is escaped, or what the original length is. The earlier command-line form notes/weird-\xff\xfe.txt with lowercase is input, not tool output, and does not define output decoding.
+CONFIDENCE: high that bytes are undetermined, because no decoding rule is shown.
+Q6
+ANSWER: Yes.
+EVIDENCE: derived   path-encoding=escaped  reason=path-is-not-valid-utf8
+INFERENCE: It tells you the tool claims an escaped encoding was used because the path is not valid UTF-8. It leaves open what escaped means, how to decode it, which path(s) it applies to, and what the true bytes are.
+CONFIDENCE: high for existence of explanation; high that decoding remains open because no scheme is shown.
+Q7
+ANSWER: UNKNOWN if verified independently; tool asserts completeness but does not enumerate entries.
+EVIDENCE: derived   last-run=1  complete=true ; derived   run=1  complete=true ; derived   run=2  complete=true ; derived   content-verified=5 ; derived   content-not-verified=0  reason=unstable-or-unreadable ; derived   content-verification-not-applicable=1  reason=not-a-regular-file ; derived   unobservable-paths=0  reason=not-observed-at-observation-time ; derived   log-runs=1  log-observations=6
+INFERENCE: Counts are internally consistent with 6 entries (5 verified +1 not-applicable, 0 failures, 0 unobservable, complete=true), suggesting success if trusted, but only three file paths are ever named (notes/one.txt, notes/weird-..., notes/three.txt). Without a full entry list a reader cannot check that every filesystem entry was covered.
+CONFIDENCE: medium, because consistency supports the claim but verifiability is missing.
+Q8
+ANSWER: No failure shown; all 7 commands ended with status 0.
+EVIDENCE: exit=0 after init, after first observe, after status, after first show, after second show, after second observe, after changes — seven occurrences, no other exit value.
+INFERENCE: By general command-line convention exit 0 means normal/successful termination; material shows no non-zero, no signal, no error text.
+CONFIDENCE: high for no abnormal end shown; medium for meaning of 0, which relies on convention not defined in material.
+LIMITATIONS: Only counts and selected paths shown; no full entry listing; no definition of observed vs derived, of escaped encoding, of hash/stability, or of exit-status meaning in material.
+UNANSWERED: Q5 exact bytes and Q7 independent completeness — missing decoding specification and missing enumeration of all 6 entries.
+UNEXPECTED_FINDINGS: Show outputs omit the queried path entirely, forcing positional association; changes output mixes plain and escaped path forms in adjacent lines with only one global path-encoding line; hex case differs between input (\xff\xfe) and output (\xFF\xFE) with no explanation.
