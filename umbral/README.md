@@ -22,6 +22,21 @@ alone what came from their filesystem and what the tool produced:
 The set of fields allowed on an `observed` line is a constant (`OBSERVED_FIELDS` in
 `src/report.rs`) and is enforced by a test, so the distinction cannot decay by inattention.
 
+### Paths that are not valid UTF-8
+
+A path is a byte string; the output is text. Where those disagree the tool neither refuses nor
+mangles. A byte that is not part of a valid UTF-8 sequence renders as `\xNN`, and a literal
+backslash renders as `\\` so an escape can never be mistaken for a name containing the same
+characters. The rendering is reversible. When it happens, the tool says so:
+
+```
+observed  canonical=/tmp/ws-\xFF\xFE
+derived   canonical-encoding=escaped  reason=path-is-not-valid-utf8
+```
+
+That line is required, not decorative: without it a reader could take the escaped form for the
+name on disk. Paths that are valid UTF-8 render as themselves and produce no such line.
+
 ## What this is NOT
 
 - **Not the product.** This is development code for one version. Nothing here is a selected
