@@ -1,0 +1,58 @@
+=== RAW PARTICIPANT RESPONSE — unmodified. Metadata and analysis: EVIDENCE-AI-01.md ===
+
+Q1
+ANSWER:      6 entries in total: 5 files, 1 directory, 0 symlinks, 0 other.
+EVIDENCE:    derived   entries=6  files=5  dirs=1  symlinks=0  other=0
+INFERENCE:   None beyond reading the numbers; the line directly states the counts.
+CONFIDENCE:  high, because the numbers are explicitly stated in one line.
+
+Q2
+ANSWER:      Three distinct leading words: observed, derived, exit=0.
+EVIDENCE:    observed  canonical=/tmp/umbral-check-01/subject, derived   root=/tmp/umbral-check-01/subject, exit=0
+INFERENCE:   observed lines appear to report directly witnessed facts (canonical path, kind/file size/mtime). derived lines appear to report computed/stored results (root, workspace-id, run numbers, counts, hashes, comparisons, encoding). exit=0 appears to report how the command terminated. This division is inferred from pattern of contents, not stated in the material.
+CONFIDENCE:  medium, because the words are objectively listed but their functional distinction is inferred from usage pattern only.
+
+Q3
+ANSWER:      Command 1 (umbral show /tmp/umbral-check-01/subject notes/one.txt): No. Command 2 (umbral show /tmp/umbral-check-01/subject notes/weird-\xff\xfe.txt): No.
+EVIDENCE:    Command 1 output: derived   run=1  hash=b6748fa64b14  stability=stable + observed  kind=file  size=10  mtime=2026-09-13T02:33:26.061Z + exit=0. Command 2 output: derived   run=1  hash=ba73f69e9b28  stability=stable + observed  kind=file  size=6  mtime=2026-09-13T02:33:26.061Z + exit=0.
+INFERENCE:   Neither output contains a path token at all; the path appears only in the $ command line, not in the tool output. Therefore a reader of the output alone cannot link output to path except by command order/context.
+CONFIDENCE:  high, because completeness can be checked by inspection — no path string occurs in those six output lines.
+
+Q4
+ANSWER:      No, not same form. Path 1 is plain ASCII. Path 2 contains backslash-x escapes with uppercase hex.
+EVIDENCE:    derived   modified  path=notes/three.txt  content-changed=true  scan-complete=true ; derived   modified  path=notes/weird-\xFF\xFE.txt  content-changed=true  scan-complete=true
+INFERENCE:   The difference is literal characters \, x, F, F etc. in the second vs. only filename characters in the first. That the second is an encoded form relies on Q6 line, not on Q4 lines alone.
+CONFIDENCE:  high for quotation and for observable character difference; medium for calling one "plain" vs "escaped" without using the later encoding line.
+
+Q5
+ANSWER:      UNKNOWN for exact bytes. Only determinable: tool treats it as not literally written.
+EVIDENCE:    derived   modified  path=notes/weird-\xFF\xFE.txt  content-changed=true  scan-complete=true ; derived   path-encoding=escaped  reason=path-is-not-valid-utf8
+INFERENCE:   If external convention \xFF = byte 0xFF is assumed, it would suggest bytes 0xFF 0xFE at that position, but the material does not define the escape syntax, its scope, whether other characters are literal, case significance (\xff in the earlier show invocation vs \xFF here), or how to invert it. Therefore actual byte sequence cannot be determined from output alone.
+CONFIDENCE:  low for any byte claim, high for UNKNOWN — because decoding requires a specification the material does not give.
+
+Q6
+ANSWER:      Yes.
+EVIDENCE:    derived   path-encoding=escaped  reason=path-is-not-valid-utf8
+INFERENCE:   It tells that some path rendering is escaped because a path is not valid UTF-8. It leaves open: which path(s) it applies to, what escaped means syntactically, how to recover original bytes, and whether it applies to whole output or only the final command.
+CONFIDENCE:  high that the line is an explanation; medium on scope because linkage to specific path is not stated in the line itself.
+
+Q7
+ANSWER:      Tool claims completeness, but successful reading cannot be independently verified from material alone.
+EVIDENCE:    derived   run=1  complete=true, derived   run=2  complete=true, derived   content-verified=5, derived   content-not-verified=0  reason=unstable-or-unreadable, derived   content-verification-not-applicable=1  reason=not-a-regular-file, derived   unobservable-paths=0  reason=not-observed-at-observation-time, derived   log-runs=1  log-observations=6
+INFERENCE:   Counts (5 verified + 1 not-applicable = 6 entries, 0 not-verified, 0 unobservable, complete=true) are consistent with every entry accounted for, but complete, verified, observable are tool-defined terms with no definition in the material, so they support only that the tool asserts success, not that reading actually succeeded.
+CONFIDENCE:  medium, because numbers align but meanings are undefined in-material.
+
+Q8
+ANSWER:      No failure shown; all 7 commands show exit=0.
+EVIDENCE:    exit=0 appears after init, after first observe, after status, after both shows, after second observe, after changes — seven occurrences total, no other exit value.
+INFERENCE:   By general command-line convention 0 means normal/successful termination, but the material itself does not define exit=. The conclusion of no abnormal end rests partly on that external convention.
+CONFIDENCE:  high that no non-zero status appears; medium that this means success, because that relies on external convention.
+
+LIMITATIONS: Only the captured transcript was available; no definitions of observed vs derived, complete, verified, escaped, stable, or exit= are given in-material. No decoding table for escapes. No directory listing independent of tool to cross-check.
+
+UNANSWERED: Q5 exact bytes — cannot be answered because escape mapping and scope are unspecified. Q7 in absolute sense — cannot confirm actual readability, only tool's self-report.
+
+UNEXPECTED_FINDINGS:
+- The show invocation writes notes/weird-\xff\xfe.txt with lowercase hex, while changes reports notes/weird-\xFF\xFE.txt with uppercase hex for what appears to be the same entry; material does not explain case change.
+- The two show outputs contain no path echo, making them unlinkable from output alone.
+- status reports log-observations=6 matching entries=6.
