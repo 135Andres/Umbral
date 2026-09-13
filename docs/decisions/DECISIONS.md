@@ -376,6 +376,61 @@ Reversibility: high.
 Status: DECIDED (process/epistemic constraint), with the mechanism still OPEN.
 
 ================================================================================
+UD-019 — v0.2 basis: applicability must be determinable; the mechanism is NOT chosen
+Authority: USER (2026-09-13 project decision following EXP-AI-01, "QUÉ APRENDEMOS DE
+EXP-AI-01 PARA v0.2").
+Statement: `basis` must be traceable to the entry or object it applies to. The mechanism of
+that traceability remains a design question.
+What this record does NOT say — and the distinction is the point: it does not say that every
+`basis` must explicitly carry a subject. It says that the applicability of `basis` must be
+traceable and determinable. That is what the evidence permits.
+Relationship to UD-017: `UD-017` already establishes that `basis` must be traceable to the
+evidence that produced the result. This record refines HOW that traceability requirement must
+be satisfied, and deliberately does not select the representation. `UD-017` is not amended;
+records are immutable, so this is a new record referencing it.
+Evidence: EXP-AI-01 (`8a50eb2`), `experiments/exp-ai-01/COMPARISON-AI-01-AI-02.md` §8, §10.
+Two independent AI readers, under the same frozen material, could not resolve the
+applicability of a derived declaration from positional adjacency alone: the
+`path-encoding=escaped` line names no path and follows two `modified` lines (verified against
+`material.txt` line 64). Mere positional adjacency therefore does not provide sufficient
+traceability for external readers under this material.
+What follows for v0.2: v0.2 must guarantee that the relation between `basis` and that to which
+it applies is determinable under the contract.
+The mechanism stays open, and none of these is excluded in advance:
+  - an explicit field;
+  - a declared convention;
+  - another verifiable representation.
+Do NOT assume, in any later design: that it must be a string; that it must be an independent
+field; that it must be repeated on every line; or that any particular format is implied.
+The format is not designed here and is not designed by this record.
+Alternatives considered: (a) require an explicit `subject` on every derived line — NOT
+adopted: it fixes the mechanism before the design work, and the experiment supports
+determinability, not one particular representation; (b) leave UD-017 as it stands and treat the
+adjacency problem as a legibility debt like F-V01-8/F-V01-9 — REJECTED: `basis` is new output
+whose applicability is part of what makes its traceability claim meaningful, so the gap would
+be introduced by v0.2 rather than inherited by it.
+Consequences:
+  - `basis` must not introduce an undefined semantic vocabulary. `F-V01-9` records that the
+    output's vocabulary is defined nowhere in the output; v0.2 adds a term to that output and
+    must not deepen the debt. `F-V01-9` is NOT reopened or resolved by this record.
+  - Non-determinability must remain operational, not anthropomorphic: `unknown` means a
+    property is not determinable from the available evidence within the contract. The output
+    and the documentation describe evidence, observations, derivations and limits of
+    determination, and attribute no mental state to the software. The enforced
+    `BANNED_LEXICON` in `umbral/src/report.rs`, and the test that applies it to the rendered
+    output of every command, continue to apply unchanged.
+  - A contractual test is required that FAILS if a `basis` cannot be attributed to the entry or
+    object it describes under the chosen mechanism.
+Scope guard: this record does NOT authorize implementation, does NOT select a format, does NOT
+redesign `show`, and does NOT redesign the path encoding. The `show` question raised by the same
+experiment (CTF-2) remains DEFERRED, with one design condition: if v0.2 changes `show` to expose
+`basis`, the new representation must not reproduce the unresolved subject/applicability
+ambiguity observed in EXP-AI-01.
+Reversibility: medium. Weaker than a format choice, but narrowing it later would itself have to
+be recorded.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -386,7 +441,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (process)    — a commitment about how the project works, not about the product.
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
-                         (UD-016, UD-017.) A scoped commitment expires with its version
+                         (UD-016, UD-017, UD-019.) A scoped commitment expires with its version
                          unless a later record extends it.
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
                          a pointer is added here instead.
