@@ -27,10 +27,11 @@ filesystem sovereign and make the semantic layer a derived, rebuildable, user-go
 projection (MC §12, §28, §39).
 
 WHAT WE HAVE DECIDED
-See DECISIONS.md (UD-001..UD-013). Headlines: open source, no ads; no mandatory
+See DECISIONS.md (UD-001..UD-023). Headlines: open source, no ads; no mandatory
 taxonomy; no hidden prompt injection; Sonora not an authority; local-first with file
-survivability; research before implementation; Gemini-first research with Hermes
-cross-verification; layered permission intent; views and proactive intelligence wanted.
+survivability; incremental version development; v0.2's bounded content-read optimisation,
+observation-basis and output-contract commitments; and its historical guarantees and
+minimum-materiality rule.
 Known gap in that log: provenance has no record — the charter states it (MC §40) but its
 own section header demotes it, and this repository deliberately did not resolve that for
 the user. See DECISIONS.md "GAPS IN THIS LOG".
@@ -86,17 +87,16 @@ WHAT COULD CHANGE OUR MIND
 - A candidate architecture scoring K1-K9 so decisively that scope assumptions change.
 - Any new explicit user decision — user authority always outranks research.
 
-CURRENT NEXT STEP (updated 2026-09-12b: v0.1 EVIDENCE COMPLETE EXCEPT THE READER PROTOCOL)
+CURRENT NEXT STEP (updated 2026-09-13: v0.2 ACTIVE AT CONTRACT INTEGRATION)
 
-Development proceeds by incremental versions (v0.1, v0.2, ...) rather than jumping to V1.
-v0.1 exists as the development crate `umbral/` — a local, read-only observation instrument
-whose reader-facing surface closes V0's SC-5 gap. Its evidence is registered in
-docs/versions/v0.1.md. The reader protocol has since been executed by the project owner and
-**its acceptance criterion A1 was not satisfied**: three of eight questions could not be
-answered from the output alone, and two findings from that run — mislabelled output lines, and
-limits expressed only reactively — await an owner decision. v0.1 is therefore **not declared
-complete**. V1 remains reserved for a version that has passed a separate AUDIT READINESS
-REVIEW and an external audit; no version is designated as the audit candidate in advance.
+Development proceeds by incremental versions on version branches. v0.2 is active on branch
+`v0.2`; its current gate is owner acceptance of falsifiable acceptance criteria derived from
+`UD-016`–`UD-023`. Production changes begin only after that gate and proceed test-first. The
+active record is `docs/versions/v0.2.md`; the scope and technical-design documents remain
+candidates. v0.1 remains **not declared complete** because its independent-human reader
+criterion is unsatisfied. V1 remains reserved for a version that has passed a separate AUDIT
+READINESS REVIEW and an external audit; no version is designated as the audit candidate in
+advance.
 
 `fsp-check/` is unchanged and remains frozen at PARTIAL. The two are separate: V0 is
 evidence for v0.x, never a dependency of it.
@@ -109,7 +109,7 @@ status comes only from SC-5, the missing reader-facing surface, which was outsid
 mandate. What V0 did not demonstrate, and what it leaves open, is listed in the closeout
 record's V1 handoff section — Q25 (SQLite-only vs SQLite + JSONL) remains OPEN.
 
-Current work is publication preparation, not product work.
+Current work is v0.2 contract integration on its version branch; architecture remains unselected.
 Unchanged evidence lines (open, not cancelled, runnable independently):
 E-CO-1 (coexistence kill-test), E-CO-6a (safety floor), E-MIN-1 (field ablation with
 readers). Prior next-step text preserved below for continuity.
