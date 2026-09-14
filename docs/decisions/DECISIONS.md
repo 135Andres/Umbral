@@ -597,6 +597,74 @@ would itself have to be recorded.
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-023 — Historical guarantees and minimum-materiality rule
+Authority: USER (2026-09-13 mandate "Umbral v0.2 — Derivación del núcleo histórico mínimo",
+followed by explicit authorization to begin converting the approved conceptual decisions into
+versioned changes).
+Statement: v0.2 adopts the following historical-contract guarantees as one related decision set:
+
+1. **Historical emission and support.** Umbral preserves what it emitted and the historical
+   support available to it, with the material conditions and limitations known at the time. A
+   later interpretation never replaces the original emission. Historical code behaviour,
+   intended historical rules and later evaluation remain distinguishable when known; absence
+   of enough retained support may legitimately make a later question indeterminable.
+2. **Observational appearance and disappearance.** `Created` and `Deleted` are relative claims
+   over compared observations and their effective scope. They do not assert physical creation
+   or deletion. Materially different cases — confirmed absence, incomplete reference,
+   effective-scope change, unknown coverage and other known limitations — must not collapse.
+3. **Effective scope and contemporary explanation.** The effective historical scope, achieved
+   coverage and the material explanation recorded during the run are preserved. A partial
+   explanation remains marked partial, and a later explanation remains distinguishable from
+   one recorded contemporaneously. This is not a commitment to retain the complete policy
+   resolution chain.
+4. **Evidence acquisition.** Known, material facts about how evidence was or was not obtained
+   must survive: fresh acquisition, reuse, failed attempt, known non-attempt, historical
+   uncertainty about whether an attempt occurred, and known diagnostics. Metadata evidence is
+   not content evidence; a diagnostic is not automatically a root cause; equal values do not
+   imply equal acquisition histories.
+5. **Re-evaluation.** Re-evaluation is a derived, conditional act. Its evidence, evaluator,
+   applicable rules, material limitations and use of information acquired after the historical
+   run remain attributable. Insufficient evidence, evaluator incapability and an evaluation
+   attempt that failed remain distinguishable. A re-evaluation neither substitutes for the
+   historical emission nor establishes historical code behaviour, intended rules or physical
+   events by itself.
+
+Minimum-materiality rule: historical support is mandatory exactly where information known to
+Umbral during observation, acquisition, effective-scope determination or emission would, if
+lost, collapse two histories that the guarantees above require to remain distinguishable. This
+rule defines a minimum, not an instruction to retain every available or potentially useful fact.
+It never requires Umbral to invent a distinction it could not observe.
+
+Relationship to existing records: this record extends the historical contract without amending
+`UD-017`, `UD-019`, `UD-020`, `UD-021` or `UD-022`. In particular, `UD-021`'s distinction between
+a fresh content reading, reused prior evidence and UNKNOWN/error remains mandatory; its concrete
+persistence mechanism remains open.
+
+Alternatives rejected by the user: treating later reconstruction as the historical emission;
+treating `Created`/`Deleted` as physical claims; collapsing effective scope into achieved
+coverage; collapsing diagnostics into causes; treating reused evidence as a fresh reading; and
+defining historical support by future reconstructibility.
+
+Consequences:
+  - the association between an emission and its material historical support must remain
+    recoverable, but this record does not require co-location or any particular carrier;
+  - known material acquisition diagnostics must not be discarded before persistence merely
+    because the final result can honestly say `unknown`;
+  - the historical conditions on both sides of a comparative claim must remain interpretable;
+  - later evaluations are new, attributable acts and cannot silently rewrite prior emissions;
+  - implementation proceeds only through version-scoped, test-first increments whose behaviour
+    is already decided; an unresolved semantic choice remains a stop condition.
+
+Scope guard: this record does NOT select M1, M2 or M6; define a schema, table, struct, API,
+serialization, exact output vocabulary or identity model; adopt `ctime`; decide retention or
+TTL; guarantee reconstruction or replay; settle the names or full semantics of every mutation
+kind; authorize changes to the frozen V0 prototype; or declare v0.2 complete. The exact reduced
+set of irreducible conceptual distinctions remains analysis until separately accepted.
+
+Reversibility: low for the semantic boundaries; high for every mechanism left open.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -607,7 +675,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (process)    — a commitment about how the project works, not about the product.
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
-                         (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022.) A scoped commitment expires with its version
+                         (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023.) A scoped commitment expires with its version
                          unless a later record extends it.
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
                          a pointer is added here instead.
