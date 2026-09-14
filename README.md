@@ -51,13 +51,13 @@ Four commitments define the shape of the project:
 | Product | **does not exist.** There is no usable application to install |
 | Architecture | **not selected.** No database, protocol, versioning engine, UI or semantic model has been chosen |
 | Prototype | **V0 exists and is frozen**, status `PARTIAL` — see below |
-| Development | **v0.1 exists** as a local, read-only observation instrument under [`umbral/`](umbral/); its evidence is registered, and it is **not declared complete** |
-| Phase | DISCOVERY → RESEARCH → ARCHITECTURE |
-| Next | V1 is **not started** and is not authorized |
+| Development | **v0.2 is active** on branch `v0.2`, currently at contract integration; v0.1 remains not declared complete |
+| Phase | Incremental development, with architecture still unselected |
+| Next gate | Accept v0.2's falsifiable acceptance criteria before the first production-code slice |
 
-Two names that look alike and are not. **V0** is the frozen experiment `fsp-check/`. **v0.1**
-is the first development version, in new code that does not depend on it. V0 is evidence for
-v0.x; it is never a dependency of it.
+Two names that look alike and are not. **V0** is the frozen experiment `fsp-check/`.
+**v0.1** and the active **v0.2** are development versions in new code that does not depend on
+it. V0 is evidence for v0.x; it is never a dependency of it.
 
 ## V0 — the first experiment
 
