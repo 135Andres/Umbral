@@ -665,6 +665,73 @@ Reversibility: low for the semantic boundaries; high for every mechanism left op
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-024 — Typed association and comparison-side identity (D6)
+Authority: USER (2026-09-13, explicit adoption "D6 = Sí" after the adversarial
+audit of the N3→N8 reduction).
+Statement: the historical association between an evaluative act and its support
+must be able to preserve, where material: the role the support played in the act,
+the identity of each comparison side it belongs to, and the known historical
+conditions of each side. This is a semantic requirement about what must remain
+distinguishable; it selects no representation, structure or names.
+Purpose: this record fixes the semantic condition under which the comparative
+anchoring distinction (N3) is absorbed into the typed association instead of
+remaining an independent core distinction. If a future representation binds only
+individual observations with roles and cannot identify to which comparison side
+an observation belonged, stories that differ only in their reference would
+collapse, violating the observational relativity required by the second
+historical guarantee (UD-023 §2). The canonical adversarial case: a `Created`
+claim relative to reference run R1 versus the same claim relative to reference
+run R2, with identical retained observations on both sides, must remain
+distinguishable.
+Relationship to existing records: a semantic precision of the association
+requirement already adopted in UD-023 (its first consequence: the association
+between an emission and its material historical support must remain recoverable,
+and the historical conditions on both sides of a comparative claim must remain
+interpretable). It amends no earlier record.
+Scope guard: this record does NOT define how a comparison side is identified
+concretely (run, capture, derived set), the closed vocabulary of roles, any
+carrier, schema or storage for the association, event names, or retention of the
+linked support.
+Reversibility: low for the semantic requirement; high for every mechanism left
+open.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-025 — Acquisition granularity and traversal facts (D7)
+Authority: USER (2026-09-13, explicit adoption "D7 = Sí" after the adversarial
+audit of the N5→derivable reduction).
+Statement: the acquisition history must be able to preserve, where material: the
+acquisition state distinguished per material component of the evidence (for
+example, metadata versus content), and known facts about the traversal process
+that explain which part of the scope came to be observed, or why it ceased to be
+observed. This defines what must remain distinguishable; achieved coverage
+remains a consequence derivable from these facts together with the effective
+scope — not an entity and not an additional guarantee.
+Purpose: this record fixes the semantic conditions under which achieved coverage
+remains derivable instead of an independent core distinction. Acquisition states
+must not collapse metadata and content when the difference is material (UD-023 §4
+already requires metadata ≠ content), because coverage of the metadata component
+does not imply coverage of the content component. Traversal facts are material
+even when no individual element exists to attach them to: when enumeration
+stopped at a known point, the un-enumerated remainder leaves coverage unknown,
+and D2/D3 require unknown coverage to stay distinguishable from verified-zero
+change.
+Relationship to existing records: a semantic precision of the acquisition
+requirement already adopted in UD-023 §4 (how evidence was or was not obtained,
+including failed attempt, known non-attempt and historical uncertainty). It
+specifies the minimum granularity that preserves the differences D4 already
+guarantees; it introduces no guarantee D4 did not carry. It amends no earlier
+record.
+Scope guard: this record does NOT define the closed vocabulary of acquisition
+states, the exact set of material components, how coverage is computed or
+presented (including the fate of the current `complete_scan` flag), the semantics
+of `unknown` (UD-019 unchanged), observation identity, or retention of acquisition
+records.
+Reversibility: low for the semantic requirement; high for every mechanism left
+open.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -675,7 +742,8 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (process)    — a commitment about how the project works, not about the product.
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
-                         (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023.) A scoped commitment expires with its version
+                         (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023, UD-024,
+                         UD-025.) A scoped commitment expires with its version
                          unless a later record extends it.
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
                          a pointer is added here instead.
