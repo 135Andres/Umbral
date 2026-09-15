@@ -732,6 +732,77 @@ open.
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-026 — Contextual identity of comparison sides (D8)
+Authority: USER (2026-09-13, explicit adoption of the weakened formulation after the
+semantic investigation "Identidad de los lados de comparación", which rejected the
+stronger phrasing "anclado en la determinación histórica de observación" as
+presupposing an observation model not yet decided).
+Statement: the historical identity of a comparison side is contextual: it must allow
+distinguishing the stories the adopted guarantees require to remain separate, without
+constituting a claim of physical or ontological identity of the observed objects. A side
+is anchored in the historical fact of observation that constitutes it — what was
+observed, in which act, to the extent Umbral knew it — and in the material conditions
+known of that observation. Equality of content, hash, observed values, coverage or
+acquisition modality does not by itself imply identity of the side; the run participates
+in the individuation of the observation, but does not by itself define the side. This
+decision fixes semantic meaning, not an identification mechanism or a concrete
+representation. It does not presuppose how many observations exist, how they are
+individuated, or how they are identified.
+What this record fixes conceptually:
+  - a comparison side is not a physical object, a value, a hash, a run or a role;
+  - equality of content is not historical identity; equality of acquisition is not
+    historical identity;
+  - identity must be sufficient to preserve the differences D1–D7 require;
+  - there is no obligation to assert physical continuity between observations.
+Relationship to existing records: a semantic precision of the comparison-side identity
+requirement already adopted in UD-024 (D6). It amends no earlier record.
+Scope guard: this record does NOT decide which identifier to use, whether to use a UUID
+or a hash, `(run_id, observation_id)`, how observations are identified, the structure of
+a run, whether a side is stored or derived, schemas, tables, structs, serialization, API,
+architecture, role vocabulary, acquisition-state vocabulary, `unknown` (UD-019
+unchanged), the identity of rules/evaluators, or retention/TTL. It does not close the
+`Observation` model and adds no ontological property to it. It does not turn achieved
+coverage into an independent guarantee.
+Reversibility: low for the semantic requirement; high for every mechanism left open.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-027 — Historical attribution of the evaluative act (D9)
+Authority: USER (2026-09-13, explicit adoption "D9 = Sí" with one minimal modification:
+the record must state its compatibility with the three strata D1 already distinguishes).
+Statement: D1–D8 do not require a stable or absolute identity of rules or of the
+evaluator. They require that the evaluative act be historically attributable with
+sufficient context to distinguish the original emission from later interpretations or
+re-evaluations, including the rules Umbral knew and recorded as applied in that act, their
+partiality where it applies, and the temporal provenance of that information.
+Declared rules, rules recorded as applied, and rules inferred afterwards are distinct
+categories and must not be presented as equivalent. Absence of knowledge about the
+historical rules may remain explicitly indeterminate.
+The strata D1 distinguishes — historical code behaviour, intended rules at the time, and
+later evaluation — remain distinguishable when known; "declared" designates what was
+declared at the moment of the act, not a later reconstruction.
+This decision defines no evaluator identity and no mechanism for identifying rules, and
+does not guarantee that the historical record describes the executable's internal
+behaviour with independent truth.
+Why the strata clause is part of the record: D1 (UD-023 §1) already requires those three
+strata to remain distinguishable when known. Read without it, "declared rules" and "rules
+inferred afterwards" leave the intended-rules stratum unhosted, and intended rules would
+collapse into a present-day inference — which would weaken an obligation UD-023 already
+carries. The clause preserves an adopted distinction; it creates no new reconstruction
+capability.
+Relationship to existing records: a semantic precision of the stratum attribution already
+required by UD-023 §1, and consistent with UD-024 (D6), UD-025 (D7) and UD-026 (D8). It
+amends no earlier record.
+Scope guard: this record does NOT decide evaluator identity, absolute rule identity, a
+rule hash, a commit SHA, an implementation version, an executable fingerprint, a
+configuration format, representation, schema, serialization, replay, reproducibility,
+equivalence between implementations, or any identification mechanism. It is not a
+guarantee that the recorded rules equal the executable's actual behaviour, and it does not
+make a later re-evaluation correct or complete.
+Reversibility: low for the semantic requirement; high for every mechanism left open.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -743,7 +814,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
                          (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023, UD-024,
-                         UD-025.) A scoped commitment expires with its version
+                         UD-025, UD-026, UD-027.) A scoped commitment expires with its version
                          unless a later record extends it.
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
                          a pointer is added here instead.
