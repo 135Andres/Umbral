@@ -803,6 +803,58 @@ Reversibility: low for the semantic requirement; high for every mechanism left o
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+INTERPRETIVE STATUS RECORD — P5: multiplicity of identical emissions under D1
+Authority: USER (2026-09-15 mandate "Registrar decisión owner sobre D1/P5 y cerrar el
+checkpoint"; the decision was stated explicitly by the owner).
+This record is NOT a UD. It creates no identifier, adds no guarantee and amends no earlier
+record, so the decision-record count remains UD-001–UD-027 and the identifier registry needs
+no change. Records above are immutable and are not edited; this entry is appended.
+Statement: the owner decides that **P5 remains INDETERMINATE in v0.2**. P5 is the question of
+whether the pure multiplicity of identical emissions must be preserved under D1 — history H1,
+in which an act emits `X` once, against history H2, in which the same act emits `X` twice,
+everything else remaining identical and the multiplicity being historically known. It is
+decided that:
+  - no normative guarantee of multiplicity preservation is adopted;
+  - no normative exclusion of multiplicity is adopted either;
+  - neither reading may be treated as an implicit norm;
+  - the treatment of multiplicity stays outside the v0.2 normative contract until a later
+    decision;
+  - the indeterminacy does NOT authorize implementation, documentation or tests to assume
+    unilaterally either that multiplicity is guaranteed or that its loss is permitted;
+  - a future guarantee about multiplicity must be justified by a demonstrated semantic need.
+The normative premise left pending by the adversarial research is recorded here as the
+question this entry declines to answer: whether the known difference between one and two
+emissions of the same content constitutes, by itself, a distinction that D1 obliges Umbral to
+preserve. That research is evidence, not authority; the authority for this entry is the owner.
+Relationship to existing records: this record relates to D1 (`UD-023` §1, "Umbral preserves
+what it emitted and the historical support available to it") and to the adversarial research
+chain that produced P5, which is evidence only. It **does not modify D1–D9 as adopted
+guarantees**; it fixes the normative state of an interpretive question that the research could
+not resolve. It does not extend the minimum-materiality rule of `UD-023`, and it does not make
+materiality the ground of the one-versus-two distinction. No new UD identifier is created and
+no existing identifier is reused or renumbered.
+Alternatives not adopted by the user in v0.2 (recorded as not adopted, not as incorrect):
+  - a cardinal reading of "what it emitted" that turns multiplicity into a D1 guarantee;
+  - a non-cardinal reading that normatively declares multiplicity may be discarded;
+  - a new independent guarantee created solely to close P5.
+Consequences:
+  - P5 falls outside the set of determined v0.2 guarantees;
+  - implementation may not unilaterally assume a multiplicity semantics in either direction;
+  - any future guarantee that needs to distinguish repetitions must first demonstrate the need;
+  - nothing here requires introducing stable identity, individuation, exact cardinality or a
+    collection structure now;
+  - later decisions may resolve the question, and this entry does not prejudge them.
+Scope guard: this record applies to **v0.2** and is not extrapolated automatically to later
+versions. The indeterminacy is neither a positive nor a negative guarantee. It is not a general
+obligation to retain known information, and it is not a general permission to discard it. It
+introduces no architecture, schema, data model, identifier, cardinality, sequence, multiset or
+persistence mechanism, and it authorizes no implementation.
+Reversibility: high — the question remains open and can be resolved at any time by a new
+normative decision of the owner supported by a demonstrated semantic need. Nothing in this
+entry pre-commits the content of that later decision.
+Status: DECIDED (scoped to v0.2) — what is decided is that P5 remains INDETERMINATE for v0.2.
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
