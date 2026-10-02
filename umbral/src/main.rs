@@ -17,7 +17,7 @@
 //! - `changes <root>` — what changed between the last two runs
 //! - `show <root> <path>` — the history of one path
 //! - `workspaces`     — which workspaces exist on this machine
-//! - `check <root>`   — recompute derived state and verify the log is self-consistent
+//! - `check <root>`   — verify the log: references, stored values, no derived state
 //!
 //! # Exit codes
 //!
@@ -45,7 +45,7 @@ usage: umbral <command> [args]
   changes <root>         read what changed between the last two runs (read-only)
   show <root> <path>     read the history of one path (read-only)
   workspaces             list workspaces on this machine (read-only)
-  check <root>           recompute derived state and verify the log (read-only)
+  check <root>           verify the log (read-only)
 
 State lives outside <root>, under $XDG_DATA_HOME/umbral/ (fallback ~/.local/share/umbral/).
 Nothing is ever written inside <root>.";

@@ -864,11 +864,14 @@ pub fn show(
 // check
 // ---------------------------------------------------------------------------------------
 
-/// Demonstrate the claim the persistence model rests on: the log is the truth, and the
-/// derived state is recomputed from it rather than stored.
+/// Verify the log, and print only verifications that can fail.
 ///
-/// This does not add product capability. It answers exactly one question — can the
-/// observable state be reconstructed from the persisted record — and reports it.
+/// What is checked: every observation belongs to a run that exists; every stored value is one
+/// this build can interpret, read raw rather than through the normalising readers; and the
+/// stored tables are the log and nothing else, so no derived state is persisted. Each of
+/// these is shown failing by a test that corrupts a log on purpose. Three earlier lines were
+/// removed because they could not fail (D-V01-11): a per-run count compared with itself, the
+/// same table read twice through the same parser, and duplicates the primary key forbids.
 pub fn check(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, crate::log::LogError> {
     let mut out = Vec::new();
     // The state path is composed from the data home and the workspace identifier, and the
@@ -889,41 +892,10 @@ pub fn check(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, crat
     let known: std::collections::BTreeSet<i64> = runs.iter().map(|r| r.id).collect();
     let orphans = all.iter().filter(|o| !known.contains(&o.run_id)).count();
 
-    // 2. Counts agree: the per-run entry count equals the rows actually stored.
-    let mut count_mismatch = 0u64;
-    for r in &runs {
-        let rows = all.iter().filter(|o| o.run_id == r.id).count() as u64;
-        if rows != r.entries {
-            count_mismatch += 1;
-        }
-    }
+    // 2. Every stored value is interpretable, read raw.
+    let invalid = log.invalid_values()?;
 
-    // 3. No duplicate (run, path) pairs.
-    let mut seen: std::collections::BTreeSet<(i64, Vec<u8>)> = std::collections::BTreeSet::new();
-    let mut duplicates = 0u64;
-    for o in &all {
-        let key = (o.run_id, path_key(&o.path));
-        if !seen.insert(key) {
-            duplicates += 1;
-        }
-    }
-
-    // 4. Independent recomputation: derive the latest run's state twice, once through the
-    //    per-run query and once by filtering the full log, and compare.
-    let recomputed_agrees = match runs.last() {
-        None => true,
-        Some(last) => {
-            let via_run = log.observations_for_run(last.id)?;
-            let via_all: Vec<Observation> = all
-                .iter()
-                .filter(|o| o.run_id == last.id)
-                .cloned()
-                .collect();
-            via_run == via_all
-        }
-    };
-
-    // 5. No derived state is persisted: the stored tables are the log, and nothing else.
+    // 3. No derived state is persisted: the stored tables are the log, and nothing else.
     let mut tables = log.tables()?;
     tables.sort();
     let only_log = tables
@@ -938,22 +910,29 @@ pub fn check(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, crat
         orphans == 0
     )));
     out.push(Line::derived(format!(
-        "run-counts-agree={}  mismatched-runs={count_mismatch}",
-        count_mismatch == 0
+        "row-values-valid={}  invalid-values={}",
+        invalid.is_empty(),
+        invalid.len()
     )));
-    out.push(Line::derived(format!("duplicate-entries={duplicates}")));
-    out.push(Line::derived(format!(
-        "derived-state-recomputed={}  agrees-with-stored={}",
-        true, recomputed_agrees
-    )));
+    for v in &invalid {
+        let mut text = format!("invalid-value  run={}", v.run_id);
+        let rendered = v.path.as_ref().map(|p| render_path(p));
+        if let Some(p) = &rendered {
+            text.push_str(&format!("  path={}", p.text));
+        }
+        text.push_str(&format!("  field={}  reason={}", v.field, v.reason));
+        out.push(Line::derived(text));
+        if let Some(p) = &rendered {
+            out.extend(path_notes(&[("path", p)]));
+        }
+    }
     out.push(Line::derived(format!(
         "stored-tables={}  derived-state-persisted={}",
         tables.join(","),
         !only_log
     )));
 
-    let ok =
-        orphans == 0 && count_mismatch == 0 && duplicates == 0 && recomputed_agrees && only_log;
+    let ok = orphans == 0 && invalid.is_empty() && only_log;
     out.push(Line::derived(format!("consistent={ok}")));
     Ok(out)
 }

@@ -62,7 +62,7 @@ umbral status <root>          what is known now                      (read-only)
 umbral changes <root>         what changed between the last two runs (read-only)
 umbral show <root> <path>     the history of one path                (read-only)
 umbral workspaces             which workspaces exist on this machine (read-only)
-umbral check <root>           recompute derived state and verify the log (read-only)
+umbral check <root>           verify the log: references, stored values, no derived state (read-only)
 ```
 
 Exit codes: `0` success (including `ambiguous` and "no results" — they are results, not
@@ -103,7 +103,10 @@ here is not a statement about Umbral's persistence model.
 The log stores observations and the runs that produced them. It stores **no derived state**:
 there is no projection table, no cached current state, no stored reconciliation result.
 Everything derived is recomputed on read, so nothing can drift out of agreement with the log.
-`umbral check` demonstrates that.
+`umbral check` verifies the structural half of that claim — the stored tables are the log and
+nothing else — together with referential integrity and that every stored value is one this
+build can interpret. Each of its verifications is shown failing by a test that corrupts a log on
+purpose; verifications that could not fail were removed (D-V01-11).
 
 ## Building and testing
 
