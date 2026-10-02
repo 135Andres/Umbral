@@ -284,14 +284,57 @@ fn several_candidates_for_one_identity_are_ambiguous() {
     );
     let r = reconcile(&prev, &cur);
 
-    assert_eq!(r.count(MutationKind::Ambiguous), 2);
+    // D-V01-8: every path in the conflicting group is reported, the previous-side ones
+    // included. Before the fix `l1` and `l2` received no verdict at all.
+    assert_eq!(
+        r.count(MutationKind::Ambiguous),
+        4,
+        "got: {:?}",
+        r.mutations
+    );
     assert_eq!(r.count(MutationKind::RenamedOrMoved), 0);
+    assert_eq!(r.count(MutationKind::Deleted), 0);
     for m in kinds(&r, MutationKind::Ambiguous) {
         assert_eq!(
             m.evidence.reason,
             Some(umbral::identity::AmbiguityReason::ConflictingCandidates)
         );
     }
+    let paths: Vec<_> = r.mutations.iter().map(|m| m.path.clone()).collect();
+    for p in ["l1", "l2", "m1", "m2"] {
+        assert!(
+            paths.contains(&PathBuf::from(p)),
+            "{p} not reported: {paths:?}"
+        );
+    }
+}
+
+/// D-V01-8: a previous-side path of a conflicting group that is still present in the
+/// current set is classified by its own same-path verdict, not reported a second time.
+#[test]
+fn a_conflicting_previous_path_still_present_is_reported_once() {
+    let prev = set(
+        vec![mk("l1", 1, 10, Some(1)), mk("l2", 1, 10, Some(1))],
+        true,
+    );
+    let cur = set(
+        vec![
+            mk("l1", 1, 99, Some(7)),
+            mk("m1", 1, 10, Some(1)),
+            mk("m2", 1, 10, Some(1)),
+        ],
+        true,
+    );
+    let r = reconcile(&prev, &cur);
+
+    let l1: Vec<_> = r
+        .mutations
+        .iter()
+        .filter(|m| m.path.as_path() == std::path::Path::new("l1"))
+        .collect();
+    assert_eq!(l1.len(), 1, "got: {:?}", r.mutations);
+    assert_eq!(l1[0].kind, MutationKind::Recreated);
+    assert_eq!(r.mutations.len(), 4, "got: {:?}", r.mutations);
 }
 
 /// Deleting one of two hard links leaves the object alive, and that is reported.
