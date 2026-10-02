@@ -250,7 +250,7 @@ fn a_non_utf8_root_works_end_to_end() {
         "the root must be rendered with a defined escape, not dropped:\n{init}"
     );
     assert!(
-        init.contains("path-is-not-valid-utf8"),
+        init.contains("canonical-encoding=escaped:not-valid-utf8"),
         "the reader must be told the rendering is not the literal path:\n{init}"
     );
 

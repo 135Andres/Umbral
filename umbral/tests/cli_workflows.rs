@@ -201,13 +201,17 @@ fn workspaces_lists_the_recorded_root_exactly_and_as_derived() {
     s.run_os_ok(&[OsStr::new("init"), dir.as_os_str()]);
 
     let canonical = std::fs::canonicalize(&dir).unwrap();
-    let expected = umbral::report::render_path(&canonical).text;
+    let expected = umbral::report::render_path(&canonical).field("canonical");
     let out = s.run_ok(&["workspaces"]);
     assert_all_labelled(&out);
     assert!(
-        out.contains(&format!("derived   canonical={expected}\n")),
+        out.contains(&format!("derived   {expected}\n")),
         "expected the exact root {expected}, got:\n{out}"
     );
+    // And it reads back to the exact bytes (`umbral-output/1`).
+    let parsed = umbral::contract::parse(&out).unwrap();
+    let listed = parsed.iter().find_map(|l| l.field("canonical")).unwrap();
+    assert_eq!(listed, canonical.as_os_str().as_bytes());
     assert!(
         !out.contains("observed"),
         "a stored value is not observed:\n{out}"

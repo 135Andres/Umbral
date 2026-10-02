@@ -28,6 +28,7 @@
 //! A missing value is never filled with an invented one.
 
 pub mod content;
+pub mod contract;
 pub mod identity;
 pub mod log;
 pub mod reconcile;
