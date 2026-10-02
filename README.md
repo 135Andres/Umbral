@@ -54,10 +54,11 @@ $ umbral observe /tmp/umbral-demo
 derived   contract=umbral-output/1
 observed  canonical=/tmp/umbral-demo
 derived   run=1  root=/tmp/umbral-demo
-derived   run=1  entries=5
-derived   run=1  content-verified=3
-derived   run=1  content-not-verified=0  reason=unstable-or-unreadable
-derived   run=1  started=2026-10-02T22:14:48.872Z  finished=2026-10-02T22:14:48.872Z
+derived   run=1  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
+derived   run=1  metadata-fresh=5  metadata-failed=0
+derived   run=1  content-fresh=3  content-reused=0  content-failed=0  content-not-attempted=0  content-not-recorded=0
+derived   run=1  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
+derived   run=1  started=2026-10-02T23:38:58.637Z  finished=2026-10-02T23:38:58.637Z
 derived   run=1  complete=true
 
 # ... api.md edited, faq.md added, latency-notes.md removed ...
@@ -66,10 +67,11 @@ $ umbral observe /tmp/umbral-demo
 derived   contract=umbral-output/1
 observed  canonical=/tmp/umbral-demo
 derived   run=2  root=/tmp/umbral-demo
-derived   run=2  entries=5
-derived   run=2  content-verified=3
-derived   run=2  content-not-verified=0  reason=unstable-or-unreadable
-derived   run=2  started=2026-10-02T22:14:48.977Z  finished=2026-10-02T22:14:48.977Z
+derived   run=2  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
+derived   run=2  metadata-fresh=5  metadata-failed=0
+derived   run=2  content-fresh=3  content-reused=0  content-failed=0  content-not-attempted=0  content-not-recorded=0
+derived   run=2  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
+derived   run=2  started=2026-10-02T23:38:58.642Z  finished=2026-10-02T23:38:58.642Z
 derived   run=2  complete=true
 
 $ umbral changes /tmp/umbral-demo
@@ -87,12 +89,26 @@ derived   modified  path=docs/api.md  content-changed=true  scan-complete=true
 derived   created  path=docs/faq.md  reference-complete=true  scan-complete=true
 derived   deleted  path=research/latency-notes.md  object-survives=false  scan-complete=true
 
+$ umbral status /tmp/umbral-demo
+derived   contract=umbral-output/1
+observed  canonical=/tmp/umbral-demo
+derived   root=/tmp/umbral-demo
+derived   workspace-id=b8e1aa4d4ff5946a
+derived   last-run=2  started=2026-10-02T23:38:58.642Z
+derived   last-run=2  complete=true
+derived   run=2  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
+derived   run=2  metadata-fresh=5  metadata-failed=0
+derived   run=2  content-fresh=3  content-reused=0  content-failed=0  content-not-attempted=0  content-not-recorded=0
+derived   run=2  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
+derived   run=2  unobservable-paths=0  reason=not-observed-at-observation-time
+derived   log-runs=2  log-observations=10
+
 $ umbral show /tmp/umbral-demo docs/api.md
 derived   contract=umbral-output/1
-derived   run=1  hash=d99695aff77f  stability=stable
-observed  kind=file  size=33  mtime=2026-10-02T22:14:48.870Z
-derived   run=2  hash=6b89ae2fdd89  stability=stable
-observed  kind=file  size=36  mtime=2026-10-02T22:14:48.974Z
+derived   observation=1:docs/api.md  hash=6a417660a09d  stability=stable  metadata=fresh  content=fresh
+observed  observation=1:docs/api.md  kind=file  size=32  mtime=2026-10-02T23:38:58.634Z
+derived   observation=2:docs/api.md  hash=6d333f581dde  stability=stable  metadata=fresh  content=fresh
+observed  observation=2:docs/api.md  kind=file  size=36  mtime=2026-10-02T23:38:58.639Z
 derived   run=1 -> 2  modified  path=docs/api.md  content-changed=true  scan-complete=true
 ```
 
