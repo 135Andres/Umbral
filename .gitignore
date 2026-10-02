@@ -15,6 +15,12 @@ target/
 # Internal working record — the owner's publication checklist. Kept on disk, not published.
 /PUBLICATION-PROPOSAL.md
 
+# Local review reports — reports the agent writes for the owner to pass to an external
+# model for feedback. Numbered 01, 02, 03, … in order of delivery. Working artifacts,
+# not part of the public edition: they are inputs to a review conversation, not project
+# knowledge, and nothing here is authority.
+/hermes-reports/
+
 # PRIVATE — must never be published.
 # The project owner's founding charter is a private document, deliberately not part of
 # the public edition; see README.md ("Naming and sources"). Do not remove this rule, and
