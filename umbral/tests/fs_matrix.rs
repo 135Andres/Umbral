@@ -146,7 +146,7 @@ fn an_unreadable_file_is_recorded_as_not_verified() {
     assert_eq!(out.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(
-        stdout.contains("content-not-verified=1"),
+        stdout.contains("content-failed=1") && stdout.contains("permission-denied=1"),
         "an unreadable file must be reported as not verified:\n{stdout}"
     );
 

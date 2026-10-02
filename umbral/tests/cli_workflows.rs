@@ -20,7 +20,7 @@ fn init_then_observe_then_read_is_the_whole_contract() {
     let obs = s.run_ok(&["observe", r.as_str()]);
     assert_all_labelled(&obs);
     assert!(
-        obs.contains("content-verified=2"),
+        obs.contains("content-fresh=2"),
         "both files are regular files:\n{obs}"
     );
 
@@ -70,7 +70,7 @@ fn two_observations_of_an_unchanged_tree_agree() {
     let r = s.root().to_string_lossy().to_string();
 
     let second = s.run_ok(&["observe", r.as_str()]);
-    assert!(second.contains("content-verified=2"), "got:\n{second}");
+    assert!(second.contains("content-fresh=2"), "got:\n{second}");
 
     let changes = s.run_ok(&["changes", r.as_str()]);
     assert!(changes.contains("count  unchanged=3"), "got:\n{changes}");

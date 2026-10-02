@@ -28,6 +28,7 @@
 //!
 //! A missing value is never filled with an invented one.
 
+pub mod acquisition;
 pub mod content;
 pub mod contract;
 pub mod identity;
