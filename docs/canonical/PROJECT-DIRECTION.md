@@ -27,11 +27,12 @@ filesystem sovereign and make the semantic layer a derived, rebuildable, user-go
 projection (MC §12, §28, §39).
 
 WHAT WE HAVE DECIDED
-See DECISIONS.md (UD-001..UD-023). Headlines: open source, no ads; no mandatory
-taxonomy; no hidden prompt injection; Sonora not an authority; local-first with file
-survivability; incremental version development; v0.2's bounded content-read optimisation,
-observation-basis and output-contract commitments; and its historical guarantees and
-minimum-materiality rule.
+See DECISIONS.md (UD-001..UD-029, plus the P5 interpretive record). Headlines: open
+source, no ads, licensed GPL-3.0-or-later (UD-028); no mandatory taxonomy; no hidden prompt
+injection; Sonora not an authority; local-first with file survivability; incremental
+version development; v0.2's bounded content-read optimisation, observation-basis and
+output-contract commitments; its historical guarantees (D1-D9) and minimum-materiality
+rule; and the correction of v0.1 defects by explicit evidence only (UD-029).
 Known gap in that log: provenance has no record — the charter states it (MC §40) but its
 own section header demotes it, and this repository deliberately did not resolve that for
 the user. See DECISIONS.md "GAPS IN THIS LOG".
@@ -39,7 +40,7 @@ the user. See DECISIONS.md "GAPS IN THIS LOG".
 CANDIDATE HYPOTHESIS SET (2026-09-10b, NOT a direction change)
 The coexistence work produced a candidate broader concept — SHARED ENVIRONMENT REALITY
 (reality / standing / currency), with Shared Validity as its currency dimension — and a
-separate self-description hypothesis for the instrument itself. Eight hypotheses (H15-H23),
+separate self-description hypothesis for the instrument itself. Nine hypotheses (H15-H23, the self-description one being H16),
 two proposed mechanisms (M9 calibration precondition, M10 read/write recording split) and
 the objections C1-C13 (OBJ-1..13 in that file) are recorded in ENVIRONMENT-INTELLIGENCE.md. All unratified. The two
 kill-tests are independent: E-CO-1 (currency) and E-CO-6a (safety floor).
@@ -52,7 +53,7 @@ projection thesis (MC §4-§6), which remains fundamental. Seven candidate strat
 eight invented mechanisms are recorded in COEXISTENCE-STRATEGIES.md — all unratified, none
 selected. The first question is whether the problem is material at all (E-CO-1).
 
-WHAT WE ARE CURRENTLY TESTING
+LAST CONCEPT EXPERIMENT (current work is v0.2 contract integration — see CURRENT NEXT STEP)
 EXP-1 ran 2026-09-10 (experiments/exp1/): a content-only semantic projection over a
 36-file arbitrary corpus, measured on 8 retrieval classes and 10 filesystem mutations.
 Result: PARTIAL PASS on both hypotheses — retrieval useful without any user taxonomy,
@@ -87,11 +88,13 @@ WHAT COULD CHANGE OUR MIND
 - A candidate architecture scoring K1-K9 so decisively that scope assumptions change.
 - Any new explicit user decision — user authority always outranks research.
 
-CURRENT NEXT STEP (updated 2026-09-13: v0.2 ACTIVE AT CONTRACT INTEGRATION)
+CURRENT NEXT STEP (updated 2026-10-02: v0.2 ACTIVE AT CONTRACT INTEGRATION)
 
 Development proceeds by incremental versions on version branches. v0.2 is active on branch
 `v0.2`; its current gate is owner acceptance of falsifiable acceptance criteria derived from
-`UD-016`–`UD-023`. Production changes begin only after that gate and proceed test-first. The
+`UD-016`–`UD-027` and the P5 record. On 2026-10-02 a repository audit
+(research/history/AUDIT-2026-10-02.md) found v0.1 defects in `umbral/`; their correction on the
+version branch is authorized by `UD-029` and is not v0.2 scope work. Production changes begin only after that gate and proceed test-first. The
 active record is `docs/versions/v0.2.md`; the scope and technical-design documents remain
 candidates. v0.1 remains **not declared complete** because its independent-human reader
 criterion is unsatisfied. V1 remains reserved for a version that has passed a separate AUDIT
