@@ -267,9 +267,29 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                 },
             });
         } else {
-            // More than one candidate on at least one side. Never pick one.
+            // More than one candidate on at least one side. Never pick one — and never drop
+            // one either: every previous path in the group is reported too (D-V01-8). A
+            // previous path that is still present in the current set gets its own same-path
+            // verdict instead, so it is not reported twice.
             for &pi in prevs.iter() {
                 prev_matched[pi] = true;
+                let prev = &previous.paths[pi];
+                if cur_by_path.contains_key(prev.path.as_path()) {
+                    continue;
+                }
+                mutations.push(Mutation {
+                    kind: MutationKind::Ambiguous,
+                    path: prev.path.clone(),
+                    old_path: None,
+                    evidence: Evidence {
+                        physical_identity: None,
+                        old_physical_identity: Some(*pid),
+                        content_changed: None,
+                        complete_scan: current.complete,
+                        object_survives: None,
+                        reason: Some(AmbiguityReason::ConflictingCandidates),
+                    },
+                });
             }
             for &ci in curs.iter() {
                 cur_matched[ci] = true;

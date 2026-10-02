@@ -39,7 +39,8 @@ pub enum AmbiguityReason {
     /// recreation, a replacement, or inode reuse — so it does not say anything.
     IdentityChangedAtSamePath,
     /// Several objects share one physical id in a way that admits more than one pairing.
-    /// Never resolved by picking one.
+    /// Never resolved by picking one. Every path involved is reported with this reason, on
+    /// both sides of the comparison.
     ConflictingCandidates,
     /// Content is identical, so content cannot separate the two sides. Duplicate content
     /// is not identity.
