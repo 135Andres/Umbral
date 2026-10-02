@@ -65,6 +65,10 @@ umbral workspaces             which workspaces exist on this machine (read-only)
 umbral check <root>           verify the log: references, stored values, no derived state (read-only)
 ```
 
+The output format proposed for v0.2 — a header naming the contract edition, and one escaping
+rule for every value — is specified in [`CONTRACT.md`](CONTRACT.md). It is **proposed, not
+implemented**: the output described below is the current one.
+
 Exit codes: `0` success (including `ambiguous` and "no results" — they are results, not
 errors), `1` runtime error, `2` usage error, `3` `observe` recorded a run that was
 incomplete because some paths could not be observed.
