@@ -523,3 +523,20 @@ fn escaped_path_lines_satisfy_the_label_contract() {
     );
     assert!(unlabelled_lines(&umbral::report::render(&lines)).is_empty());
 }
+
+/// D-V01-15. A time before 1970 is a time, not zero: it converts to a negative offset and is
+/// written as the date it is. A time the log cannot represent is refused, never replaced.
+#[test]
+fn a_clock_before_1970_is_not_recorded_as_1970() {
+    use std::time::{Duration, UNIX_EPOCH};
+    let before = UNIX_EPOCH - Duration::from_secs(1);
+    let ns = umbral::report::unix_ns(before).expect("representable");
+    assert_eq!(ns, -1_000_000_000);
+    assert_eq!(
+        umbral::report::format_unix_ns(ns),
+        "1969-12-31T23:59:59.000Z"
+    );
+    assert_eq!(umbral::report::unix_ns(UNIX_EPOCH), Some(0));
+    let unrepresentable = UNIX_EPOCH + Duration::from_secs(400 * 365 * 86_400);
+    assert_eq!(umbral::report::unix_ns(unrepresentable), None);
+}

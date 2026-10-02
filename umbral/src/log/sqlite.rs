@@ -104,21 +104,39 @@ impl SqliteLog {
 
     fn from_conn(conn: Connection) -> Result<Self, LogError> {
         conn.execute_batch("PRAGMA foreign_keys=ON;")?;
-        conn.execute_batch(SCHEMA)?;
-        let stored: Option<String> = conn
-            .query_row(
+        // The version is read before anything is written: a log this build does not
+        // understand, or a database that is not an umbral log, is refused unmodified
+        // (D-V01-13). Only an empty database is initialised.
+        let tables: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table'",
+            [],
+            |r| r.get(0),
+        )?;
+        let has_meta: bool = conn.query_row(
+            "SELECT EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='schema_meta')",
+            [],
+            |r| r.get(0),
+        )?;
+        let stored: Option<String> = if has_meta {
+            conn.query_row(
                 "SELECT value FROM schema_meta WHERE key='schema_version'",
                 [],
                 |r| r.get(0),
             )
-            .optional()?;
+            .optional()?
+        } else {
+            None
+        };
         match stored {
-            None => {
-                conn.execute(
-                    "INSERT INTO schema_meta (key, value) VALUES ('schema_version', ?1)",
-                    [SCHEMA_VERSION],
-                )?;
+            None if tables == 0 => {
+                conn.execute_batch(&format!(
+                    "BEGIN;
+                     {SCHEMA}
+                     INSERT INTO schema_meta (key, value) VALUES ('schema_version', '{SCHEMA_VERSION}');
+                     COMMIT;"
+                ))?;
             }
+            None => return Err(LogError::UnknownSchema("none".into())),
             Some(v) if v == SCHEMA_VERSION => {}
             Some(v) if v == SCHEMA_VERSION_V0_1 => Self::migrate_from_v0_1(&conn)?,
             Some(v) => return Err(LogError::UnknownSchema(v)),

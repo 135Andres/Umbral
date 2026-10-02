@@ -78,6 +78,18 @@ pub struct Observation {
 }
 
 impl Observation {
+    /// A path the scan reported but could not `lstat`: it is stored with the placeholder kind
+    /// `other` and no metadata. Its kind was not observed, and readers must not present the
+    /// placeholder as if it had been (D-V01-16).
+    pub fn metadata_failed(&self) -> bool {
+        self.kind == EntryKind::Other
+            && self.error.is_some()
+            && self.dev.is_none()
+            && self.ino.is_none()
+            && self.size.is_none()
+            && self.mtime.is_none()
+    }
+
     /// The hash, only when the observation was stable. Same gate as
     /// [`ContentObservation::valid_hash`], applied to persisted rows.
     pub fn valid_hash(&self) -> Option<&[u8; 32]> {
