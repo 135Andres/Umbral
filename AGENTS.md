@@ -43,9 +43,23 @@ hypotheses > your own inference. **Never promote a lower level into a higher one
 - **No architecture selection**, no schema, no protocol, no technology choice presented as
   settled. The V0 prototype's stack is scoped, provisional and reversible
   (`UD-012`, `UD-013`), and **V0 is not Umbral's architecture**.
-- **Preserve the boundary.** `research/sources/` may contain material that is not part of
-  the public edition of this repository; see the root README, "Naming and sources". Do not
-  quote, copy or republish anything from a non-public source into a public document.
+- **Preserve the public/private boundary.** The owner keeps a private record outside this
+  repository: deliberations, the reasoning behind decisions, working reports, full audits and
+  product intent not yet decided. Some private files also sit, ignored by git, in this working
+  tree (`research/sources/PROJECT-MASTER-CONTEXT.md`, `PUBLICATION-PROPOSAL.md`,
+  `hermes-reports/`). Public documents cite private material as `MC §n` or
+  `owner instruction (private, YYYY-MM-DD)` and never reproduce it.
+  - **Public** is what a reader needs to interpret this repository: what binds the code, the
+    licence and the documentation (decision records state *what* and *scope*, not the owner's
+    reasoning); a definition for every identifier a public document cites; defects, evidence
+    and negative results.
+  - **Private** is everything else, until the owner publishes it. Promotion from private to
+    public is the owner's decision and takes the form of a minimal extract, never a copy of
+    working material.
+  - **Quotations from the charter.** The short, labelled verbatim quotations already present
+    in the canonical documents and in `DECISIONS.md` are authorized by the owner (2026-10-02).
+    Any new quotation, copy or republication of non-public material needs the owner's explicit
+    authorization.
 
 ## Process
 

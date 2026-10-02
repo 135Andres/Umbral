@@ -227,7 +227,9 @@ The founding charter is the project owner's own document. It is cited throughout
 `MC §n` and is **not part of the public edition of this repository**; the canonical
 documents in [`docs/`](docs/README.md) carry its load-bearing content, each with its
 `MC §n` citation preserved. Where a citation cannot be checked publicly, that is stated
-rather than hidden.
+rather than hidden. The same applies to the owner's reasoning behind some decisions: a record
+cites it as `owner instruction (private, date)` and states what was decided and its scope, not
+why.
 
 This repository's history was rewritten once, before its first public release, to remove a
 document that is not part of the public edition. That is why no commit hash is cited
