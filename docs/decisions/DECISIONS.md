@@ -1048,6 +1048,28 @@ Reversibility: medium — a later edition can change these, as a recorded change
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-034 — v0.2 slice 2b: how a `changes` verdict states its basis; slice 2b accepted
+Authority: USER (owner instruction, private, 2026-10-02 — chosen among proposed alternatives, then
+the drafted criteria accepted).
+Statement: the owner decides, for v0.2:
+  - evidence that a path had no observation in a run is written as a per-side absence field
+    naming that run, and only when it is true;
+  - several entries a verdict rests on are named by repeating the field, one reference each;
+  - every verdict line states the completeness of both sides it compares;
+  - `old-path=` is removed and `from-run`/`to-run` become `reference-run`/`compared-run`;
+and accepts the criteria `A2-T2b-1`–`A2-T2b-9` in `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.6
+as written on 2026-10-02.
+Relationship to existing records: applies `UD-033`'s field-set carrier and references to
+`changes`, and `UD-031`'s roles and sides; satisfies on the verdict line the part of A2-V7
+(`UD-023` §2–§3, `UD-024`) about both sides' completeness. None is amended.
+Consequences: slice 2b may be implemented, test-first. No verdict may change.
+Scope guard: this record does NOT decide Q26 — the renamed-over-an-existing-path case keeps its
+current verdicts and is only reported truthfully; does NOT define traversal facts (slice 4);
+does NOT authorize slice 3.
+Reversibility: medium — a later edition can change these, as a recorded change.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -1059,7 +1081,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
                          (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023, UD-024,
-                         UD-025, UD-026, UD-027, UD-030, UD-031, UD-033.) A scoped commitment expires with its version
+                         UD-025, UD-026, UD-027, UD-030, UD-031, UD-033, UD-034.) A scoped commitment expires with its version
                          unless a later record extends it.
   DECIDED (scoped to `umbral/` v0.1 defects)
                        — committed for the named corrections only (UD-029, UD-032).
