@@ -855,6 +855,67 @@ entry pre-commits the content of that later decision.
 Status: DECIDED (scoped to v0.2) — what is decided is that P5 remains INDETERMINATE for v0.2.
 
 ================================================================================
+UD-028 — Licence: GNU GPL v3 or later
+Authority: USER (owner instruction, private, 2026-10-02). The owner's reasoning is held in the
+owner's private record and is not reproduced here.
+Statement: the contents of this repository — code and documentation — are licensed under the
+GNU General Public License, version 3 or (at the recipient's option) any later version
+(SPDX: `GPL-3.0-or-later`). The intent recorded with the choice: a work based on Umbral that is
+distributed must remain open source under the same terms.
+What the licence does and does not do, stated so the intent is not overstated: the GPL's
+obligations attach to conveying the work. It does not require a modified copy that is only used
+privately to be published, and it does not treat offering the software as a network service as
+conveying it.
+Alternatives considered: AGPL-3.0-or-later and MPL-2.0 — not chosen.
+Relationship to the previous state: the repository was published under the Apache License 2.0,
+applied at publication without a decision record (audit 2026-10-02, F11). This record replaces
+it for the repository from this point on; copies already obtained under Apache-2.0 keep that
+licence for those copies. Third-party dependencies keep their own licences; the current ones
+(blake3, rusqlite, libsqlite3-sys, walkdir, proptest, tempfile) are under CC0-1.0/Apache-2.0,
+MIT or Unlicense terms, all compatible with GPL-3.0.
+Consequences: contributions are accepted under the same licence; UD-001's consequence "licence
+choice still open" is superseded in part (pointer below); "licence" leaves the NOT DECIDED list.
+Scope guard: this record does NOT decide a governance model, a contributor agreement, a hosted
+offering or any trademark question.
+Reversibility: low once others hold copies under it; treat as durable.
+Status: DECIDED.
+
+================================================================================
+UD-029 — v0.1 defect corrections on the v0.2 branch, by explicit evidence only
+Authority: USER (owner instruction, private, 2026-10-02: "arreglar todo, mínimo").
+Statement: the implementation defects in `umbral/` found by the 2026-10-02 audit
+(`research/history/AUDIT-2026-10-02.md`; registered as `D-V01-6` … `D-V01-12` in
+`docs/versions/v0.1.md`) are corrected on branch `v0.2`, test-first, BEFORE the v0.2 acceptance
+criteria are accepted. They are corrections of v0.1 behaviour, not v0.2 scope work.
+The semantics of the corrections, fixed here so that no implementation step has to choose them:
+  - no new verdict kind is introduced; where a distinction was being lost, it is carried as
+    explicit evidence on the existing verdicts;
+  - a `created` verdict states whether the reference observation was complete
+    (`reference-complete=true|false`), because appearing relative to an incomplete reference is
+    materially different from appearing relative to a complete one (`UD-023` §2);
+  - when several candidates share one physical identity, every path involved is reported
+    `ambiguous` with reason `ConflictingCandidates`, previous-side paths included — none is
+    silently dropped;
+  - a same-path pair without shared identity is classified only when its current entry was not
+    already matched by physical identity elsewhere — the rule of the frozen V0 experiment;
+  - a content-acquisition error (not found, permission denied, read error) is persisted with the
+    observation; existing logs are migrated automatically and additively, and a log written
+    before the migration reads that field as not recorded;
+  - `check` verifies only what can fail, and verifies stored values rather than normalising them;
+  - `workspaces` labels what it reads from the stored workspace record `derived`.
+Relationship to existing records: `UD-023` lets implementation proceed only where behaviour is
+already decided; this record is where the behaviour above is decided. The schema change is
+version-scoped technical work under `UD-014` (no new dependency). `UD-016`–`UD-027` are untouched.
+Explicitly NOT decided, and left as an open question: when an object is renamed over an existing
+path, the conditions that separate `renamed-or-moved`, `recreated` and `deleted`. That case keeps
+the V0 behaviour (`OPEN-QUESTIONS.md`).
+Scope guard: this record does NOT accept or amend the A2 criteria, does NOT authorize v0.2
+production work (incremental content observation), does NOT select the v0.2 persistence schema,
+does NOT close Q25, does NOT declare v0.1 complete (A1 remains NOT SATISFIED).
+Reversibility: high — each correction is a separate commit with its own test.
+Status: DECIDED (scoped to `umbral/` v0.1 defects).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -868,6 +929,8 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
                          (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023, UD-024,
                          UD-025, UD-026, UD-027.) A scoped commitment expires with its version
                          unless a later record extends it.
+  DECIDED (scoped to `umbral/` v0.1 defects)
+                       — committed for the named corrections only (UD-029).
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
                          a pointer is added here instead.
 
@@ -891,10 +954,32 @@ SUPERSESSION POINTERS (records are immutable; this is where replacement is recor
       changes a verdict fails v0.2" — which the accepted limitation F-TD-4 shows to be
       inaccurate as written. Verdict preservation is now bounded by the evidence each
       observation holds (UD-021). UD-016's text is preserved as written and is not edited.
+  UD-001 ("the product is open source")
+      superseded **in part** by UD-028 (2026-10-02). The decision stands; only its consequence
+      "licence choice still open" no longer describes the project: the licence is
+      GPL-3.0-or-later.
+
+================================================================================
+CITATION NOTES (records are immutable; corrections to how a record cites are recorded here)
+================================================================================
+  UD-017, alternative (a), "which by UD-014's correction (F-V01-2) is reserved for what the
+      filesystem itself states per entry": UD-014 is the v0.1 stack adoption and contains no
+      such correction. The correction is v0.1's own disposition of finding F-V01-2
+      (`experiments/v0.1-reader-protocol/README.md` §7, 2026-09-12). The rule the
+      sentence relies on is unchanged; only its citation was wrong. (Audit 2026-10-02, F14.)
+  UD-023 – UD-027 and the P5 interpretive record cite identifiers whose definitions lived only
+      in working reports outside this repository: `M6` (UD-023), `N3`, `N5`, `N8` (UD-024,
+      UD-025), and the labels `D1`–`D9` used for the historical guarantees. Their definitions
+      are extracted to `research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md` and the namespaces are
+      registered in `docs/IDENTIFIERS.md`. `P5`, `H1` and `H2` are defined inside the P5 record
+      itself; they collide with other namespaces and are registered as such. The P5 record's
+      sentence "the identifier registry needs no change" is superseded by that registration.
+      (Audit 2026-10-02, F3.)
 
 ================================================================================
 NOT DECIDED (explicitly, by the user's own record — MC §52): final name, final
 architecture, database, indexing technology, AI protocol, versioning model, permission
 mechanism, UI architecture, semantic model. The v0.1 crate uses SQLite; that is a scoped
 implementation choice under UD-014, and it settles none of these. Also undecided: surface sequence (0.7), MVP
-boundary (0.8), licence, governance, first target user sequence.
+boundary (0.8), governance, first target user sequence. (The licence was listed here until
+2026-10-02; it is decided by UD-028.)
