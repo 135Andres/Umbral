@@ -31,8 +31,8 @@ use std::path::{Path, PathBuf};
 use rusqlite::{Connection, OptionalExtension};
 
 use super::{
-    LogError, NewObservation, NewRun, Observation, ObservationLog, RunId, RunMeta, SCHEMA_VERSION,
-    SCHEMA_VERSION_V0_1,
+    InvalidValue, LogError, NewObservation, NewRun, Observation, ObservationLog, RunId, RunMeta,
+    SCHEMA_VERSION, SCHEMA_VERSION_V0_1,
 };
 use crate::content::{hex, GuardDelta, Stability};
 use crate::scan::EntryKind;
@@ -324,6 +324,86 @@ impl ObservationLog for SqliteLog {
         ))?;
         let rows = stmt.query_map([], row_to_observation)?;
         Ok(rows.collect::<Result<Vec<_>, _>>()?)
+    }
+
+    fn invalid_values(&self) -> Result<Vec<InvalidValue>, LogError> {
+        let mut out = Vec::new();
+        let mut stmt = self.conn.prepare(&format!(
+            "SELECT run_id, path, kind, length(hash), hash_stability, hash_deltas, mtime_ns, {}
+             FROM observation ORDER BY run_id ASC, path ASC",
+            self.content_error_expr
+        ))?;
+        let mut rows = stmt.query([])?;
+        while let Some(r) = rows.next()? {
+            let run_id: RunId = r.get(0)?;
+            let path = blob_to_path(&r.get::<_, Vec<u8>>(1)?);
+            let kind: String = r.get(2)?;
+            let hash_len: Option<i64> = r.get(3)?;
+            let stability: Option<String> = r.get(4)?;
+            let deltas: Option<String> = r.get(5)?;
+            let mtime_ns: Option<i64> = r.get(6)?;
+            let content_error: Option<String> = r.get(7)?;
+
+            let mut bad = |field: &'static str, reason: String| {
+                out.push(InvalidValue {
+                    run_id,
+                    path: Some(path.clone()),
+                    field,
+                    reason,
+                })
+            };
+            if !matches!(kind.as_str(), "file" | "dir" | "symlink" | "other") {
+                bad("kind", "unknown-value".into());
+            }
+            if let Some(n) = hash_len {
+                if n != 32 {
+                    bad("hash", format!("length-{n}-not-32"));
+                } else if stability.is_none() {
+                    bad("hash", "hash-without-stability".into());
+                }
+            }
+            if let Some(s) = &stability {
+                if Stability::parse(s).is_none() {
+                    bad("hash_stability", "unknown-value".into());
+                }
+            }
+            if let Some(d) = &deltas {
+                if d.split(',').any(|x| GuardDelta::parse(x).is_none()) {
+                    bad("hash_deltas", "unknown-value".into());
+                }
+            }
+            if let Some(n) = mtime_ns {
+                if !(0..1_000_000_000).contains(&n) {
+                    bad("mtime_ns", "out-of-range".into());
+                }
+            }
+            if let Some(e) = &content_error {
+                let class = e.split(':').next().unwrap_or("");
+                if !matches!(
+                    class,
+                    "not-found"
+                        | "permission-denied"
+                        | "not-a-regular-file"
+                        | "read-error"
+                        | "not-recorded"
+                ) {
+                    bad("content_error", "unknown-value".into());
+                }
+            }
+        }
+        let mut stmt = self.conn.prepare(
+            "SELECT run_id FROM run WHERE finished_at_ns < started_at_ns ORDER BY run_id ASC",
+        )?;
+        let mut rows = stmt.query([])?;
+        while let Some(r) = rows.next()? {
+            out.push(InvalidValue {
+                run_id: r.get(0)?,
+                path: None,
+                field: "finished_at_ns",
+                reason: "before-started".into(),
+            });
+        }
+        Ok(out)
     }
 
     fn counts(&self) -> Result<(u64, u64), LogError> {

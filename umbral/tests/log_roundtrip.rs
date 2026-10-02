@@ -511,3 +511,67 @@ fn a_v0_1_log_is_migrated_in_place_when_opened_for_writing() {
         .unwrap();
     assert_eq!(version, "umbral-v0.1.1");
 }
+
+/// D-V01-11. `check` must look at the stored values, not at a normalised reading of them:
+/// before the fix a hash of the wrong length read back as "no hash", an unknown stability as
+/// "none" and an unknown kind as `other`, so a corrupted row was invisible to `check`.
+#[test]
+fn check_detects_stored_values_this_build_cannot_interpret() {
+    let t = tempfile::TempDir::new().unwrap();
+    let path = t.path().join("log.sqlite");
+    {
+        let mut log = SqliteLog::open(&path).unwrap();
+        log.append_run(run(vec![
+            (entry("a", 1, 1), Some(verified(1, 1))),
+            (entry("b", 2, 1), Some(verified(2, 1))),
+        ]))
+        .unwrap();
+    }
+    {
+        let conn = rusqlite::Connection::open(&path).unwrap();
+        conn.execute_batch(
+            "UPDATE observation SET hash = X'0102030405' WHERE path = X'61';
+             UPDATE observation SET hash_stability = 'sturdy', kind = 'fifo-ish',
+                                    mtime_ns = 2000000000 WHERE path = X'62';",
+        )
+        .unwrap();
+    }
+
+    let log = SqliteLog::open_read_only(&path).unwrap();
+    let rendered = umbral::report::render(&umbral::report::check(&ws(), &log).unwrap());
+    assert!(rendered.contains("consistent=false"), "got:\n{rendered}");
+    assert!(
+        rendered.contains("row-values-valid=false  invalid-values=4"),
+        "got:\n{rendered}"
+    );
+    for field in ["hash", "hash_stability", "kind", "mtime_ns"] {
+        assert!(
+            rendered.contains(&format!("field={field}")),
+            "{field} not reported:\n{rendered}"
+        );
+    }
+}
+
+/// D-V01-11. Every verification `check` prints must be one that can fail. These three could
+/// not: a per-run count compared with itself, the same table read twice through the same
+/// parser, and duplicates the primary key already forbids.
+#[test]
+fn check_prints_no_verification_that_cannot_fail() {
+    let log = SqliteLog::open_in_memory().unwrap();
+    let rendered = umbral::report::render(&umbral::report::check(&ws(), &log).unwrap());
+    for gone in [
+        "run-counts-agree",
+        "derived-state-recomputed",
+        "duplicate-entries",
+    ] {
+        assert!(
+            !rendered.contains(gone),
+            "{gone} still printed:\n{rendered}"
+        );
+    }
+    assert!(
+        rendered.contains("row-values-valid=true  invalid-values=0"),
+        "got:\n{rendered}"
+    );
+    assert!(rendered.contains("consistent=true"), "got:\n{rendered}");
+}
