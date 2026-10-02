@@ -53,7 +53,7 @@ inside one experiment's own files, and must not be cited from outside it.
 | PREFIX | OWNER | RANGE | KIND | SCOPE | COLLISION |
 |---|---|---|---|---|---|
 | `MC §n` | `research/sources/PROJECT-MASTER-CONTEXT.md` (**private, untracked**) | §1–§52+ | charter / user intent | project | — |
-| `UD` | `docs/decisions/DECISIONS.md` | UD-001–UD-030 | decision record | project | — |
+| `UD` | `docs/decisions/DECISIONS.md` | UD-001–UD-031 | decision record | project | — |
 | `A` | `docs/canonical/INVARIANTS.md` | A1–A11 | invariant | project | **yes** — see §4.8 |
 | `P` | `docs/canonical/PRINCIPLES.md` | P1–P9 | principle | project | **yes** — see §4.2 |
 | `C` | `docs/canonical/CONSTRAINTS.md` | C1–C12 | constraint | project | — |
