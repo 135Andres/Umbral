@@ -249,6 +249,7 @@ pub const DERIVED_ONLY_FIELDS: &[&str] = &[
     "dirs=",
     "symlinks=",
     "other=",
+    "kind-unknown=",
     "content-verified=",
     "content-not-verified=",
     "content-verification-not-applicable=",
@@ -356,6 +357,15 @@ fn civil_from_days(z: i64) -> (i64, u32, u32) {
 }
 
 /// `1970-01-01T00:00:00.000Z`-style rendering of nanoseconds since the Unix epoch.
+/// Nanoseconds since the Unix epoch, negative before it (D-V01-15). `None` when the time does
+/// not fit the log's signed 64-bit field — it is then refused, never replaced by a stand-in.
+pub fn unix_ns(t: std::time::SystemTime) -> Option<i64> {
+    match t.duration_since(std::time::UNIX_EPOCH) {
+        Ok(d) => i64::try_from(d.as_nanos()).ok(),
+        Err(e) => i64::try_from(e.duration().as_nanos()).ok().map(|n| -n),
+    }
+}
+
 pub fn format_unix_ns(ns: i64) -> String {
     let secs = ns.div_euclid(1_000_000_000);
     let nanos = ns.rem_euclid(1_000_000_000);
@@ -540,9 +550,12 @@ pub fn status(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, cra
     let obs = log.observations_for_run(run.id)?;
     let (mut files, mut dirs, mut symlinks, mut other) = (0u64, 0u64, 0u64, 0u64);
     let (mut verified, mut not_verified, mut errored) = (0u64, 0u64, 0u64);
+    let mut kind_unknown = 0u64;
 
     for o in &obs {
         match o.kind {
+            // Stored as `other`, but no kind was observed (D-V01-16).
+            _ if o.metadata_failed() => kind_unknown += 1,
             EntryKind::File => files += 1,
             EntryKind::Dir => dirs += 1,
             EntryKind::Symlink => symlinks += 1,
@@ -563,12 +576,13 @@ pub fn status(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, cra
     // are things the tool does not know: the number is the tool's arithmetic, and the
     // unknowns themselves are reported per path by `show`.
     out.push(Line::derived(format!(
-        "entries={}  files={}  dirs={}  symlinks={}  other={}",
+        "entries={}  files={}  dirs={}  symlinks={}  other={}  kind-unknown={}",
         obs.len(),
         files,
         dirs,
         symlinks,
-        other
+        other,
+        kind_unknown
     )));
     out.push(Line::derived(format!("content-verified={verified}")));
     out.push(Line::derived(format!(
@@ -721,17 +735,24 @@ pub fn show(
             opt_hash(o),
             opt_stability(o)
         )));
-        out.push(Line::observed(format!(
-            "kind={}  size={}  mtime={}",
-            kind_field(o),
-            opt_u64(o.size),
-            match o.mtime {
-                Some((s, n)) => format_unix_ns(s * 1_000_000_000 + n as i64),
-                None => "none".to_string(),
-            }
-        )));
+        // A path whose metadata could not be obtained has nothing observed to show; its stored
+        // kind is a placeholder, so it is listed as absent instead (D-V01-16).
+        if !o.metadata_failed() {
+            out.push(Line::observed(format!(
+                "kind={}  size={}  mtime={}",
+                kind_field(o),
+                opt_u64(o.size),
+                match o.mtime {
+                    Some((s, n)) => format_unix_ns(s * 1_000_000_000 + n as i64),
+                    None => "none".to_string(),
+                }
+            )));
+        }
 
         let mut absent = Vec::new();
+        if o.metadata_failed() {
+            absent.push("kind");
+        }
         if o.size.is_none() {
             absent.push("size");
         }

@@ -605,3 +605,96 @@ fn check_prints_no_verification_that_cannot_fail() {
     );
     assert!(rendered.contains("consistent=true"), "got:\n{rendered}");
 }
+
+fn table_names(path: &std::path::Path) -> Vec<String> {
+    let conn = rusqlite::Connection::open(path).unwrap();
+    let mut stmt = conn
+        .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+        .unwrap();
+    stmt.query_map([], |r| r.get(0))
+        .unwrap()
+        .map(|r| r.unwrap())
+        .collect()
+}
+
+/// D-V01-13. A log this build does not understand is refused before anything is written to it.
+/// Before the fix, `open` created its tables first and checked the version afterwards, so a log
+/// written by a later build was modified by the build that then refused it.
+#[test]
+fn a_log_of_an_unknown_version_is_refused_without_being_modified() {
+    let t = tempfile::TempDir::new().unwrap();
+    let path = t.path().join("future.sqlite");
+    rusqlite::Connection::open(&path)
+        .unwrap()
+        .execute_batch(
+            "CREATE TABLE schema_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+             INSERT INTO schema_meta VALUES ('schema_version', 'umbral-v9');",
+        )
+        .unwrap();
+    let before = table_names(&path);
+
+    let err = SqliteLog::open(&path).unwrap_err();
+    assert!(matches!(err, umbral::log::LogError::UnknownSchema(ref v) if v == "umbral-v9"));
+    assert_eq!(table_names(&path), before, "the refused log was modified");
+}
+
+/// D-V01-13. A database that is not an umbral log is not adopted as one.
+#[test]
+fn a_database_without_a_schema_version_is_not_adopted() {
+    let t = tempfile::TempDir::new().unwrap();
+    let path = t.path().join("other.sqlite");
+    rusqlite::Connection::open(&path)
+        .unwrap()
+        .execute_batch("CREATE TABLE notes (body TEXT);")
+        .unwrap();
+
+    assert!(matches!(
+        SqliteLog::open(&path).unwrap_err(),
+        umbral::log::LogError::UnknownSchema(_)
+    ));
+    assert_eq!(table_names(&path), vec!["notes".to_string()]);
+}
+
+/// D-V01-16. A path whose metadata could not be obtained at all is stored with a placeholder
+/// kind. Before the fix `show` printed that placeholder as `observed kind=other`: a value the
+/// filesystem never stated, presented as if it had.
+#[test]
+fn a_path_whose_metadata_failed_is_not_shown_as_observed() {
+    let mut log = SqliteLog::open_in_memory().unwrap();
+    log.append_run(NewRun {
+        started_at_ns: 1_000,
+        finished_at_ns: 2_000,
+        root: PathBuf::from("/tmp/root"),
+        observations: vec![NewObservation {
+            entry: Entry {
+                path: PathBuf::from("gone"),
+                kind: EntryKind::Other,
+                dev: None,
+                ino: None,
+                size: None,
+                mtime: None,
+            },
+            content: None,
+            error: Some("No such file or directory (os error 2)".into()),
+        }],
+    })
+    .unwrap();
+
+    let lines = umbral::report::show(&ws(), &log, std::path::Path::new("gone")).unwrap();
+    let rendered = umbral::report::render(&lines);
+    assert!(
+        !rendered.lines().any(|l| l.starts_with("observed")),
+        "nothing was observed:\n{rendered}"
+    );
+    assert!(
+        rendered.contains("fields=kind,size,mtime,physical-identity"),
+        "got:\n{rendered}"
+    );
+
+    let status = umbral::report::render(&umbral::report::status(&ws(), &log).unwrap());
+    assert!(
+        status.contains("other=0"),
+        "an unobserved kind is not `other`:\n{status}"
+    );
+    assert!(status.contains("kind-unknown=1"), "got:\n{status}");
+}

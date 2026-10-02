@@ -245,3 +245,43 @@ fn workspaces_does_not_invent_a_missing_creation_time() {
     assert!(out.contains("created=unknown"), "got:\n{out}");
     assert!(!out.contains("1970"), "got:\n{out}");
 }
+
+/// D-V01-14. One workspace record that cannot be read or interpreted must not hide the others,
+/// and must not vanish silently either: before the fix, a record that was not UTF-8 made
+/// `workspaces` fail outright, and a record without a root was skipped without a trace.
+#[test]
+fn workspaces_reports_an_unreadable_record_and_still_lists_the_others() {
+    let s = Sandbox::new();
+    let r = s.root().to_string_lossy().to_string();
+    s.run_ok(&["init", r.as_str()]);
+
+    let umbral_dir = s.data.path().join("umbral");
+    let garbled = umbral_dir.join("ws-garbled");
+    std::fs::create_dir(&garbled).unwrap();
+    std::fs::write(
+        garbled.join("workspace.json"),
+        b"{\"canonical\": \"\xFF\xFE\"}",
+    )
+    .unwrap();
+    let rootless = umbral_dir.join("ws-rootless");
+    std::fs::create_dir(&rootless).unwrap();
+    std::fs::write(rootless.join("workspace.json"), "{}\n").unwrap();
+
+    let out = s.run_ok(&["workspaces"]);
+    assert_all_labelled(&out);
+    umbral::contract::parse(&out).unwrap();
+    let canonical = std::fs::canonicalize(s.root()).unwrap();
+    let expected = umbral::report::render_path(&canonical).field("canonical");
+    assert!(
+        out.contains(&expected),
+        "the readable workspace is still listed:\n{out}"
+    );
+    assert!(
+        out.contains("unknown   workspace-id=garbled  reason=record-unreadable"),
+        "got:\n{out}"
+    );
+    assert!(
+        out.contains("unknown   workspace-id=rootless  reason=record-without-root"),
+        "got:\n{out}"
+    );
+}

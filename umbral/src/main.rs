@@ -137,12 +137,12 @@ fn run(args: &[OsString]) -> u8 {
         }
 
         "workspaces" => match workspace::list() {
-            Ok(list) => {
+            Ok(listing) => {
                 let mut lines = Vec::new();
-                if list.is_empty() {
+                if listing.workspaces.is_empty() && listing.unreadable.is_empty() {
                     lines.push(report::Line::unknown("workspaces=none"));
                 }
-                for w in &list {
+                for w in &listing.workspaces {
                     // Everything here is read back from a workspace record the tool wrote
                     // earlier — including the canonical root, which the filesystem reported
                     // at `init`, not in this run. So all of it is `derived` (D-V01-12).
@@ -158,6 +158,20 @@ fn run(args: &[OsString]) -> u8 {
                             .unwrap_or_else(|| "unknown".to_string()),
                         report::text_field("tool-version", &w.tool_version)
                     )));
+                }
+                // A record that exists but cannot be read is reported, not skipped (D-V01-14).
+                for u in &listing.unreadable {
+                    // The id comes from a directory name, so it is written like any other value.
+                    let mut text = format!(
+                        "{}  reason={}",
+                        report::text_field("workspace-id", &u.id),
+                        u.reason
+                    );
+                    if let Some(e) = &u.error {
+                        text.push_str("  ");
+                        text.push_str(&report::text_field("record-error", e));
+                    }
+                    lines.push(report::Line::unknown(text));
                 }
                 print!("{}", report::render(&lines));
                 0
@@ -230,7 +244,10 @@ fn observe(root: &Path) -> u8 {
         Err(e) => return runtime_error(&e),
     };
 
-    let started_at_ns = now_ns();
+    let started_at_ns = match now_ns() {
+        Ok(t) => t,
+        Err(e) => return runtime_error(&e),
+    };
     let scan = match scan::scan(root) {
         Ok(s) => s,
         Err(e) => return runtime_error(&e),
@@ -293,7 +310,10 @@ fn observe(root: &Path) -> u8 {
         }
     }
 
-    let finished_at_ns = now_ns();
+    let finished_at_ns = match now_ns() {
+        Ok(t) => t,
+        Err(e) => return runtime_error(&e),
+    };
     let run = NewRun {
         started_at_ns,
         finished_at_ns,
@@ -336,9 +356,9 @@ fn observe(root: &Path) -> u8 {
     }
 }
 
-fn now_ns() -> i64 {
-    std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_nanos() as i64)
-        .unwrap_or(0)
+/// The current time for a run's timestamps. A clock the log cannot represent stops the run:
+/// a run is never recorded at an invented time (D-V01-15).
+fn now_ns() -> Result<i64, String> {
+    report::unix_ns(std::time::SystemTime::now())
+        .ok_or_else(|| "the system clock is outside the range the log can record".to_string())
 }
