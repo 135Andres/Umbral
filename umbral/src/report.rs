@@ -6,8 +6,11 @@
 //!
 //! - `observed` — a fact read from the filesystem during a named run.
 //! - `derived` — a result computed from observations.
-//! - `ambiguous` — insufficient or conflicting evidence, with a named reason.
-//! - `unknown` — not observed, not observable, or not comparable.
+//! - `ambiguous` — a classification the evidence leaves open between more than one outcome,
+//!   with a named reason. None of the outcomes is chosen.
+//! - `unknown` — a value that is not determinable from the available evidence: not
+//!   observed, not obtainable, or not comparable. An error is a reason for `unknown`, not a
+//!   label of its own (`UD-031`).
 //!
 //! A line with no label is an implementation defect, and [`unlabelled_lines`] exists so that
 //! a test can say so.
@@ -761,8 +764,10 @@ pub fn show(
             )));
         }
         if o.stability == Some(Stability::Unstable) && !o.deltas.is_empty() {
-            out.push(Line::ambiguous(format!(
-                "run={}  reason=UnstableObservation  deltas={}",
+            // No value was obtained, so this is `unknown`; `ambiguous` is for a classification
+            // the evidence leaves open between several outcomes (`UD-031`).
+            out.push(Line::unknown(format!(
+                "run={}  reason=unstable-observation  deltas={}",
                 o.run_id,
                 o.deltas
                     .iter()

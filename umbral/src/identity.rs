@@ -52,11 +52,11 @@ pub enum AmbiguityReason {
 impl AmbiguityReason {
     pub fn as_str(self) -> &'static str {
         match self {
-            AmbiguityReason::MissingPhysicalEvidence => "MissingPhysicalEvidence",
-            AmbiguityReason::IdentityChangedAtSamePath => "IdentityChangedAtSamePath",
-            AmbiguityReason::ConflictingCandidates => "ConflictingCandidates",
-            AmbiguityReason::DuplicateContentNotIdentity => "DuplicateContentNotIdentity",
-            AmbiguityReason::NoContentEvidence => "NoContentEvidence",
+            AmbiguityReason::MissingPhysicalEvidence => "missing-physical-evidence",
+            AmbiguityReason::IdentityChangedAtSamePath => "identity-changed-at-same-path",
+            AmbiguityReason::ConflictingCandidates => "conflicting-candidates",
+            AmbiguityReason::DuplicateContentNotIdentity => "duplicate-content-not-identity",
+            AmbiguityReason::NoContentEvidence => "no-content-evidence",
         }
     }
 }

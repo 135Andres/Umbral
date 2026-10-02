@@ -297,7 +297,7 @@ fn the_ambiguous_case_in_that_fixture_is_a_real_tool_verdict() {
         "the replacement must be reported as ambiguous, by the tool, with its reason:\n{changes}"
     );
     assert!(
-        changes.contains("reason=DuplicateContentNotIdentity"),
+        changes.contains("reason=duplicate-content-not-identity"),
         "the tool must name why the evidence does not settle it:\n{changes}"
     );
 }

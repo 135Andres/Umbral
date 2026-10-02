@@ -5,7 +5,7 @@
 
 use std::path::PathBuf;
 
-use umbral::content::{ContentError, ContentObservation, Stability};
+use umbral::content::{ContentError, ContentObservation, GuardDelta, Stability};
 use umbral::log::sqlite::SqliteLog;
 use umbral::log::{NewObservation, NewRun, ObservationLog, SCHEMA_VERSION};
 use umbral::scan::{Entry, EntryKind};
@@ -418,6 +418,36 @@ fn a_content_acquisition_error_survives_the_log() {
     assert!(
         rendered.contains("unknown   run=1  content-error=permission-denied"),
         "got:\n{rendered}"
+    );
+}
+
+/// `UD-031`. A content reading that kept changing yields no value, so it is `unknown` — a value
+/// that is not determinable — and not `ambiguous`, which is reserved for a classification the
+/// evidence leaves open between several outcomes. The deltas are its diagnostic.
+#[test]
+fn an_unstable_content_reading_is_shown_as_unknown() {
+    let mut log = SqliteLog::open_in_memory().unwrap();
+    let unstable = ContentObservation {
+        hash: None,
+        hashed_len: None,
+        stability: Some(Stability::Unstable),
+        deltas: vec![GuardDelta::SizeChanged, GuardDelta::MtimeChanged],
+        error: None,
+    };
+    log.append_run(run(vec![(entry("a", 1, 1), Some(unstable))]))
+        .unwrap();
+
+    let lines = umbral::report::show(&ws(), &log, std::path::Path::new("a")).unwrap();
+    let rendered = umbral::report::render(&lines);
+    assert!(
+        rendered.contains(
+            "unknown   run=1  reason=unstable-observation  deltas=size-changed,mtime-changed"
+        ),
+        "got:\n{rendered}"
+    );
+    assert!(
+        !rendered.lines().any(|l| l.starts_with("ambiguous")),
+        "no classification is open here, so nothing is ambiguous:\n{rendered}"
     );
 }
 

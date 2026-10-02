@@ -17,8 +17,11 @@ alone what came from their filesystem and what the tool produced:
 - **`derived`** — the tool produced it: content fingerprints, stability verdicts, run
   identifiers, the run's own timestamps, workspace identifiers, composed paths, counts, and
   configuration echoed back.
-- **`ambiguous`** — the evidence permits more than one reading, with the reason named.
-- **`unknown`** — the tool does not have the information.
+- **`ambiguous`** — a classification the evidence leaves open between more than one outcome
+  (renamed, or recreated?), with the reason named. None is chosen.
+- **`unknown`** — a value that is not determinable from the evidence available: not observed,
+  not obtainable, not comparable. An error is a reason given on an `unknown` line, not a label
+  of its own (`UD-031`).
 
 The set of fields allowed on an `observed` line is a constant (`OBSERVED_FIELDS` in
 `src/report.rs`) and is enforced by a test, so the distinction cannot decay by inattention.
