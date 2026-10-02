@@ -147,17 +147,60 @@ fn canonicalise(root: &Path) -> Result<PathBuf, WorkspaceError> {
 
 /// The JSON record written at `init`. Deliberately minimal: it exists so `workspaces` can
 /// list what exists, and so `open` can detect a version it does not understand.
+///
+/// `canonical_hex` carries the canonical root's raw bytes, so a root that is not valid UTF-8
+/// is listed exactly; the text fields are for a human reading the file (D-V01-12). Records
+/// written before that field existed are still read, from the unescaped text.
 fn render_record(ws: &Workspace, created_at_ns: i64) -> String {
-    let esc = |s: &str| s.replace('\\', "\\\\").replace('"', "\\\"");
     format!(
-        "{{\n  \"root\": \"{}\",\n  \"canonical\": \"{}\",\n  \"id\": \"{}\",\n  \"created_at_ns\": {},\n  \"tool_version\": \"{}\",\n  \"schema_version\": \"{}\"\n}}\n",
-        esc(&ws.root.to_string_lossy()),
-        esc(&ws.canonical.to_string_lossy()),
+        "{{\n  \"root\": \"{}\",\n  \"canonical\": \"{}\",\n  \"canonical_hex\": \"{}\",\n  \"id\": \"{}\",\n  \"created_at_ns\": {},\n  \"tool_version\": \"{}\",\n  \"schema_version\": \"{}\"\n}}\n",
+        json_escape(&ws.root.to_string_lossy()),
+        json_escape(&ws.canonical.to_string_lossy()),
+        crate::content::hex(&canonical_bytes(&ws.canonical)),
         ws.id,
         created_at_ns,
         TOOL_VERSION,
         RECORD_VERSION
     )
+}
+
+/// JSON string escaping: quote, backslash and every control character.
+fn json_escape(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+fn bytes_from_hex(h: &str) -> Option<Vec<u8>> {
+    if !h.len().is_multiple_of(2) {
+        return None;
+    }
+    (0..h.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(h.get(i..i + 2)?, 16).ok())
+        .collect()
+}
+
+fn path_from_bytes(b: Vec<u8>) -> PathBuf {
+    #[cfg(unix)]
+    {
+        use std::os::unix::ffi::OsStringExt;
+        PathBuf::from(std::ffi::OsString::from_vec(b))
+    }
+    #[cfg(not(unix))]
+    {
+        PathBuf::from(String::from_utf8_lossy(&b).into_owned())
+    }
 }
 
 fn json_int_field(text: &str, field: &str) -> Option<i64> {
@@ -173,6 +216,8 @@ fn json_int_field(text: &str, field: &str) -> Option<i64> {
     digits.parse().ok()
 }
 
+/// The value of a string field, unescaped. Reads to the closing quote, not to the first
+/// quote character, so an escaped `\"` inside the value does not end it (D-V01-12).
 fn json_string_field(text: &str, field: &str) -> Option<String> {
     let key = format!("\"{field}\"");
     let start = text.find(&key)? + key.len();
@@ -180,8 +225,24 @@ fn json_string_field(text: &str, field: &str) -> Option<String> {
     let colon = rest.find(':')? + 1;
     let rest = rest[colon..].trim_start();
     let rest = rest.strip_prefix('"')?;
-    let end = rest.find('"')?;
-    Some(rest[..end].to_string())
+    let mut out = String::new();
+    let mut chars = rest.chars();
+    loop {
+        match chars.next()? {
+            '"' => return Some(out),
+            '\\' => match chars.next()? {
+                'n' => out.push('\n'),
+                'r' => out.push('\r'),
+                't' => out.push('\t'),
+                'u' => {
+                    let code: String = chars.by_ref().take(4).collect();
+                    out.push(char::from_u32(u32::from_str_radix(&code, 16).ok()?)?);
+                }
+                other => out.push(other),
+            },
+            c => out.push(c),
+        }
+    }
 }
 
 /// Create a workspace record. Refuses to overwrite an existing one — re-initialising in
@@ -252,7 +313,8 @@ impl Workspace {
 pub struct WorkspaceEntry {
     pub id: String,
     pub canonical: PathBuf,
-    pub created_at_ns: i64,
+    /// `None` when the record carries no creation time — absence, not 1970.
+    pub created_at_ns: Option<i64>,
     pub tool_version: String,
 }
 
@@ -274,14 +336,19 @@ pub fn list() -> Result<Vec<WorkspaceEntry>, WorkspaceError> {
             continue;
         }
         let text = std::fs::read_to_string(&record)?;
-        let Some(canonical) = json_string_field(&text, "canonical") else {
-            continue;
-        };
-        let created_at_ns = json_int_field(&text, "created_at_ns").unwrap_or(0);
+        let canonical =
+            match json_string_field(&text, "canonical_hex").and_then(|h| bytes_from_hex(&h)) {
+                Some(bytes) => path_from_bytes(bytes),
+                None => match json_string_field(&text, "canonical") {
+                    Some(c) => PathBuf::from(c),
+                    None => continue,
+                },
+            };
+        let created_at_ns = json_int_field(&text, "created_at_ns");
         let tool_version = json_string_field(&text, "tool_version").unwrap_or_default();
         out.push(WorkspaceEntry {
             id: id.to_string(),
-            canonical: PathBuf::from(canonical),
+            canonical,
             created_at_ns,
             tool_version,
         });

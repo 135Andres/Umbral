@@ -148,11 +148,11 @@ fn run(args: &[OsString]) -> u8 {
                     lines.push(report::Line::unknown("workspaces=none"));
                 }
                 for w in &list {
-                    // Everything in a workspace record except the canonical root was
-                    // computed by the tool when the record was written: the identifier, the
-                    // creation timestamp, the tool version.
+                    // Everything here is read back from a workspace record the tool wrote
+                    // earlier — including the canonical root, which the filesystem reported
+                    // at `init`, not in this run. So all of it is `derived` (D-V01-12).
                     let canonical = report::render_path(&w.canonical);
-                    lines.push(report::Line::observed(format!(
+                    lines.push(report::Line::derived(format!(
                         "canonical={}",
                         canonical.text
                     )));
@@ -160,7 +160,9 @@ fn run(args: &[OsString]) -> u8 {
                     lines.extend(report::path_notes(&[("canonical", &canonical)]));
                     lines.push(report::Line::derived(format!(
                         "created={}  tool-version={}",
-                        report::format_unix_ns(w.created_at_ns),
+                        w.created_at_ns
+                            .map(report::format_unix_ns)
+                            .unwrap_or_else(|| "unknown".to_string()),
                         w.tool_version
                     )));
                 }
