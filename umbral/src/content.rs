@@ -166,17 +166,25 @@ fn content_error_from(e: &std::io::Error) -> ContentError {
 
 /// Observe the content of a regular file, guarded against concurrent modification.
 pub fn observe_content(path: &Path) -> ContentObservation {
-    let before = match std::fs::symlink_metadata(path) {
-        Ok(m) => m,
-        Err(e) => return ContentObservation::error(content_error_from(&e)),
-    };
-    if !before.file_type().is_file() {
-        return ContentObservation::error(ContentError::NotARegularFile);
-    }
+    observe_content_guarded(path, |_attempt| {})
+}
 
+/// The guarded read, with a hook called after each read and before the "after" `stat`.
+/// Production passes a no-op; the hook exists so a test can change the file inside the read
+/// window deterministically instead of racing a thread against the read.
+fn observe_content_guarded(path: &Path, mut after_read: impl FnMut(u32)) -> ContentObservation {
     let mut last_deltas: Vec<GuardDelta> = Vec::new();
 
-    for _attempt in 0..MAX_GUARD_ATTEMPTS {
+    for attempt in 0..MAX_GUARD_ATTEMPTS {
+        // The "before" `stat` is taken on every attempt. Taken once, a retry would compare
+        // against the state before the first change and could never succeed (D-V01-7).
+        let before = match std::fs::symlink_metadata(path) {
+            Ok(m) => m,
+            Err(e) => return ContentObservation::error(content_error_from(&e)),
+        };
+        if !before.file_type().is_file() {
+            return ContentObservation::error(ContentError::NotARegularFile);
+        }
         let before_id = physical_id_of(&before);
         let before_size = before.len();
         let before_mtime = mtime_of(&before);
@@ -207,6 +215,7 @@ pub fn observe_content(path: &Path) -> ContentObservation {
         if let Some(e) = read_error {
             return ContentObservation::error(content_error_from(&e));
         }
+        after_read(attempt);
 
         let after = match std::fs::symlink_metadata(path) {
             Ok(m) => m,
@@ -254,4 +263,51 @@ pub fn hex(h: &[u8]) -> String {
 /// Short hex rendering for terminal display. Never used for comparison.
 pub fn hex_short(h: &[u8]) -> String {
     h.iter().take(6).map(|b| format!("{b:02x}")).collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+
+    fn append(path: &Path, bytes: &[u8]) {
+        let mut f = std::fs::OpenOptions::new().append(true).open(path).unwrap();
+        f.write_all(bytes).unwrap();
+    }
+
+    /// D-V01-7. A file that changes once, during the first read, and is then left alone is
+    /// read again and verified: that is what the retry exists for. Before the fix the retry
+    /// compared against the first attempt's "before" `stat`, so it could never succeed.
+    #[test]
+    fn a_file_changed_once_during_the_first_read_is_verified_on_the_retry() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let path = dir.path().join("f.txt");
+        std::fs::write(&path, b"aaaa").unwrap();
+
+        let obs = observe_content_guarded(&path, |attempt| {
+            if attempt == 0 {
+                append(&path, b"bb");
+            }
+        });
+
+        assert_eq!(obs.stability, Some(Stability::Stable), "got {obs:?}");
+        assert_eq!(obs.hash, Some(*blake3::hash(b"aaaabb").as_bytes()));
+        assert_eq!(obs.hashed_len, Some(6));
+        assert!(obs.deltas.is_empty());
+    }
+
+    /// The other side: a file that changes inside every read window is still `Unstable`, with
+    /// no hash and the deltas that fired.
+    #[test]
+    fn a_file_changed_during_every_read_is_unstable() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let path = dir.path().join("f.txt");
+        std::fs::write(&path, b"aaaa").unwrap();
+
+        let obs = observe_content_guarded(&path, |_attempt| append(&path, b"b"));
+
+        assert_eq!(obs.stability, Some(Stability::Unstable));
+        assert_eq!(obs.hash, None);
+        assert!(obs.deltas.contains(&GuardDelta::SizeChanged), "got {obs:?}");
+    }
 }
