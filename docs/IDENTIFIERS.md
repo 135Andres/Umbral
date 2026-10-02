@@ -53,7 +53,7 @@ inside one experiment's own files, and must not be cited from outside it.
 | PREFIX | OWNER | RANGE | KIND | SCOPE | COLLISION |
 |---|---|---|---|---|---|
 | `MC §n` | `research/sources/PROJECT-MASTER-CONTEXT.md` (**private, untracked**) | §1–§52+ | charter / user intent | project | — |
-| `UD` | `docs/decisions/DECISIONS.md` | UD-001–UD-032 | decision record | project | — |
+| `UD` | `docs/decisions/DECISIONS.md` | UD-001–UD-033 | decision record | project | — |
 | `A` | `docs/canonical/INVARIANTS.md` | A1–A11 | invariant | project | **yes** — see §4.8 |
 | `P` | `docs/canonical/PRINCIPLES.md` | P1–P9 | principle | project | **yes** — see §4.2 |
 | `C` | `docs/canonical/CONSTRAINTS.md` | C1–C12 | constraint | project | — |
@@ -114,7 +114,7 @@ inside one experiment's own files, and must not be cited from outside it.
 | `N` (core) | `research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md` §2 | N1–N10 | candidate minimal-core distinction (analysis) | version-local (v0.2) | **yes** — see §4.13 |
 | `P5` / `H1`, `H2` (P5 record) | `docs/decisions/DECISIONS.md`, P5 interpretive record | P5; H1–H2 | interpretive question; its two test histories | version-local (v0.2) | **yes** — see §4.2, §4.12 |
 | `R` (scope) | `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §7 | R1–R5 | risk | version-local (v0.2) | **yes** — see §4.4 |
-| `A2` | `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9 | A2-V1–A2-V14; A2-T1-1–A2-T1-11; A2-1–A2-9 superseded | acceptance criterion (accepted, `UD-030`) | version-local (v0.2) | **yes** — `A2` is also an invariant (`docs/canonical/INVARIANTS.md`); see §4.8 |
+| `A2` | `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9 | A2-V1–A2-V14; A2-T1-1–A2-T1-11; A2-T2a-1–A2-T2a-10; A2-1–A2-9 superseded | acceptance criterion (accepted, `UD-030`, `UD-033`) | version-local (v0.2) | **yes** — `A2` is also an invariant (`docs/canonical/INVARIANTS.md`); see §4.8 |
 | `D-PEND` | `docs/decisions/DECISIONS.md` + `docs/candidates/V0.2-TECHNICAL-DESIGN.md` | D-PEND-1, D-PEND-2 | pending decision | project | — (two documents, one namespace, by design) |
 | `J.1` | `docs/decisions/DECISIONS.md` + `docs/candidates/V0.2-TECHNICAL-DESIGN.md` §E.5 | J.1 | owner decision (traceability) | project | **yes** — see §4.6 |
 | `§n` | every document | — | section number | per document | **yes** — see §5 |
