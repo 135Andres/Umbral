@@ -60,7 +60,7 @@ inside one experiment's own files, and must not be cited from outside it.
 | `R` | `docs/canonical/REQUIREMENTS.md` | R1–R13 | requirement | project | **yes** — see §4.4 |
 | `J` | `docs/canonical/REQUIREMENTS.md` | J1–J8 | possibility (roadmap) | project | **yes** — see §4.6 |
 | `H` | `docs/candidates/ARCHITECTURE-HYPOTHESES.md` | H1–H25 | hypothesis | project | **yes** — see §4.12 |
-| `Q` | `docs/candidates/OPEN-QUESTIONS.md` | Q1–Q25 | open question | project | **yes** — see §4.12 |
+| `Q` | `docs/candidates/OPEN-QUESTIONS.md` | Q1–Q26 | open question | project | **yes** — see §4.12 |
 | `T` | `docs/candidates/OPEN-QUESTIONS.md` + `docs/candidates/ARCHITECTURE-HYPOTHESES.md` | T1–T7 | tension | project | — (two documents, one namespace, by design) |
 | `S` | `research/RESEARCH-INDEX.md` | S0–S12 | external source | project | **yes** — see §4.7 |
 | `K` | `docs/candidates/RESEARCH-AGENDA.md` §7.6 | K1–K9 | comparison criterion | project | — (cited bare elsewhere) |
@@ -212,7 +212,7 @@ experiment criteria in `experiments/exp-doc1/EXP-DOC-1.md`; and `DQ-6` used as a
 name in `research/RESEARCH-INDEX.md` and `research/history/STAGE-2026-09-11b-v0-transition.md`).
 `EXP` (numeric form `EXP-1`…`EXP-4`; alphabetic form `EXP-AI-01`, `EXP-CTIME`, `EXP-DOC-1`).
 `H` (H1–H25 hypotheses; `H-DOC-1`/`H-DOC-2` experiment hypotheses; `H11-a`…`H11-g` design
-hypotheses). `Q` (Q1–Q25 project questions; `XQ-1`–`XQ-5` experiment questions — the `XQ` prefix
+hypotheses). `Q` (Q1–Q26 project questions; `XQ-1`–`XQ-5` experiment questions — the `XQ` prefix
 disambiguates, but `Q29` is cited in `DOC-FRICTION-018` as a *phantom* identifier that never
 existed). The P5 interpretive record adds `H1`/`H2` as the names of two test histories, which
 collide with hypotheses H1–H2.

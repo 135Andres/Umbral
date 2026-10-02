@@ -1,8 +1,9 @@
 # Security Policy
 
 Umbral is an early research project. It has **no release, no supported version and no
-deployed service**. What exists is documentation and one frozen prototype
-(`fsp-check/`), which runs locally and has no network surface.
+deployed service**. What exists is documentation, one frozen prototype (`fsp-check/`) and
+one development command-line instrument (`umbral/`). Both run locally and have no network
+surface.
 
 That said, security claims are exactly the kind of claim this project refuses to make
 loosely, so this policy is written plainly.
@@ -13,6 +14,11 @@ loosely, so this policy is written plainly.
 
 In scope:
 
+- **In the development instrument (`umbral/`)** — anything that writes inside the directory it
+  is pointed at (it must only write under its own state directory, `$XDG_DATA_HOME/umbral/`);
+  that follows a symlink out of the observed root; that records a content hash as verified for
+  bytes it did not read; that labels a computed value as observed by the filesystem; or that
+  lets a crafted path or log corrupt another workspace's record.
 - **In the prototype (`fsp-check/`)** — anything that makes it read or modify files it was
   not asked to touch; a crash or corrupted state that could be mistaken for valid
   recorded evidence; a hash recorded as valid for bytes that were not the bytes read; a
