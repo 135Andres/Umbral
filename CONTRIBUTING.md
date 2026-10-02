@@ -240,4 +240,5 @@ generated indexes, and decoration that has to be maintained.
 
 - [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) applies to all project spaces.
 - By contributing you agree that your contribution is licensed under the
-  [Apache License 2.0](LICENSE), the license of this repository.
+  [GNU General Public License v3.0 or later](LICENSE) (`GPL-3.0-or-later`), the license of this
+  repository (`UD-028`).
