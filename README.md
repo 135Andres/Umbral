@@ -1,63 +1,117 @@
 # Umbral
 
-**Umbral is an open-source, local-first, AI-native project environment for making the
-reality of an environment legible to multiple intelligences — human and artificial —
-while keeping organization and authority in the user's hands.**
+**Umbral is a research project about one question: when humans and AI systems work on the
+same files, how does anyone — human or artificial — tell what is actually known about the
+project, and what is only inference?**
 
-> **Research project.** No architecture selected. No product. A frozen proof-of-concept
-> (V0) exists under [`fsp-check/`](fsp-check/). V1 has not started and is not authorized.
+> **Research project.** No architecture selected. No product. What exists today: a frozen
+> proof-of-concept ([`fsp-check/`](fsp-check/)) and a small working command-line
+> instrument ([`umbral/`](umbral/)). V1 has not started and is not authorized.
 
-## What is Umbral?
+## The problem
 
-Umbral is an intended open-source, local-first workspace whose human mental model is
-*"my files and folders"*. Projects, tasks, decisions, knowledge and AI capabilities are
-meant to live as an **optional, derived, rebuildable overlay** over a filesystem the user
-already owns — not as a mandated taxonomy, and not inside a proprietary database.
+Anyone joining a project late — a human collaborator, or an AI agent — can read the
+current state of the files. What the files alone do not say is how things got this way:
+what changed, when, whether a claim rests on actually reading the bytes or only on
+metadata, and what is simply not known.
 
-The files stay the user's. The overlay is a projection that can be discarded and rebuilt.
+That distinction matters more as AI takes part in more of the work. A reader that cannot
+tell "I read this file" apart from "this file looks unchanged" will present guesses with
+the confidence of evidence. Humans do it too, when they are guessing in good faith.
 
-```mermaid
-flowchart TB
-    A["human and artificial intelligences"] -->|"read · propose · act"| B["optional derived overlay<br/>meaning · relationships · provenance · state"]
-    B -->|"projected from, never owning"| C["the user's filesystem<br/>the source of truth"]
+## The idea
+
+Keep the files where they are, and keep a record of observations that is honest about its
+own evidence. Umbral points at a directory you own and:
+
+- records what existed and what changed between observations, in an append-only local log;
+- labels every statement by where it came from — **`observed`** (the filesystem reported
+  it), **`derived`** (the tool computed it), **`ambiguous`** (the evidence permits more
+  than one reading, with the reason named) and **`unknown`** (it does not have the
+  information);
+- never writes inside the directory it observes, never stores file content — only content
+  fingerprints — and has no network, daemon or watcher.
+
+The labels are not philosophy. They are what let a *later* reader — including an AI that
+cannot ask you questions — tell evidence apart from inference.
+
+## A real session
+
+Run against a small demo directory (`docs/`, `research/`, three files). Between the two
+observation runs, `docs/api.md` was edited, `docs/faq.md` was added and
+`research/latency-notes.md` was removed:
+
+```
+$ umbral init /tmp/umbral-demo
+observed  canonical=/tmp/umbral-demo
+derived   root=/tmp/umbral-demo
+derived   workspace-id=b8e1aa4d4ff5946a
+derived   state-dir=/tmp/umbral-state/umbral/ws-b8e1aa4d4ff5946a
+derived   initialised=true
+
+$ umbral observe /tmp/umbral-demo
+observed  canonical=/tmp/umbral-demo
+derived   run=1  root=/tmp/umbral-demo
+derived   run=1  entries=5
+derived   run=1  content-verified=3
+derived   run=1  content-not-verified=0  reason=unstable-or-unreadable
+derived   run=1  started=2026-09-16T04:02:23.185Z  finished=2026-09-16T04:02:23.185Z
+derived   run=1  complete=true
+
+# ... api.md edited, faq.md added, latency-notes.md removed ...
+
+$ umbral observe /tmp/umbral-demo
+observed  canonical=/tmp/umbral-demo
+derived   run=2  root=/tmp/umbral-demo
+derived   run=2  entries=5
+derived   run=2  content-verified=3
+derived   run=2  content-not-verified=0  reason=unstable-or-unreadable
+derived   run=2  started=2026-09-16T04:02:23.344Z  finished=2026-09-16T04:02:23.345Z
+derived   run=2  complete=true
+
+$ umbral changes /tmp/umbral-demo
+derived   compared  from-run=1  to-run=2  complete=true
+derived   count  unchanged=3
+derived   count  modified=1
+derived   count  created=1
+derived   count  deleted=1
+derived   count  unobserved=0
+derived   count  renamed-or-moved=0
+derived   count  recreated=0
+derived   count  ambiguous=0
+derived   modified  path=docs/api.md  content-changed=true  scan-complete=true
+derived   created  path=docs/faq.md  scan-complete=true
+derived   deleted  path=research/latency-notes.md  object-survives=false  scan-complete=true
+
+$ umbral show /tmp/umbral-demo docs/api.md
+derived   run=1  hash=8276bbbc60ed  stability=stable
+observed  kind=file  size=33  mtime=2026-09-16T04:02:22.849Z
+derived   run=2  hash=b19dcd2a10f6  stability=stable
+observed  kind=file  size=41  mtime=2026-09-16T04:02:23.191Z
+derived   run=1 -> 2  modified  path=docs/api.md  content-changed=true  scan-complete=true
 ```
 
-## Why?
-
-Today the human organizes files, and AI has to ingest them wholesale. Knowledge tools
-demand a taxonomy up front, or swallow files into a database that outlives nothing. Both
-put the maintenance burden on the person, and both make the environment harder — not
-easier — for the *next* participant, human or artificial, to understand.
-
-Umbral starts from the opposite assumption: the filesystem is already the shared reality,
-and what is missing is a truthful, portable account of it.
-
-Four commitments define the shape of the project:
-
-- **Filesystem sovereign.** Files are the source of truth; any index is a disposable
-  projection.
-- **No mandatory taxonomy.** Existing, messy, arbitrary structure must remain workable.
-- **Intelligence as a participant, not a feature.** Several AI systems — from different
-  vendors, some not yet existing — are expected to share one environment. Umbral's job is
-  to make that environment legible to them, not to think on the user's behalf.
-- **User authority.** The project records; it does not decide what is true. Its tools
-  observe, derive, and report — including reporting that something is unknown, ambiguous,
-  or disputed.
+Even `deleted` is stated carefully: it is a claim about the comparison between two runs —
+`object-survives=false` says the path was not seen again — not a claim about physical
+deletion. Where the evidence would permit several readings, the output says so instead of
+choosing silently.
 
 ## What exists today
 
 | | |
 |---|---|
-| Product | **does not exist.** There is no usable application to install |
-| Architecture | **not selected.** No database, protocol, versioning engine, UI or semantic model has been chosen |
-| Prototype | **V0 exists and is frozen**, status `PARTIAL` — see below |
-| Development | **v0.2 is active** on branch `v0.2`, currently at contract integration; v0.1 remains not declared complete |
-| Phase | Incremental development, with architecture still unselected |
-| Next gate | Accept v0.2's falsifiable acceptance criteria before the first production-code slice |
+| Product | **does not exist.** There is no usable application to install, no UI, no AI integration |
+| Architecture | **not selected.** No database, protocol, versioning engine or semantic model has been chosen |
+| V0 | **frozen proof-of-concept**, status `PARTIAL` — see below |
+| v0.1 | **working observation instrument** — [`umbral/`](umbral/), the CLI shown above. Not declared complete; its independent-human reader criterion (A1) is unsatisfied |
+| Development | **v0.2 is active** on branch `v0.2`, currently at contract integration; no production code yet |
+| V1 | not started and not authorized |
 
 Two names that look alike and are not. **V0** is the frozen experiment `fsp-check/`.
-**v0.1** and the active **v0.2** are development versions in new code that does not depend on
-it. V0 is evidence for v0.x; it is never a dependency of it.
+**v0.1** and the active **v0.2** are development versions in new code that does not depend
+on it. V0 is evidence for v0.x; it is never a dependency of it. And neither `fsp-check/`
+nor `umbral/` is the product: both are instruments and evidence on the way to a design
+that has not been chosen.
 
 ## V0 — the first experiment
 
@@ -65,14 +119,6 @@ it. V0 is evidence for v0.x; it is never a dependency of it.
 
 > Can a filesystem be observed, identified, content-verified, reconciled and persisted
 > deterministically and safely — **without pretending to know what the files mean?**
-
-```mermaid
-flowchart LR
-    scan["scan<br/>what exists"] --> identity["identity<br/>physical evidence"]
-    identity --> hash["hash<br/>content bytes"]
-    hash --> reconcile["reconcile<br/>what changed"]
-    reconcile --> store["store<br/>append-only history,<br/>rebuildable projection"]
-```
 
 - **Tested:** 68 tests; 512 generated property-test cases checked against an independent
   oracle; real process-kill crash trials; benchmarks recorded as evidence. One test
@@ -92,6 +138,37 @@ flowchart LR
 
 Full evidence: [`experiments/v0-harness/V0-CLOSEOUT.md`](experiments/v0-harness/V0-CLOSEOUT.md)
 (scope statement, criteria, limitations, open questions, V1 handoff).
+
+## Where Umbral is going
+
+Everything above is what exists. The rest is what the project is *for* — recorded as
+intent and research, not as working software.
+
+Umbral is intended as an open-source, local-first, AI-native project environment whose
+human mental model is *"my files and folders"*. Projects, tasks, decisions, knowledge and
+AI capabilities are meant to live as an **optional, derived, rebuildable overlay** over a
+filesystem the user already owns — not as a mandated taxonomy, and not inside a
+proprietary database. The files stay the user's. The overlay is a projection that can be
+discarded and rebuilt.
+
+The research direction currently being worked towards ([`UD-011`](docs/decisions/DECISIONS.md)):
+what must Umbral provide so that a human and several AI systems — from different vendors,
+some not yet existing — can safely, coherently and continuously share one filesystem,
+without the human reorganizing the project around any one AI's assumptions.
+
+Four commitments define the shape of that goal:
+
+- **Filesystem sovereign.** Files are the source of truth; any index is a disposable
+  projection.
+- **No mandatory taxonomy.** Existing, messy, arbitrary structure must remain workable.
+- **Intelligence as a participant, not a feature.** Umbral's job is to make the shared
+  environment legible to its participants, not to think on the user's behalf.
+- **User authority.** The project records; it does not decide what is true. Its tools
+  observe, derive, and report — including reporting that something is unknown, ambiguous,
+  or disputed.
+
+None of this is built. What it requires, what could falsify it, and what has been tested
+so far are tracked in the documentation below.
 
 ## Documentation
 
@@ -190,6 +267,7 @@ otherwise.
 This is an early research project, published for transparency rather than for use. It has
 no release, no stability promise, and no support commitment. Interfaces, documents and
 even names may change. The prototype under `fsp-check/` is experimental infrastructure:
-it is kept as evidence of what was tested, not as a foundation to build on.
+it is kept as evidence of what was tested, not as a foundation to build on. The instrument
+under `umbral/` is development code for one version, subject to the same rule.
 
 If you are looking for a product to install, there isn't one yet.
