@@ -27,12 +27,12 @@ filesystem sovereign and make the semantic layer a derived, rebuildable, user-go
 projection (MC §12, §28, §39).
 
 WHAT WE HAVE DECIDED
-See DECISIONS.md (UD-001..UD-031, plus the P5 interpretive record). Headlines: open
+See DECISIONS.md (UD-001..UD-032, plus the P5 interpretive record). Headlines: open
 source, no ads, licensed GPL-3.0-or-later (UD-028); no mandatory taxonomy; no hidden prompt
 injection; Sonora not an authority; local-first with file survivability; incremental
 version development; v0.2's bounded content-read optimisation, observation-basis and
 output-contract commitments; its historical guarantees (D1-D9) and minimum-materiality
-rule; the correction of v0.1 defects by explicit evidence only (UD-029); and v0.2's accepted
+rule; the correction of v0.1 defects by explicit evidence only (UD-029, UD-032); and v0.2's accepted
 acceptance criteria and first slice, the output contract umbral-output/1 (UD-030); and v0.2's
 closed vocabularies for `unknown`, acquisition states, roles and comparison sides (UD-031).
 Known gap in that log: provenance has no record — the charter states it (MC §40) but its

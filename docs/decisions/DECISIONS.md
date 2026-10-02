@@ -996,6 +996,27 @@ Reversibility: medium — a later edition can change the vocabularies, as a reco
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-032 — further v0.1 defect corrections on the v0.2 branch
+Authority: USER (owner instruction, private, 2026-10-02 — chosen among proposed alternatives).
+Statement: four v0.1 defects found after the audit, registered as `D-V01-13` … `D-V01-16` in
+`docs/versions/v0.1.md`, are corrected on branch `v0.2`, test-first, under the same terms as
+`UD-029`. The semantics of the corrections, fixed here:
+  - a log is never written to before its schema version is read; a log of an unknown version,
+    or a database with tables and no version, is refused unmodified;
+  - one workspace record that cannot be read or interpreted is reported as `unknown` with its
+    reason, and does not prevent the others from being listed;
+  - a time before 1970 is recorded as the time it is; a time the log cannot represent is refused
+    for a run and left absent for a workspace's creation, never replaced by a stand-in;
+  - a path whose metadata could not be obtained is not shown or counted as an observed kind; its
+    stored placeholder kind is not rewritten.
+Relationship to existing records: an extension of `UD-029` to defects it did not list; no
+earlier record is amended.
+Scope guard: this record does NOT authorize v0.2 slice work, does NOT change the schema, and does
+NOT declare v0.1 complete.
+Reversibility: high — each correction is covered by its own test.
+Status: DECIDED (scoped to `umbral/` v0.1 defects).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -1010,7 +1031,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
                          UD-025, UD-026, UD-027, UD-030, UD-031.) A scoped commitment expires with its version
                          unless a later record extends it.
   DECIDED (scoped to `umbral/` v0.1 defects)
-                       — committed for the named corrections only (UD-029).
+                       — committed for the named corrections only (UD-029, UD-032).
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
                          a pointer is added here instead.
 
@@ -1055,6 +1076,8 @@ CITATION NOTES (records are immutable; corrections to how a record cites are rec
       itself; they collide with other namespaces and are registered as such. The P5 record's
       sentence "the identifier registry needs no change" is superseded by that registration.
       (Audit 2026-10-02, F3.)
+  UD-029, "reason `ConflictingCandidates`": the output token is `conflicting-candidates` since
+      UD-031 made every reason token kebab-case; the decision is unchanged.
 
 ================================================================================
 NOT DECIDED (explicitly, by the user's own record — MC §52): final name, final
