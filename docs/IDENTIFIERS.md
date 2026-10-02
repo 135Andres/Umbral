@@ -114,6 +114,7 @@ inside one experiment's own files, and must not be cited from outside it.
 | `N` (core) | `research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md` §2 | N1–N10 | candidate minimal-core distinction (analysis) | version-local (v0.2) | **yes** — see §4.13 |
 | `P5` / `H1`, `H2` (P5 record) | `docs/decisions/DECISIONS.md`, P5 interpretive record | P5; H1–H2 | interpretive question; its two test histories | version-local (v0.2) | **yes** — see §4.2, §4.12 |
 | `R` (scope) | `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §7 | R1–R5 | risk | version-local (v0.2) | **yes** — see §4.4 |
+| `A2` | `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9 | A2-V1–A2-V14; A2-T1-1–A2-T1-11; A2-1–A2-9 superseded | acceptance criterion (proposed) | version-local (v0.2) | **yes** — `A2` is also an invariant (`docs/canonical/INVARIANTS.md`); see §4.8 |
 | `D-PEND` | `docs/decisions/DECISIONS.md` + `docs/candidates/V0.2-TECHNICAL-DESIGN.md` | D-PEND-1, D-PEND-2 | pending decision | project | — (two documents, one namespace, by design) |
 | `J.1` | `docs/decisions/DECISIONS.md` + `docs/candidates/V0.2-TECHNICAL-DESIGN.md` §E.5 | J.1 | owner decision (traceability) | project | **yes** — see §4.6 |
 | `§n` | every document | — | section number | per document | **yes** — see §5 |
@@ -187,6 +188,9 @@ meanings inside one research artifact. **Say which: "S11 (source)", "S11 (scenar
 `docs/versions/v0.1.md` uses `A1` for v0.1's acceptance criterion, whose current state is
 **NOT SATISFIED**. A reader who meets `A1` cannot tell which is meant, and the two have opposite
 states. **Write "A1 (invariant)" or "A1 (v0.1 criterion)".**
+The same holds one level down: v0.2's acceptance criteria are written `A2-V1`, `A2-T1-1` (and,
+superseded, `A2-1`…`A2-9`), while `A2` alone is an invariant. **The hyphen and suffix are what
+distinguish them; never write a criterion as bare `A2`.**
 
 **4.9 — `L`.** `experiments/exp1/EXP-1.md` defines L1–L5 as that experiment's limitations, and
 `docs/canonical/PROJECT-DIRECTION.md` cites them as `L1/L3`.
