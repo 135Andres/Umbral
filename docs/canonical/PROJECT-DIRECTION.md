@@ -27,13 +27,14 @@ filesystem sovereign and make the semantic layer a derived, rebuildable, user-go
 projection (MC §12, §28, §39).
 
 WHAT WE HAVE DECIDED
-See DECISIONS.md (UD-001..UD-030, plus the P5 interpretive record). Headlines: open
+See DECISIONS.md (UD-001..UD-031, plus the P5 interpretive record). Headlines: open
 source, no ads, licensed GPL-3.0-or-later (UD-028); no mandatory taxonomy; no hidden prompt
 injection; Sonora not an authority; local-first with file survivability; incremental
 version development; v0.2's bounded content-read optimisation, observation-basis and
 output-contract commitments; its historical guarantees (D1-D9) and minimum-materiality
 rule; the correction of v0.1 defects by explicit evidence only (UD-029); and v0.2's accepted
-acceptance criteria and first slice, the output contract umbral-output/1 (UD-030).
+acceptance criteria and first slice, the output contract umbral-output/1 (UD-030); and v0.2's
+closed vocabularies for `unknown`, acquisition states, roles and comparison sides (UD-031).
 Known gap in that log: provenance has no record — the charter states it (MC §40) but its
 own section header demotes it, and this repository deliberately did not resolve that for
 the user. See DECISIONS.md "GAPS IN THIS LOG".
@@ -95,8 +96,9 @@ Development proceeds by incremental versions on version branches. v0.2 is active
 `v0.2`. Its acceptance criteria were accepted on 2026-10-02 (`UD-030`): version criteria
 `A2-V1`–`A2-V14` and slice 1, the output contract `umbral-output/1` (`umbral/CONTRACT.md`), which is
 the work in progress. Later slices (`basis`, the O(changes) skip, acquisition history) each need
-their own criteria and acceptance; conceptual research on role and acquisition-state
-vocabularies and on `unknown` comes before the slices that depend on it. On 2026-10-02 a repository audit
+their own criteria and acceptance. The vocabularies those slices use — `unknown` vs
+`ambiguous`, acquisition states, roles and comparison sides — were adopted on 2026-10-02
+(`UD-031`). On 2026-10-02 a repository audit
 (research/history/AUDIT-2026-10-02.md) found v0.1 defects in `umbral/`; their correction on the
 version branch is authorized by `UD-029` and is not v0.2 scope work. Production changes proceed
 test-first, one accepted slice at a time. The

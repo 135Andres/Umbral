@@ -940,6 +940,62 @@ a recorded breaking change.
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-031 — v0.2 vocabularies: `unknown`, acquisition states, roles and sides
+Authority: USER (owner instruction, private, 2026-10-02 — chosen among proposed alternatives).
+Statement: the owner adopts, for v0.2, the following closed vocabularies and definitions. Each
+is a concept; the exact words that appear in the output are fixed by the criteria of the slice
+that first emits them, and must keep these meanings.
+
+1. **`unknown` and `ambiguous`.**
+   - `unknown` — the **value** of a property is not determinable from the evidence available
+     within the contract. No candidate value is offered.
+   - `ambiguous` — a **classification** is compatible, on the evidence, with more than one
+     outcome. The reason is named; no outcome is chosen.
+   - An **error** is not a state: it is a reason given for an `unknown`. Where `UD-021` writes
+     "UNKNOWN / error", the state is `unknown` and the error is its reason.
+2. **Acquisition state**, per material component of the evidence (`UD-025`). In v0.2 the
+   components are metadata and content.
+   | State | Meaning |
+   |---|---|
+   | `fresh` | acquired in this act; a value exists |
+   | `reused` | a value carried from an earlier observation, which must stay identifiable; it is never content-verified (`UD-017`) |
+   | `failed` | attempted; no value was obtained — including a content reading that kept changing |
+   | `not-attempted` | it is recorded that no attempt was made, with its reason |
+   | `not-recorded` | it is not recorded whether an attempt was made |
+   - A **diagnostic** (the operating system's message, the guard's deltas, the reason for not
+     attempting) is kept apart from the state, never folded into it (`UD-023` §4).
+   - An entry that is not a regular file has **no content component**. That is not an
+     acquisition state, and such an entry does not count toward content coverage.
+3. **Role** of a piece of support in an evaluative act (`UD-024`): its relation to the claim.
+   | Role | Meaning |
+   |---|---|
+   | `subject` | an observation of the entry the claim is about |
+   | `counterpart` | an observation of another entry on which the claim rests |
+   | `condition` | a fact of a run (completeness, scope, traversal) that conditions the claim without belonging to any entry |
+   Which fields each piece of support supplied is not a role; it is left to the `basis`
+   mechanism (M1/M2), which this record does not select.
+4. **Side** of a comparative act (`UD-024`, `UD-026`): `reference` and `compared`.
+5. All four vocabularies are **closed**: a new value needs an owner decision and a public
+   definition.
+
+Consequences, in the output of edition `umbral-output/1`, before v0.2 is closed:
+  - `show`'s line for an unstable content reading moves from `ambiguous` to `unknown`;
+  - every reason token is kebab-case: `UnstableObservation`, `MissingPhysicalEvidence`,
+    `IdentityChangedAtSamePath`, `ConflictingCandidates`, `DuplicateContentNotIdentity` and
+    `NoContentEvidence` become `unstable-observation`, `missing-physical-evidence`,
+    `identity-changed-at-same-path`, `conflicting-candidates`, `duplicate-content-not-identity`
+    and `no-content-evidence`.
+  No version closed with the earlier tokens under `umbral-output/1`, so the edition is kept.
+Relationship to existing records: this fills the vocabularies `UD-024`, `UD-025` and `UD-026`
+left open, and the definition of `unknown` `UD-019` kept operational; none of them is amended.
+Scope guard: this record does NOT select M1, M2 or M6, the reference representation, the
+`basis` field name, a persistence schema, the identifier of a side, or the output tokens of
+slices 2–4; does NOT decide D-PEND-2, Q25 or Q26; does NOT define traversal facts (`UD-025`)
+beyond the role that carries them.
+Reversibility: medium — a later edition can change the vocabularies, as a recorded change.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -951,7 +1007,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
                          (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023, UD-024,
-                         UD-025, UD-026, UD-027, UD-030.) A scoped commitment expires with its version
+                         UD-025, UD-026, UD-027, UD-030, UD-031.) A scoped commitment expires with its version
                          unless a later record extends it.
   DECIDED (scoped to `umbral/` v0.1 defects)
                        — committed for the named corrections only (UD-029).
