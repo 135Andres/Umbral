@@ -43,6 +43,7 @@ observation runs, `docs/api.md` was edited, `docs/faq.md` was added and
 
 ```
 $ umbral init /tmp/umbral-demo
+derived   contract=umbral-output/1
 observed  canonical=/tmp/umbral-demo
 derived   root=/tmp/umbral-demo
 derived   workspace-id=b8e1aa4d4ff5946a
@@ -50,26 +51,29 @@ derived   state-dir=/tmp/umbral-state/umbral/ws-b8e1aa4d4ff5946a
 derived   initialised=true
 
 $ umbral observe /tmp/umbral-demo
+derived   contract=umbral-output/1
 observed  canonical=/tmp/umbral-demo
 derived   run=1  root=/tmp/umbral-demo
 derived   run=1  entries=5
 derived   run=1  content-verified=3
 derived   run=1  content-not-verified=0  reason=unstable-or-unreadable
-derived   run=1  started=2026-10-02T19:59:42.472Z  finished=2026-10-02T19:59:42.473Z
+derived   run=1  started=2026-10-02T22:14:48.872Z  finished=2026-10-02T22:14:48.872Z
 derived   run=1  complete=true
 
 # ... api.md edited, faq.md added, latency-notes.md removed ...
 
 $ umbral observe /tmp/umbral-demo
+derived   contract=umbral-output/1
 observed  canonical=/tmp/umbral-demo
 derived   run=2  root=/tmp/umbral-demo
 derived   run=2  entries=5
 derived   run=2  content-verified=3
 derived   run=2  content-not-verified=0  reason=unstable-or-unreadable
-derived   run=2  started=2026-10-02T19:59:42.592Z  finished=2026-10-02T19:59:42.592Z
+derived   run=2  started=2026-10-02T22:14:48.977Z  finished=2026-10-02T22:14:48.977Z
 derived   run=2  complete=true
 
 $ umbral changes /tmp/umbral-demo
+derived   contract=umbral-output/1
 derived   compared  from-run=1  to-run=2  complete=true
 derived   count  unchanged=3
 derived   count  modified=1
@@ -84,12 +88,17 @@ derived   created  path=docs/faq.md  reference-complete=true  scan-complete=true
 derived   deleted  path=research/latency-notes.md  object-survives=false  scan-complete=true
 
 $ umbral show /tmp/umbral-demo docs/api.md
+derived   contract=umbral-output/1
 derived   run=1  hash=d99695aff77f  stability=stable
-observed  kind=file  size=33  mtime=2026-10-02T19:59:42.463Z
+observed  kind=file  size=33  mtime=2026-10-02T22:14:48.870Z
 derived   run=2  hash=6b89ae2fdd89  stability=stable
-observed  kind=file  size=36  mtime=2026-10-02T19:59:42.585Z
+observed  kind=file  size=36  mtime=2026-10-02T22:14:48.974Z
 derived   run=1 -> 2  modified  path=docs/api.md  content-changed=true  scan-complete=true
 ```
+
+Every output begins with the edition of the output contract it follows
+(`contract=umbral-output/1`, specified in [`umbral/CONTRACT.md`](umbral/CONTRACT.md)), so a
+saved or piped output can be read correctly later without anything else.
 
 Even `deleted` is stated carefully: it is a claim about the comparison between two runs —
 `object-survives=false` says the path was not seen again — not a claim about physical
