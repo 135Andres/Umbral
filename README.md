@@ -55,7 +55,7 @@ derived   run=1  root=/tmp/umbral-demo
 derived   run=1  entries=5
 derived   run=1  content-verified=3
 derived   run=1  content-not-verified=0  reason=unstable-or-unreadable
-derived   run=1  started=2026-09-16T04:02:23.185Z  finished=2026-09-16T04:02:23.185Z
+derived   run=1  started=2026-10-02T19:59:42.472Z  finished=2026-10-02T19:59:42.473Z
 derived   run=1  complete=true
 
 # ... api.md edited, faq.md added, latency-notes.md removed ...
@@ -66,7 +66,7 @@ derived   run=2  root=/tmp/umbral-demo
 derived   run=2  entries=5
 derived   run=2  content-verified=3
 derived   run=2  content-not-verified=0  reason=unstable-or-unreadable
-derived   run=2  started=2026-09-16T04:02:23.344Z  finished=2026-09-16T04:02:23.345Z
+derived   run=2  started=2026-10-02T19:59:42.592Z  finished=2026-10-02T19:59:42.592Z
 derived   run=2  complete=true
 
 $ umbral changes /tmp/umbral-demo
@@ -80,20 +80,22 @@ derived   count  renamed-or-moved=0
 derived   count  recreated=0
 derived   count  ambiguous=0
 derived   modified  path=docs/api.md  content-changed=true  scan-complete=true
-derived   created  path=docs/faq.md  scan-complete=true
+derived   created  path=docs/faq.md  reference-complete=true  scan-complete=true
 derived   deleted  path=research/latency-notes.md  object-survives=false  scan-complete=true
 
 $ umbral show /tmp/umbral-demo docs/api.md
-derived   run=1  hash=8276bbbc60ed  stability=stable
-observed  kind=file  size=33  mtime=2026-09-16T04:02:22.849Z
-derived   run=2  hash=b19dcd2a10f6  stability=stable
-observed  kind=file  size=41  mtime=2026-09-16T04:02:23.191Z
+derived   run=1  hash=d99695aff77f  stability=stable
+observed  kind=file  size=33  mtime=2026-10-02T19:59:42.463Z
+derived   run=2  hash=6b89ae2fdd89  stability=stable
+observed  kind=file  size=36  mtime=2026-10-02T19:59:42.585Z
 derived   run=1 -> 2  modified  path=docs/api.md  content-changed=true  scan-complete=true
 ```
 
 Even `deleted` is stated carefully: it is a claim about the comparison between two runs —
 `object-survives=false` says the path was not seen again — not a claim about physical
-deletion. Where the evidence would permit several readings, the output says so instead of
+deletion. In the same way, `created` states whether the run it is compared against was
+complete (`reference-complete=true`): a path missing from an incomplete run may have existed
+unseen. Where the evidence would permit several readings, the output says so instead of
 choosing silently.
 
 ## What exists today
