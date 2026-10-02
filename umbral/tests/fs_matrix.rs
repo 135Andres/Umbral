@@ -376,7 +376,9 @@ fn inode_reuse_is_recorded_not_asserted() {
     let as_deleted = changes
         .lines()
         .any(|l| l.contains("deleted") && l.contains("path=bye.txt"));
-    let as_renamed_from = changes.lines().any(|l| l.contains("old-path=bye.txt"));
+    let as_renamed_from = changes
+        .lines()
+        .any(|l| l.contains("renamed-or-moved") && l.contains("reference=1:bye.txt"));
     assert!(
         as_deleted ^ as_renamed_from,
         "bye.txt must be accounted for exactly once, as deleted XOR as a rename origin\n\

@@ -255,12 +255,9 @@ fn every_line_of_show_names_the_observation_it_reports() {
         let stored = log.observations_for_path(Path::new(path)).unwrap();
         let parsed = contract::parse(&out).unwrap();
         for (i, line) in parsed.iter().enumerate() {
-            // The comparison line between two runs (`run=1 -> 2  …`) is slice 2b's (§9.5,
-            // not in scope).
-            if line
-                .field("run")
-                .is_some_and(|v| v.windows(2).any(|w| w == b"->"))
-            {
+            // A verdict between two runs names its observations by side (`reference=`,
+            // `compared=`; slice 2b, `tests/verdict_basis.rs`).
+            if line.field("path").is_some() {
                 continue;
             }
             let reference = line.field("observation").unwrap_or_else(|| {

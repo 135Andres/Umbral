@@ -46,6 +46,8 @@ A line is:
 - An item is either a bare token (`count`, `modified`, `compared`, …) or a field
   `key=value`. A key never contains `=` or a space; the value is everything after the first
   `=` up to the next item separator, and is written in the escaped form of §4.
+- A key may appear more than once on a line (`counterpart=…  counterpart=…`). The order of a
+  line's items is part of the result: a reader keeps every occurrence, in order.
 
 ## 3. Values
 
@@ -102,7 +104,7 @@ When a written value contains at least one escape, the field is immediately foll
 same line, by an annotation naming the classes of §4 that occurred:
 
 ```
-derived   modified  path=a\x0Ab\xFF  path-encoding=escaped:control-character,not-valid-utf8  scan-complete=true
+derived   modified  path=a\x0Ab\xFF  path-encoding=escaped:control-character,not-valid-utf8  compared-complete=true
 observed  canonical=/tmp/a\x0Ab  canonical-encoding=escaped:control-character
 ```
 
