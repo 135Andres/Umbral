@@ -112,6 +112,11 @@ pub struct Evidence {
     /// `None` = not compared or not comparable.
     pub content_changed: Option<bool>,
     pub complete_scan: bool,
+    /// Whether the reference (previous) observation was complete. A verdict relative to an
+    /// incomplete reference may rest on an entry that existed but was not seen — `created`
+    /// in particular (D-V01-9). Carried on every verdict; the report states it where it is
+    /// material.
+    pub reference_complete: bool,
     /// `Some(true)` = the object still exists elsewhere in the current set (a hard-link
     /// entry vanished but the content did not). Only meaningful for `Deleted`.
     pub object_survives: Option<bool>,
@@ -215,6 +220,7 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                             old_physical_identity: prev.physical_id(),
                             content_changed,
                             complete_scan: current.complete,
+                            reference_complete: previous.complete,
                             object_survives: None,
                             reason: None,
                         },
@@ -262,6 +268,7 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                     old_physical_identity: Some(*pid),
                     content_changed: None,
                     complete_scan: current.complete,
+                    reference_complete: previous.complete,
                     object_survives: None,
                     reason: None,
                 },
@@ -286,6 +293,7 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                         old_physical_identity: Some(*pid),
                         content_changed: None,
                         complete_scan: current.complete,
+                        reference_complete: previous.complete,
                         object_survives: None,
                         reason: Some(AmbiguityReason::ConflictingCandidates),
                     },
@@ -302,6 +310,7 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                         old_physical_identity: Some(*pid),
                         content_changed: None,
                         complete_scan: current.complete,
+                        reference_complete: previous.complete,
                         object_survives: None,
                         reason: Some(AmbiguityReason::ConflictingCandidates),
                     },
@@ -350,6 +359,7 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                 old_physical_identity: prev.physical_id(),
                 content_changed,
                 complete_scan: current.complete,
+                reference_complete: previous.complete,
                 object_survives: None,
                 reason,
             },
@@ -369,6 +379,7 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                     old_physical_identity: None,
                     content_changed: None,
                     complete_scan: current.complete,
+                    reference_complete: previous.complete,
                     object_survives: None,
                     reason: None,
                 },
@@ -415,6 +426,7 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                 old_physical_identity: prev.physical_id(),
                 content_changed: None,
                 complete_scan: current.complete,
+                reference_complete: previous.complete,
                 object_survives,
                 reason,
             },

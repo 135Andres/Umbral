@@ -704,6 +704,14 @@ fn mutation_line(m: &Mutation) -> Vec<Line> {
     let path = render_path(&m.path);
     let old = m.old_path.as_ref().map(|p| render_path(p));
     let mut parts = vec![format!("path={}", path.text)];
+    // `created` is relative to the reference run: an entry absent from an incomplete
+    // reference may have existed unseen. Stated explicitly, true or false (D-V01-9).
+    if m.kind == MutationKind::Created {
+        parts.push(format!(
+            "reference-complete={}",
+            m.evidence.reference_complete
+        ));
+    }
     if let Some(o) = &old {
         parts.push(format!("old-path={}", o.text));
     }
@@ -823,7 +831,13 @@ pub fn show(
             .find(|r| r.id == b.run_id)
             .map(RunMeta::complete)
             .unwrap_or(false);
-        let set_a = ObservationSet::new(vec![observed_path(a)], true);
+        // The previous side's completeness is its own run's, not assumed (D-V01-9).
+        let complete_a = runs
+            .iter()
+            .find(|r| r.id == a.run_id)
+            .map(RunMeta::complete)
+            .unwrap_or(false);
+        let set_a = ObservationSet::new(vec![observed_path(a)], complete_a);
         let set_b = ObservationSet::new(vec![observed_path(b)], complete);
         let rec = reconcile(&set_a, &set_b);
         for m in &rec.mutations {
