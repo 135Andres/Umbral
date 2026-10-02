@@ -96,6 +96,15 @@ pub enum ContentError {
 }
 
 impl ContentError {
+    /// The form persisted in the log: the class, and for a read error the message the
+    /// operating system gave. A known diagnostic is kept, not reduced to its class (D-V01-10).
+    pub fn record(&self) -> String {
+        match self {
+            ContentError::ReadError(m) => format!("read-error: {m}"),
+            other => other.as_str().to_string(),
+        }
+    }
+
     pub fn as_str(&self) -> &'static str {
         match self {
             ContentError::NotFound => "not-found",
