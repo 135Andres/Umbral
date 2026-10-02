@@ -1,10 +1,15 @@
 # umbral-output/1 — the output contract
 
-Status: **ACCEPTED — being implemented** (owner, 2026-10-02, `UD-030`). The specification for
-v0.2's first slice (`docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.3, criteria `A2-T1-*`). The
+Status: **IMPLEMENTED** (accepted by the owner 2026-10-02, `UD-030`; implemented the same day as
+v0.2's first slice, `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.3, criteria `A2-T1-*`). The
 grammar family, the error semantics and the versioning mechanism are `UD-022`; the exact choices
 below — the escape table, the space rule, the deceptive-character set, the header and the
-version value — are `UD-030`. Until the slice lands the tool does **not** emit this format.
+version value — are `UD-030`. Writer and reader: `src/contract.rs`. Tests: `tests/output_grammar.rs`.
+
+Two clarifications made while implementing, neither changing what is accepted: in §6, a `\x`
+followed by hexadecimal digits in lowercase is *non-canonical* (the first draft listed it under
+both rows), and an output whose last line has no line feed is refused as *truncated*, which is
+what `UD-022`'s "reject truncated representation" requires of a line-terminated format.
 
 This document defines how `umbral` **writes** its standard output and how that output is
 **read back**. It does not define what any field *means*; that is in [`README.md`](README.md)
@@ -119,9 +124,10 @@ The library function that reads this format (it is not a command) must:
 |---|---|
 | a first line that is not a header | refuse: `missing contract header` |
 | a header naming any edition other than `umbral-output/1` | refuse to interpret, naming the edition |
-| a malformed escape (`\` followed by anything but `\` or `x`; `\x` not followed by two uppercase hex digits) | error naming line and column |
+| a malformed escape (`\` followed by anything but `\` or `x`; `\x` not followed by two hexadecimal digits; a `\` at the end of a value) | error naming line and column |
 | a well-formed escape the writer would never produce (`\x41` for `A`, `\x5C` for a backslash, lowercase hex) | error: non-canonical encoding |
 | a raw control character inside a line | error naming line and column |
+| an output whose last line does not end with a line feed | refuse: truncated |
 | after the label column: an empty item (three or more spaces in a row, a leading space, or a separator at the end of a line) | error naming line and column |
 | a label this edition does not define | error |
 | a well-formed `key=value` whose key, or a bare token, this edition does not define | **preserve it** as opaque data — never drop it, never rename it |

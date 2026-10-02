@@ -85,19 +85,14 @@ fn run(args: &[OsString]) -> u8 {
                     let canonical = report::render_path(&ws.canonical);
                     let given = report::render_path(&ws.root);
                     let state = report::render_path(&ws.state_dir);
-                    let mut lines = vec![
-                        report::Line::observed(format!("canonical={}", canonical.text)),
-                        report::Line::derived(format!("root={}", given.text)),
+                    let lines = vec![
+                        report::Line::observed(canonical.field("canonical")),
+                        report::Line::derived(given.field("root")),
                         report::Line::derived(format!("workspace-id={}", ws.id)),
-                        report::Line::derived(format!("state-dir={}", state.text)),
+                        report::Line::derived(state.field("state-dir")),
                         report::Line::derived("initialised=true"),
                     ];
-                    lines.extend(report::path_notes(&[
-                        ("canonical", &canonical),
-                        ("root", &given),
-                        ("state-dir", &state),
-                    ]));
-                    println!("{}", report::render(&lines));
+                    print!("{}", report::render(&lines));
                     0
                 }
                 Err(e) => runtime_error(&e),
@@ -152,21 +147,19 @@ fn run(args: &[OsString]) -> u8 {
                     // earlier — including the canonical root, which the filesystem reported
                     // at `init`, not in this run. So all of it is `derived` (D-V01-12).
                     let canonical = report::render_path(&w.canonical);
-                    lines.push(report::Line::derived(format!(
-                        "canonical={}",
-                        canonical.text
-                    )));
+                    lines.push(report::Line::derived(canonical.field("canonical")));
                     lines.push(report::Line::derived(format!("workspace-id={}", w.id)));
-                    lines.extend(report::path_notes(&[("canonical", &canonical)]));
+                    // The tool version is read from the record, so it is written like any
+                    // other stored value.
                     lines.push(report::Line::derived(format!(
-                        "created={}  tool-version={}",
+                        "created={}  {}",
                         w.created_at_ns
                             .map(report::format_unix_ns)
                             .unwrap_or_else(|| "unknown".to_string()),
-                        w.tool_version
+                        report::text_field("tool-version", &w.tool_version)
                     )));
                 }
-                println!("{}", report::render(&lines));
+                print!("{}", report::render(&lines));
                 0
             }
             Err(e) => runtime_error(&e),
@@ -224,7 +217,7 @@ where
     };
     match f(&ws, log.as_ref()) {
         Ok(lines) => {
-            println!("{}", report::render(&lines));
+            print!("{}", report::render(&lines));
             0
         }
         Err(e) => runtime_error(&e),
@@ -326,7 +319,7 @@ fn observe(root: &Path) -> u8 {
         Err(e) => return runtime_error(&e),
     };
 
-    println!(
+    print!(
         "{}",
         report::render(&report::observe_summary(&ws, &meta, verified, not_verified))
     );

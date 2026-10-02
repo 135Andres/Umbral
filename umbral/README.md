@@ -1,6 +1,7 @@
 # umbral
 
-The v0.1 workspace observation instrument.
+The v0.1 workspace observation instrument, with v0.2 in development on branch `v0.2` (slice 1,
+the output contract `umbral-output/1`, is in place).
 
 ## What this is
 
@@ -22,20 +23,27 @@ alone what came from their filesystem and what the tool produced:
 The set of fields allowed on an `observed` line is a constant (`OBSERVED_FIELDS` in
 `src/report.rs`) and is enforced by a test, so the distinction cannot decay by inattention.
 
-### Paths that are not valid UTF-8
+### The output format: `umbral-output/1`
 
-A path is a byte string; the output is text. Where those disagree the tool neither refuses nor
-mangles. A byte that is not part of a valid UTF-8 sequence renders as `\xNN`, and a literal
-backslash renders as `\\` so an escape can never be mistaken for a name containing the same
-characters. The rendering is reversible. When it happens, the tool says so:
+Every output begins with a header naming the contract edition it follows, and every value is
+written by one escaping rule, specified in [`CONTRACT.md`](CONTRACT.md) (`UD-022`, `UD-030`):
 
 ```
-observed  canonical=/tmp/ws-\xFF\xFE
-derived   canonical-encoding=escaped  reason=path-is-not-valid-utf8
+derived   contract=umbral-output/1
+observed  canonical=/tmp/ws-\xFF\xFE  canonical-encoding=escaped:not-valid-utf8
 ```
 
-That line is required, not decorative: without it a reader could take the escaped form for the
-name on disk. Paths that are valid UTF-8 render as themselves and produce no such line.
+A path is a byte string; the output is text. What cannot stand in a line — a backslash (written
+`\\`), bytes that are not UTF-8, control characters such as a line feed, spaces that would be
+ambiguous, and characters that could disguise a name on a terminal — is written as `\xNN`. The
+writing is reversible and has exactly one form per value; names in any script, with single
+spaces, are written as themselves. When anything was escaped, the field is followed **on the same
+line** by `<field>-encoding=escaped:<reasons>`, so a reader is never left taking the escaped form
+for the name on disk, and never has to guess which value the note is about.
+
+The library reads it back (`umbral::contract::parse`), refusing anything it cannot reconstruct
+exactly — an unknown edition, a malformed or non-canonical escape, a truncated output — and
+keeping fields it does not know. Standard error is not part of the contract.
 
 ## What this is NOT
 
@@ -64,10 +72,6 @@ umbral show <root> <path>     the history of one path                (read-only)
 umbral workspaces             which workspaces exist on this machine (read-only)
 umbral check <root>           verify the log: references, stored values, no derived state (read-only)
 ```
-
-The output format proposed for v0.2 — a header naming the contract edition, and one escaping
-rule for every value — is specified in [`CONTRACT.md`](CONTRACT.md). It is **accepted (`UD-030`) and being
-implemented**: the output described below is the current one until the slice lands.
 
 Exit codes: `0` success (including `ambiguous` and "no results" — they are results, not
 errors), `1` runtime error, `2` usage error, `3` `observe` recorded a run that was

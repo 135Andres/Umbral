@@ -11,8 +11,8 @@ use std::fs;
 use common::{assert_all_labelled, labels_used, lines, Sandbox};
 use umbral::report::{
     contract_violations, fields_in, first_banned_word, label_contract_violations,
-    label_contract_violations_in_text, path_notes, render_path, unlabelled_lines, Label, Line,
-    BANNED_LEXICON, DERIVED_ONLY_FIELDS, OBSERVED_FIELDS,
+    label_contract_violations_in_text, render_path, unlabelled_lines, Line, BANNED_LEXICON,
+    DERIVED_ONLY_FIELDS, OBSERVED_FIELDS,
 };
 
 /// Every line of every command declares exactly one of the four labels.
@@ -192,7 +192,8 @@ fn a_never_observed_path_is_unknown() {
     let r = s.root().to_string_lossy().to_string();
     let out = s.run_ok(&["show", r.as_str(), "never-existed.txt"]);
     assert_all_labelled(&out);
-    let (label, text) = &lines(&out)[0];
+    // Line 0 is the contract header (`umbral-output/1`); the answer follows it.
+    let (label, text) = &lines(&out)[1];
     assert_eq!(label, "unknown");
     assert!(
         text.contains("reason=not-observed-in-any-run"),
@@ -449,7 +450,7 @@ fn a_valid_utf8_path_renders_as_itself() {
         !r.escaped,
         "nothing needed escaping, so nothing must be declared"
     );
-    assert!(path_notes(&[("canonical", &r)]).is_empty());
+    assert_eq!(r.field("canonical"), "canonical=/tmp/ordinary-name.txt");
 }
 
 #[cfg(unix)]
@@ -464,13 +465,11 @@ fn a_non_utf8_path_is_escaped_and_declared() {
     assert_eq!(r.text, "/tmp/odd-\\xFF\\xFE.txt");
     assert!(r.escaped);
 
-    let notes = path_notes(&[("canonical", &r)]);
-    assert_eq!(notes.len(), 1);
-    assert_eq!(notes[0].label, Label::Derived);
-    assert!(
-        notes[0].text.contains("path-is-not-valid-utf8"),
-        "the note must give the reason: {}",
-        notes[0].text
+    // The declaration travels on the same line, right after the value it describes
+    // (`CONTRACT.md` §5), and names the reason.
+    assert_eq!(
+        r.field("canonical"),
+        "canonical=/tmp/odd-\\xFF\\xFE.txt  canonical-encoding=escaped:not-valid-utf8"
     );
 }
 
@@ -506,13 +505,21 @@ fn valid_multibyte_characters_survive_escaping() {
 }
 
 /// Every escaped path still produces output that satisfies the label contract, so the fix
-/// does not create a hole in the contract it had to work within.
+/// does not create a hole in the contract it had to work within: the encoding annotation is
+/// grammar, and may stand on an `observed` line without counting as an observed field.
+#[cfg(unix)]
 #[test]
 fn escaped_path_lines_satisfy_the_label_contract() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
     use std::path::Path;
-    let r = render_path(Path::new("/tmp/x"));
-    let mut lines = vec![Line::observed(format!("canonical={}", r.text))];
-    lines.extend(path_notes(&[("canonical", &r)]));
-    assert!(label_contract_violations(&lines).is_empty());
+    let r = render_path(Path::new(OsStr::from_bytes(b"/tmp/x\xff=y")));
+    assert!(r.escaped);
+    let lines = vec![Line::observed(r.field("canonical"))];
+    assert!(
+        label_contract_violations(&lines).is_empty(),
+        "{:?}",
+        label_contract_violations(&lines)
+    );
     assert!(unlabelled_lines(&umbral::report::render(&lines)).is_empty());
 }
