@@ -809,6 +809,13 @@ pub fn show(
                 o.run_id
             )));
         }
+        // Why the content was not obtained, as recorded when it was not (D-V01-10).
+        if let Some(e) = &o.content_error {
+            out.push(Line::unknown(format!(
+                "run={}  content-error={e}",
+                o.run_id
+            )));
+        }
         if o.stability == Some(Stability::Unstable) && !o.deltas.is_empty() {
             out.push(Line::ambiguous(format!(
                 "run={}  reason=UnstableObservation  deltas={}",

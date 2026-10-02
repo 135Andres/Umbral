@@ -20,6 +20,8 @@
 //!   the root it observed.
 //! - `observation` — one row per observed entry per run. This is the only irreplaceable
 //!   content: it records what was seen, and it cannot be recomputed from anything else.
+//!   Since `umbral-v0.1.1` it also records why a file's content was not obtained
+//!   (`content_error`, D-V01-10).
 //!
 //! There is no projection table and no derived column. `entries`, `errors` and `complete`
 //! on [`RunMeta`](super::RunMeta) are computed from `observation` on read.
@@ -30,13 +32,23 @@ use rusqlite::{Connection, OptionalExtension};
 
 use super::{
     LogError, NewObservation, NewRun, Observation, ObservationLog, RunId, RunMeta, SCHEMA_VERSION,
+    SCHEMA_VERSION_V0_1,
 };
 use crate::content::{hex, GuardDelta, Stability};
 use crate::scan::EntryKind;
 
 pub struct SqliteLog {
     conn: Connection,
+    /// The SQL expression that yields `content_error`. A `umbral-v0.1` log opened read-only
+    /// has no such column and cannot be migrated, so the value is derived the same way the
+    /// migration would derive it.
+    content_error_expr: &'static str,
 }
+
+/// `content_error` for a `umbral-v0.1` row: a file with no content result had an error whose
+/// reason that build did not persist.
+const LEGACY_CONTENT_ERROR: &str =
+    "CASE WHEN kind = 'file' AND hash_stability IS NULL THEN 'not-recorded' END";
 
 // Hand-written rather than derived: the connection handle is an implementation detail and
 // has no useful representation to print.
@@ -71,6 +83,7 @@ CREATE TABLE IF NOT EXISTS observation (
     hash_stability  TEXT,
     hash_deltas     TEXT,
     obs_error       TEXT,
+    content_error   TEXT,
     PRIMARY KEY (run_id, path),
     -- A stored hash without a stability verdict would be a hash whose validity is unknown.
     CHECK (hash IS NULL OR hash_stability IS NOT NULL)
@@ -107,9 +120,27 @@ impl SqliteLog {
                 )?;
             }
             Some(v) if v == SCHEMA_VERSION => {}
+            Some(v) if v == SCHEMA_VERSION_V0_1 => Self::migrate_from_v0_1(&conn)?,
             Some(v) => return Err(LogError::UnknownSchema(v)),
         }
-        Ok(SqliteLog { conn })
+        Ok(SqliteLog {
+            conn,
+            content_error_expr: "content_error",
+        })
+    }
+
+    /// `umbral-v0.1` -> `umbral-v0.1.1`, in one transaction: add `content_error`, mark the
+    /// earlier file rows whose reason was not persisted, and record the new version. Additive:
+    /// no row is removed and no earlier value is changed.
+    fn migrate_from_v0_1(conn: &Connection) -> Result<(), LogError> {
+        conn.execute_batch(&format!(
+            "BEGIN;
+             ALTER TABLE observation ADD COLUMN content_error TEXT;
+             UPDATE observation SET content_error = ({LEGACY_CONTENT_ERROR});
+             UPDATE schema_meta SET value = '{SCHEMA_VERSION}' WHERE key = 'schema_version';
+             COMMIT;"
+        ))?;
+        Ok(())
     }
 
     /// Open the state file with **no write capability at all**.
@@ -130,7 +161,14 @@ impl SqliteLog {
             )
             .optional()?;
         match stored {
-            Some(v) if v == SCHEMA_VERSION => Ok(SqliteLog { conn }),
+            Some(v) if v == SCHEMA_VERSION => Ok(SqliteLog {
+                conn,
+                content_error_expr: "content_error",
+            }),
+            Some(v) if v == SCHEMA_VERSION_V0_1 => Ok(SqliteLog {
+                conn,
+                content_error_expr: LEGACY_CONTENT_ERROR,
+            }),
             Some(v) => Err(LogError::UnknownSchema(v)),
             None => Err(LogError::UnknownSchema("<absent>".into())),
         }
@@ -178,8 +216,8 @@ impl ObservationLog for SqliteLog {
             let mut stmt = tx.prepare(
                 "INSERT INTO observation
                  (run_id, path, kind, dev, ino, size, mtime_s, mtime_ns,
-                  hash, hashed_len, hash_stability, hash_deltas, obs_error)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+                  hash, hashed_len, hash_stability, hash_deltas, obs_error, content_error)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
             )?;
             for obs in &run.observations {
                 let NewObservation {
@@ -187,14 +225,15 @@ impl ObservationLog for SqliteLog {
                     content,
                     error,
                 } = obs;
-                let (hash, hashed_len, stability, deltas) = match content {
+                let (hash, hashed_len, stability, deltas, content_error) = match content {
                     Some(c) => (
                         c.hash.map(|h| h.to_vec()),
                         c.hashed_len.map(|v| v as i64),
                         c.stability.map(|s| s.as_str().to_string()),
                         c.deltas_str(),
+                        c.error.as_ref().map(|e| e.record()),
                     ),
-                    None => (None, None, None, None),
+                    None => (None, None, None, None, None),
                 };
                 let (mtime_s, mtime_ns) = match entry.mtime {
                     Some((s, n)) => (Some(s), Some(n as i64)),
@@ -214,6 +253,7 @@ impl ObservationLog for SqliteLog {
                     stability,
                     deltas,
                     error,
+                    content_error,
                 ])?;
             }
         }
@@ -254,31 +294,34 @@ impl ObservationLog for SqliteLog {
     }
 
     fn observations_for_run(&self, id: RunId) -> Result<Vec<Observation>, LogError> {
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare(&format!(
             "SELECT run_id, path, kind, dev, ino, size, mtime_s, mtime_ns,
-                    hash, hashed_len, hash_stability, hash_deltas, obs_error
+                    hash, hashed_len, hash_stability, hash_deltas, obs_error, {}
              FROM observation WHERE run_id = ?1 ORDER BY path ASC",
-        )?;
+            self.content_error_expr
+        ))?;
         let rows = stmt.query_map([id], row_to_observation)?;
         Ok(rows.collect::<Result<Vec<_>, _>>()?)
     }
 
     fn observations_for_path(&self, path: &Path) -> Result<Vec<Observation>, LogError> {
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare(&format!(
             "SELECT run_id, path, kind, dev, ino, size, mtime_s, mtime_ns,
-                    hash, hashed_len, hash_stability, hash_deltas, obs_error
+                    hash, hashed_len, hash_stability, hash_deltas, obs_error, {}
              FROM observation WHERE path = ?1 ORDER BY run_id ASC",
-        )?;
+            self.content_error_expr
+        ))?;
         let rows = stmt.query_map([path_to_blob(path)], row_to_observation)?;
         Ok(rows.collect::<Result<Vec<_>, _>>()?)
     }
 
     fn all_observations(&self) -> Result<Vec<Observation>, LogError> {
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare(&format!(
             "SELECT run_id, path, kind, dev, ino, size, mtime_s, mtime_ns,
-                    hash, hashed_len, hash_stability, hash_deltas, obs_error
+                    hash, hashed_len, hash_stability, hash_deltas, obs_error, {}
              FROM observation ORDER BY run_id ASC, path ASC",
-        )?;
+            self.content_error_expr
+        ))?;
         let rows = stmt.query_map([], row_to_observation)?;
         Ok(rows.collect::<Result<Vec<_>, _>>()?)
     }
@@ -315,6 +358,7 @@ fn row_to_observation(r: &rusqlite::Row<'_>) -> rusqlite::Result<Observation> {
     let stability: Option<String> = r.get(10)?;
     let deltas: Option<String> = r.get(11)?;
     let error: Option<String> = r.get(12)?;
+    let content_error: Option<String> = r.get(13)?;
 
     let hash_arr = match hash {
         Some(v) if v.len() == 32 => {
@@ -346,6 +390,7 @@ fn row_to_observation(r: &rusqlite::Row<'_>) -> rusqlite::Result<Observation> {
             .map(|s| s.split(',').filter_map(GuardDelta::parse).collect())
             .unwrap_or_default(),
         error,
+        content_error,
     })
 }
 
