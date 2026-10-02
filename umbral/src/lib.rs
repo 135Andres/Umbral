@@ -22,8 +22,9 @@
 //!
 //! - [`report::Label::Observed`] — a fact read from the filesystem during a named run
 //! - [`report::Label::Derived`] — a result computed from observations
-//! - [`report::Label::Ambiguous`] — insufficient or conflicting evidence, with a named reason
-//! - [`report::Label::Unknown`] — not observed, not observable, or not comparable
+//! - [`report::Label::Ambiguous`] — a classification the evidence leaves open between more
+//!   than one outcome, with a named reason
+//! - [`report::Label::Unknown`] — a value not determinable from the available evidence
 //!
 //! A missing value is never filled with an invented one.
 
