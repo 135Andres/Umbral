@@ -32,9 +32,12 @@
 
 use std::path::{Path, PathBuf};
 
-use crate::log::SCHEMA_VERSION;
-
 pub const TOOL_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// The version of the workspace record format (`workspace.json`). Versioned separately from
+/// the log schema: the log moved to `umbral-v0.1.1` without the record changing, and one
+/// number must not serve two formats.
+pub const RECORD_VERSION: &str = "umbral-v0.1";
 const WORKSPACE_FILE: &str = "workspace.json";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -153,7 +156,7 @@ fn render_record(ws: &Workspace, created_at_ns: i64) -> String {
         ws.id,
         created_at_ns,
         TOOL_VERSION,
-        SCHEMA_VERSION
+        RECORD_VERSION
     )
 }
 
@@ -221,7 +224,7 @@ pub fn open(root: &Path) -> Result<Workspace, WorkspaceError> {
     let text = std::fs::read_to_string(&record_path)?;
     let schema = json_string_field(&text, "schema_version")
         .ok_or_else(|| WorkspaceError::Json("missing schema_version".into()))?;
-    if schema != SCHEMA_VERSION {
+    if schema != RECORD_VERSION {
         return Err(WorkspaceError::UnknownSchema(schema));
     }
     Ok(Workspace {

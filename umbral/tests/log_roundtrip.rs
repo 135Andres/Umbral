@@ -5,7 +5,7 @@
 
 use std::path::PathBuf;
 
-use umbral::content::{ContentObservation, Stability};
+use umbral::content::{ContentError, ContentObservation, Stability};
 use umbral::log::sqlite::SqliteLog;
 use umbral::log::{NewObservation, NewRun, ObservationLog, SCHEMA_VERSION};
 use umbral::scan::{Entry, EntryKind};
@@ -158,7 +158,7 @@ fn the_only_stored_tables_are_the_log() {
 
 #[test]
 fn the_schema_version_is_recorded_and_an_unknown_one_is_refused() {
-    assert_eq!(SCHEMA_VERSION, "umbral-v0.1");
+    assert_eq!(SCHEMA_VERSION, "umbral-v0.1.1");
 
     let t = tempfile::TempDir::new().unwrap();
     let path = t.path().join("log.sqlite");
@@ -355,4 +355,159 @@ fn created_states_whether_its_reference_was_complete() {
         rendered.contains("created  path=b  reference-complete=false"),
         "got:\n{rendered}"
     );
+}
+
+/// The `umbral-v0.1` schema exactly as it was before D-V01-10, to prove that a log written by
+/// an earlier build is still read and is migrated in place.
+const SCHEMA_V0_1: &str = "
+CREATE TABLE schema_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE run (
+    run_id INTEGER PRIMARY KEY AUTOINCREMENT, started_at_ns INTEGER NOT NULL,
+    finished_at_ns INTEGER NOT NULL, root BLOB NOT NULL);
+CREATE TABLE observation (
+    run_id INTEGER NOT NULL REFERENCES run(run_id), path BLOB NOT NULL, kind TEXT NOT NULL,
+    dev INTEGER, ino INTEGER, size INTEGER, mtime_s INTEGER, mtime_ns INTEGER, hash BLOB,
+    hashed_len INTEGER, hash_stability TEXT, hash_deltas TEXT, obs_error TEXT,
+    PRIMARY KEY (run_id, path), CHECK (hash IS NULL OR hash_stability IS NOT NULL));
+CREATE INDEX idx_observation_path ON observation(path);
+INSERT INTO schema_meta VALUES ('schema_version', 'umbral-v0.1');
+INSERT INTO run VALUES (1, 1000, 2000, X'2F746D702F726F6F74');
+INSERT INTO observation (run_id, path, kind, dev, ino, size, mtime_s, mtime_ns,
+    hash, hashed_len, hash_stability) VALUES
+    (1, X'6F6B', 'file', 1, 1, 1, 1000, 0, X'0101010101010101010101010101010101010101010101010101010101010101', 1, 'stable'),
+    (1, X'6C6F636B6564', 'file', 1, 2, 1, 1000, 0, NULL, NULL, NULL);
+";
+
+/// D-V01-10. A content-acquisition error is evidence about how the content was (not)
+/// obtained, and it must survive persistence (`UD-023` §4). Before the fix it was dropped by
+/// `append_run`: a file that could not be read left no trace of why.
+#[test]
+fn a_content_acquisition_error_survives_the_log() {
+    let mut log = SqliteLog::open_in_memory().unwrap();
+    let denied = ContentObservation {
+        hash: None,
+        hashed_len: None,
+        stability: None,
+        deltas: Vec::new(),
+        error: Some(ContentError::PermissionDenied),
+    };
+    let failed = ContentObservation {
+        error: Some(ContentError::ReadError(
+            "Input/output error (os error 5)".into(),
+        )),
+        ..denied.clone()
+    };
+    let id = log
+        .append_run(run(vec![
+            (entry("a", 1, 1), Some(verified(1, 1))),
+            (entry("b", 2, 1), Some(denied)),
+            (entry("c", 3, 1), Some(failed)),
+        ]))
+        .unwrap();
+
+    let obs = log.observations_for_run(id).unwrap();
+    assert_eq!(obs[0].content_error, None);
+    assert_eq!(obs[1].content_error.as_deref(), Some("permission-denied"));
+    assert_eq!(
+        obs[2].content_error.as_deref(),
+        Some("read-error: Input/output error (os error 5)")
+    );
+
+    let lines = umbral::report::show(&ws(), &log, std::path::Path::new("b")).unwrap();
+    let rendered = umbral::report::render(&lines);
+    assert!(
+        rendered.contains("unknown   run=1  content-error=permission-denied"),
+        "got:\n{rendered}"
+    );
+}
+
+/// D-V01-10, compatibility. A log written before the column existed is read without being
+/// modified, and a file row that has no content result says that its reason was not
+/// recorded — rather than claiming there was no error.
+#[test]
+fn a_v0_1_log_is_read_and_its_missing_diagnostics_are_marked_not_recorded() {
+    let t = tempfile::TempDir::new().unwrap();
+    let path = t.path().join("log.sqlite");
+    rusqlite::Connection::open(&path)
+        .unwrap()
+        .execute_batch(SCHEMA_V0_1)
+        .unwrap();
+
+    let log = SqliteLog::open_read_only(&path).unwrap();
+    let obs = log.observations_for_run(1).unwrap();
+    let locked = obs
+        .iter()
+        .find(|o| o.path.as_path() == std::path::Path::new("locked"))
+        .unwrap();
+    assert_eq!(locked.content_error.as_deref(), Some("not-recorded"));
+    let ok = obs
+        .iter()
+        .find(|o| o.path.as_path() == std::path::Path::new("ok"))
+        .unwrap();
+    assert_eq!(ok.content_error, None);
+    drop(log);
+
+    let version: String = rusqlite::Connection::open(&path)
+        .unwrap()
+        .query_row(
+            "SELECT value FROM schema_meta WHERE key='schema_version'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(version, "umbral-v0.1", "a read-only open must not migrate");
+}
+
+/// D-V01-10, migration. Opening a `umbral-v0.1` log for writing migrates it in place,
+/// additively: earlier rows are kept, marked as not recorded where they lack a content
+/// result, and new runs record their diagnostics.
+#[test]
+fn a_v0_1_log_is_migrated_in_place_when_opened_for_writing() {
+    let t = tempfile::TempDir::new().unwrap();
+    let path = t.path().join("log.sqlite");
+    rusqlite::Connection::open(&path)
+        .unwrap()
+        .execute_batch(SCHEMA_V0_1)
+        .unwrap();
+
+    let mut log = SqliteLog::open(&path).unwrap();
+    let id = log
+        .append_run(run(vec![(
+            entry("new", 9, 1),
+            Some(ContentObservation {
+                hash: None,
+                hashed_len: None,
+                stability: None,
+                deltas: Vec::new(),
+                error: Some(ContentError::NotFound),
+            }),
+        )]))
+        .unwrap();
+    assert_eq!(
+        log.observations_for_run(id).unwrap()[0]
+            .content_error
+            .as_deref(),
+        Some("not-found")
+    );
+    let old = log.observations_for_run(1).unwrap();
+    assert_eq!(old.len(), 2);
+    assert_eq!(
+        old.iter()
+            .find(|o| o.path.as_path() == std::path::Path::new("locked"))
+            .unwrap()
+            .content_error
+            .as_deref(),
+        Some("not-recorded")
+    );
+    drop(log);
+
+    let version: String = rusqlite::Connection::open(&path)
+        .unwrap()
+        .query_row(
+            "SELECT value FROM schema_meta WHERE key='schema_version'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(version, "umbral-v0.1.1");
 }

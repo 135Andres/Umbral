@@ -71,6 +71,10 @@ pub struct Observation {
     pub stability: Option<Stability>,
     pub deltas: Vec<crate::content::GuardDelta>,
     pub error: Option<String>,
+    /// Why no content result was obtained, as recorded at observation time
+    /// ([`ContentError::record`](crate::content::ContentError::record)). `not-recorded` marks a
+    /// file row written by a `umbral-v0.1` build, which did not persist the reason.
+    pub content_error: Option<String>,
 }
 
 impl Observation {
@@ -140,8 +144,14 @@ impl From<std::io::Error> for LogError {
     }
 }
 
-/// The schema version this build writes and understands.
-pub const SCHEMA_VERSION: &str = "umbral-v0.1";
+/// The log schema version this build writes.
+///
+/// `umbral-v0.1.1` adds `observation.content_error` (D-V01-10). A `umbral-v0.1` log is still
+/// read, and is migrated in place, additively, the first time it is opened for writing.
+pub const SCHEMA_VERSION: &str = "umbral-v0.1.1";
+
+/// The previous log schema version, read and migrated by this build.
+pub const SCHEMA_VERSION_V0_1: &str = "umbral-v0.1";
 
 /// The persistence seam.
 pub trait ObservationLog {
