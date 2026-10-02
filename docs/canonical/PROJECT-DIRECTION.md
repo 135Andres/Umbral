@@ -27,7 +27,7 @@ filesystem sovereign and make the semantic layer a derived, rebuildable, user-go
 projection (MC §12, §28, §39).
 
 WHAT WE HAVE DECIDED
-See DECISIONS.md (UD-001..UD-032, plus the P5 interpretive record). Headlines: open
+See DECISIONS.md (UD-001..UD-033, plus the P5 interpretive record). Headlines: open
 source, no ads, licensed GPL-3.0-or-later (UD-028); no mandatory taxonomy; no hidden prompt
 injection; Sonora not an authority; local-first with file survivability; incremental
 version development; v0.2's bounded content-read optimisation, observation-basis and
@@ -90,13 +90,15 @@ WHAT COULD CHANGE OUR MIND
 - A candidate architecture scoring K1-K9 so decisively that scope assumptions change.
 - Any new explicit user decision — user authority always outranks research.
 
-CURRENT NEXT STEP (updated 2026-10-02: v0.2 SLICE 1 — OUTPUT CONTRACT)
+CURRENT NEXT STEP (updated 2026-10-02: v0.2 SLICE 2a — PER-OBSERVATION BASIS)
 
 Development proceeds by incremental versions on version branches. v0.2 is active on branch
 `v0.2`. Its acceptance criteria were accepted on 2026-10-02 (`UD-030`): version criteria
-`A2-V1`–`A2-V14` and slice 1, the output contract `umbral-output/1` (`umbral/CONTRACT.md`), which is
-the work in progress. Later slices (`basis`, the O(changes) skip, acquisition history) each need
-their own criteria and acceptance. The vocabularies those slices use — `unknown` vs
+`A2-V1`–`A2-V14` and slice 1, the output contract `umbral-output/1` (`umbral/CONTRACT.md`),
+implemented the same day. Slice 2 is split (`UD-033`): 2a — the per-observation `basis` on `show`,
+`status` and `observe`, with `show` naming its entry — is accepted and is the work in progress;
+2b (the `basis` of a `changes` verdict, as an explicit field list), the O(changes) skip and
+acquisition history each need their own criteria and acceptance. The vocabularies those slices use — `unknown` vs
 `ambiguous`, acquisition states, roles and comparison sides — were adopted on 2026-10-02
 (`UD-031`). On 2026-10-02 a repository audit
 (research/history/AUDIT-2026-10-02.md) found v0.1 defects in `umbral/`; their correction on the

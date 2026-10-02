@@ -1017,6 +1017,37 @@ Reversibility: high — each correction is covered by its own test.
 Status: DECIDED (scoped to `umbral/` v0.1 defects).
 
 ================================================================================
+UD-033 — v0.2 slice 2: split, field-set carrier, observation reference; slice 2a accepted
+Authority: USER (owner instruction, private, 2026-10-02 — chosen among proposed alternatives, then
+the drafted criteria accepted).
+Statement: the owner decides, for v0.2:
+  - slice 2 is split: **2a**, the per-observation `basis` on `show`, `status` and `observe`, with
+    `show` naming its entry; **2b**, the `basis` of a `changes` verdict;
+  - the field set a verdict rests on is carried by an **explicit field list** on the line (M2,
+    `V0.2-TECHNICAL-DESIGN.md` §E.14); M1 is not selected;
+  - a reference to an observation is **one composite value** `<run>:<path>` (R-A denoted as one
+    token), written by the contract's escaping and read by splitting at the first `:`;
+  - `show` names its observation on **every** line, `observed` lines included, through an
+    identification field that states nothing about the filesystem;
+  - the per-observation `basis` is the acquisition state of `UD-031`, shown per component
+    (`metadata=`, `content=`), always — including when it is `fresh`;
+  - `status` and `observe` count by state, on lines that name their run, and the earlier counts
+    `content-verified`, `content-not-verified` and `content-verification-not-applicable` are
+    removed;
+and accepts the criteria `A2-T2a-1`–`A2-T2a-10` in `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.5
+as written on 2026-10-02.
+Relationship to existing records: this selects the M1/M2 carrier, the reference representation,
+the `basis` field names and B1-style applicability on `show` that `UD-022` listed as open, within
+`UD-017`, `UD-019`, `UD-020` and `UD-031`; none of them is amended.
+Consequences: slice 2a may be implemented, test-first. Slice 2b needs its own criteria and
+acceptance.
+Scope guard: this record does NOT authorize slice 2b or 3, does NOT select a persistence schema
+or the field name of a reused reading's source, does NOT decide D-PEND-2, Q25 or Q26, and does NOT
+change traversal facts or `unobservable-paths` (slice 4).
+Reversibility: medium — a later edition can change these, as a recorded change.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -1028,7 +1059,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
                          (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023, UD-024,
-                         UD-025, UD-026, UD-027, UD-030, UD-031.) A scoped commitment expires with its version
+                         UD-025, UD-026, UD-027, UD-030, UD-031, UD-033.) A scoped commitment expires with its version
                          unless a later record extends it.
   DECIDED (scoped to `umbral/` v0.1 defects)
                        — committed for the named corrections only (UD-029, UD-032).
