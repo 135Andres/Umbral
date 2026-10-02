@@ -259,8 +259,10 @@ See [`SECURITY.md`](SECURITY.md). Please do not open a public issue for a vulner
 
 ## License
 
-[Apache License 2.0](LICENSE). Dependency licenses are their own; nothing here claims
-otherwise.
+[GNU General Public License v3.0 or later](LICENSE) (`GPL-3.0-or-later`), recorded as
+[`UD-028`](docs/decisions/DECISIONS.md). A work based on Umbral that is distributed must stay open
+source under the same terms. Earlier copies obtained under the Apache License 2.0 keep that
+licence. Dependency licenses are their own; nothing here claims otherwise.
 
 ## Project status
 
