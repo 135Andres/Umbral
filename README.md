@@ -58,7 +58,7 @@ derived   run=1  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
 derived   run=1  metadata-fresh=5  metadata-failed=0
 derived   run=1  content-fresh=3  content-reused=0  content-failed=0  content-not-attempted=0  content-not-recorded=0
 derived   run=1  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
-derived   run=1  started=2026-10-02T23:38:58.637Z  finished=2026-10-02T23:38:58.637Z
+derived   run=1  started=2026-10-02T23:48:58.306Z  finished=2026-10-02T23:48:58.306Z
 derived   run=1  complete=true
 
 # ... api.md edited, faq.md added, latency-notes.md removed ...
@@ -71,12 +71,12 @@ derived   run=2  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
 derived   run=2  metadata-fresh=5  metadata-failed=0
 derived   run=2  content-fresh=3  content-reused=0  content-failed=0  content-not-attempted=0  content-not-recorded=0
 derived   run=2  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
-derived   run=2  started=2026-10-02T23:38:58.642Z  finished=2026-10-02T23:38:58.642Z
+derived   run=2  started=2026-10-02T23:48:58.319Z  finished=2026-10-02T23:48:58.320Z
 derived   run=2  complete=true
 
 $ umbral changes /tmp/umbral-demo
 derived   contract=umbral-output/1
-derived   compared  from-run=1  to-run=2  complete=true
+derived   compared  reference-run=1  compared-run=2  reference-complete=true  compared-complete=true
 derived   count  unchanged=3
 derived   count  modified=1
 derived   count  created=1
@@ -85,16 +85,16 @@ derived   count  unobserved=0
 derived   count  renamed-or-moved=0
 derived   count  recreated=0
 derived   count  ambiguous=0
-derived   modified  path=docs/api.md  content-changed=true  scan-complete=true
-derived   created  path=docs/faq.md  reference-complete=true  scan-complete=true
-derived   deleted  path=research/latency-notes.md  object-survives=false  scan-complete=true
+derived   modified  path=docs/api.md  reference=1:docs/api.md  reference-fields=dev,ino,kind,size,mtime,hash  compared=2:docs/api.md  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=true  reference-complete=true  compared-complete=true
+derived   created  path=docs/faq.md  reference-absent=1  compared=2:docs/faq.md  compared-fields=dev,ino  reference-complete=true  compared-complete=true
+derived   deleted  path=research/latency-notes.md  reference=1:research/latency-notes.md  reference-fields=dev,ino  compared-absent=2  object-survives=false  reference-complete=true  compared-complete=true
 
 $ umbral status /tmp/umbral-demo
 derived   contract=umbral-output/1
 observed  canonical=/tmp/umbral-demo
 derived   root=/tmp/umbral-demo
 derived   workspace-id=b8e1aa4d4ff5946a
-derived   last-run=2  started=2026-10-02T23:38:58.642Z
+derived   last-run=2  started=2026-10-02T23:48:58.319Z
 derived   last-run=2  complete=true
 derived   run=2  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
 derived   run=2  metadata-fresh=5  metadata-failed=0
@@ -106,21 +106,24 @@ derived   log-runs=2  log-observations=10
 $ umbral show /tmp/umbral-demo docs/api.md
 derived   contract=umbral-output/1
 derived   observation=1:docs/api.md  hash=6a417660a09d  stability=stable  metadata=fresh  content=fresh
-observed  observation=1:docs/api.md  kind=file  size=32  mtime=2026-10-02T23:38:58.634Z
+observed  observation=1:docs/api.md  kind=file  size=32  mtime=2026-10-02T23:48:58.296Z
 derived   observation=2:docs/api.md  hash=6d333f581dde  stability=stable  metadata=fresh  content=fresh
-observed  observation=2:docs/api.md  kind=file  size=36  mtime=2026-10-02T23:38:58.639Z
-derived   run=1 -> 2  modified  path=docs/api.md  content-changed=true  scan-complete=true
+observed  observation=2:docs/api.md  kind=file  size=36  mtime=2026-10-02T23:48:58.312Z
+derived   modified  path=docs/api.md  reference=1:docs/api.md  reference-fields=dev,ino,kind,size,mtime,hash  compared=2:docs/api.md  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=true  reference-complete=true  compared-complete=true
 ```
 
 Every output begins with the edition of the output contract it follows
 (`contract=umbral-output/1`, specified in [`umbral/CONTRACT.md`](umbral/CONTRACT.md)), so a
 saved or piped output can be read correctly later without anything else.
 
-Even `deleted` is stated carefully: it is a claim about the comparison between two runs —
-`object-survives=false` says the path was not seen again — not a claim about physical
-deletion. In the same way, `created` states whether the run it is compared against was
-complete (`reference-complete=true`): a path missing from an incomplete run may have existed
-unseen. Where the evidence would permit several readings, the output says so instead of
+Every verdict says what it rests on: the observation it relates on each side
+(`reference=1:docs/api.md`, `compared=2:docs/api.md` — a run and a path), the fields the rules
+consulted on it, and how complete each of the two runs was. Even `deleted` is stated carefully:
+it is a claim about the comparison between two runs — `compared-absent=2` says the path had no
+observation in run 2, and `object-survives=false` that its object was not seen elsewhere — not a
+claim about physical deletion. In the same way, `created` rests on the path's absence from a
+reference run whose completeness it states: a path missing from an incomplete run may have
+existed unseen. Where the evidence would permit several readings, the output says so instead of
 choosing silently.
 
 ## What exists today

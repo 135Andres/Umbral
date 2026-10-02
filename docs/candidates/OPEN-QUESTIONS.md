@@ -138,6 +138,10 @@ Q26 — WHEN AN OBJECT IS RENAMED OVER AN EXISTING PATH, WHAT IS REPORTED FOR TH
    conditions separating `renamed-or-moved`, `recreated` and `deleted` are an open semantic
    question; `UD-023` §2 requires that observational disappearance not be read as physical
    deletion. Settles by: an owner decision on those conditions.
+   (2026-10-02, `UD-034`: the rename origin is now written `reference=<run>:c` instead of
+   `old-path=c`, and the `deleted path=a` line names `a`'s present observation with
+   `compared-fields=none` rather than calling the path absent. The verdicts are unchanged and
+   the question stays open.)
 
 ================================================================================
 (original question list, as written 2026-09-10 before the recovery)

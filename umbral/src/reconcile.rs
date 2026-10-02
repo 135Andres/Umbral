@@ -121,6 +121,75 @@ pub struct Evidence {
     /// entry vanished but the content did not). Only meaningful for `Deleted`.
     pub object_survives: Option<bool>,
     pub reason: Option<AmbiguityReason>,
+    /// Which observations the verdict rests on, and which of their fields the rules consulted
+    /// (`UD-033`, `UD-034`). Recorded by the phase that reached the verdict; it changes nothing
+    /// about the verdict itself.
+    pub basis: Basis,
+}
+
+/// The two sides of a comparison (`UD-031`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Side {
+    Reference,
+    Compared,
+}
+
+/// What a verdict rests on, on one side.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SideBasis {
+    /// The observation the verdict relates on this side, and the fields the rules consulted on
+    /// it — possibly none.
+    Related {
+        path: PathBuf,
+        fields: Vec<&'static str>,
+    },
+    /// The subject path has no observation in this run, and the verdict rests on that.
+    Absent,
+    /// The verdict relates no observation of its own on this side: on a conflicting-candidates
+    /// verdict, the other side is represented by the counterparts.
+    NotRelated,
+}
+
+/// The basis of one verdict: one entry per side, and the other entries it rests on.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Basis {
+    pub reference: SideBasis,
+    pub compared: SideBasis,
+    /// Other entries the verdict rests on, each on its side, in observation order.
+    pub counterparts: Vec<(Side, PathBuf)>,
+    /// The fields consulted on every counterpart.
+    pub counterpart_fields: Vec<&'static str>,
+}
+
+const ID_FIELDS: &[&str] = &["dev", "ino"];
+const ID_HASH_FIELDS: &[&str] = &["dev", "ino", "hash"];
+
+fn related(path: &Path, fields: &[&'static str]) -> SideBasis {
+    SideBasis::Related {
+        path: path.to_path_buf(),
+        fields: fields.to_vec(),
+    }
+}
+
+impl Basis {
+    fn pair(prev: &Path, cur: &Path, fields: &[&'static str]) -> Self {
+        Basis {
+            reference: related(prev, fields),
+            compared: related(cur, fields),
+            counterparts: Vec::new(),
+            counterpart_fields: Vec::new(),
+        }
+    }
+}
+
+/// The fields `same_observable` consults: identity (already matched), kind, and — when both
+/// sides are regular files — size and mtime.
+fn observable_fields(prev: &ObservedPath, cur: &ObservedPath) -> Vec<&'static str> {
+    let mut fields = vec!["dev", "ino", "kind"];
+    if prev.kind == cur.kind && prev.kind == EntryKind::File {
+        fields.extend(["size", "mtime"]);
+    }
+    fields
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -199,12 +268,15 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                     prev_matched[pi] = true;
                     cur_matched[ci] = true;
 
+                    let mut fields = observable_fields(prev, cur);
                     let (kind, content_changed) = if same_observable(prev, cur) {
                         (MutationKind::Unchanged, None)
                     } else if hashes_equal(prev, cur) {
                         // Metadata moved, bytes did not.
+                        fields.push("hash");
                         (MutationKind::Unchanged, Some(false))
                     } else {
+                        fields.push("hash");
                         (
                             MutationKind::Modified,
                             hashes_differ(prev, cur).then_some(true),
@@ -223,6 +295,7 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                             reference_complete: previous.complete,
                             object_survives: None,
                             reason: None,
+                            basis: Basis::pair(&prev.path, &cur.path, &fields),
                         },
                     });
                 }
@@ -271,13 +344,34 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                     reference_complete: previous.complete,
                     object_survives: None,
                     reason: None,
+                    basis: Basis::pair(
+                        &previous.paths[pi].path,
+                        &current.paths[ci].path,
+                        ID_FIELDS,
+                    ),
                 },
             });
         } else {
             // More than one candidate on at least one side. Never pick one — and never drop
             // one either: every previous path in the group is reported too (D-V01-8). A
             // previous path that is still present in the current set gets its own same-path
-            // verdict instead, so it is not reported twice.
+            // verdict instead, so it is not reported twice. Each verdict names every other
+            // member of the group, on both sides (F-TD-7).
+            let members: Vec<(Side, &Path)> = prevs
+                .iter()
+                .map(|&i| (Side::Reference, previous.paths[i].path.as_path()))
+                .chain(
+                    curs.iter()
+                        .map(|&i| (Side::Compared, current.paths[i].path.as_path())),
+                )
+                .collect();
+            let others = |side: Side, path: &Path| -> Vec<(Side, PathBuf)> {
+                members
+                    .iter()
+                    .filter(|(s, p)| !(*s == side && *p == path))
+                    .map(|(s, p)| (*s, p.to_path_buf()))
+                    .collect()
+            };
             for &pi in prevs.iter() {
                 prev_matched[pi] = true;
                 let prev = &previous.paths[pi];
@@ -296,6 +390,12 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                         reference_complete: previous.complete,
                         object_survives: None,
                         reason: Some(AmbiguityReason::ConflictingCandidates),
+                        basis: Basis {
+                            reference: related(&prev.path, ID_FIELDS),
+                            compared: SideBasis::NotRelated,
+                            counterparts: others(Side::Reference, &prev.path),
+                            counterpart_fields: ID_FIELDS.to_vec(),
+                        },
                     },
                 });
             }
@@ -313,6 +413,12 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                         reference_complete: previous.complete,
                         object_survives: None,
                         reason: Some(AmbiguityReason::ConflictingCandidates),
+                        basis: Basis {
+                            reference: SideBasis::NotRelated,
+                            compared: related(&current.paths[ci].path, ID_FIELDS),
+                            counterparts: others(Side::Compared, &current.paths[ci].path),
+                            counterpart_fields: ID_FIELDS.to_vec(),
+                        },
                     },
                 });
             }
@@ -362,9 +468,22 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                 reference_complete: previous.complete,
                 object_survives: None,
                 reason,
+                basis: Basis::pair(&prev.path, &cur.path, ID_HASH_FIELDS),
             },
         });
     }
+
+    // Absence is stated only where it is true (A2-T2b-3): a path present on a side but not
+    // consulted by its verdict — the renamed-over case, Q26 — is named with no fields.
+    let prev_paths: std::collections::BTreeSet<&Path> =
+        previous.paths.iter().map(|p| p.path.as_path()).collect();
+    let side_of = |present: bool, path: &Path| {
+        if present {
+            related(path, &[])
+        } else {
+            SideBasis::Absent
+        }
+    };
 
     // ---- Phase 4: genuinely new paths ------------------------------------------------
     for (ci, cur) in current.paths.iter().enumerate() {
@@ -382,6 +501,20 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                     reference_complete: previous.complete,
                     object_survives: None,
                     reason: None,
+                    basis: Basis {
+                        reference: side_of(prev_paths.contains(cur.path.as_path()), &cur.path),
+                        // Its identity was consulted for a partner in phase 2, and none existed.
+                        compared: related(
+                            &cur.path,
+                            if cur.physical_id().is_some() {
+                                ID_FIELDS
+                            } else {
+                                &[]
+                            },
+                        ),
+                        counterparts: Vec::new(),
+                        counterpart_fields: Vec::new(),
+                    },
                 },
             });
         }
@@ -416,6 +549,33 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
             (MutationKind::Deleted, Some(id)) => Some(surviving_ids.contains(&id)),
             _ => None,
         };
+        // The identity is consulted only to look for survivors, and every survivor is named.
+        let survivors: Vec<(Side, PathBuf)> = match (object_survives, prev.physical_id()) {
+            (Some(true), Some(id)) => current
+                .paths
+                .iter()
+                .filter(|c| c.physical_id() == Some(id))
+                .map(|c| (Side::Compared, c.path.clone()))
+                .collect(),
+            _ => Vec::new(),
+        };
+        let basis = Basis {
+            reference: related(
+                &prev.path,
+                if object_survives.is_some() {
+                    ID_FIELDS
+                } else {
+                    &[]
+                },
+            ),
+            compared: side_of(cur_by_path.contains_key(prev.path.as_path()), &prev.path),
+            counterpart_fields: if survivors.is_empty() {
+                Vec::new()
+            } else {
+                ID_FIELDS.to_vec()
+            },
+            counterparts: survivors,
+        };
 
         mutations.push(Mutation {
             kind,
@@ -429,6 +589,7 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                 reference_complete: previous.complete,
                 object_survives,
                 reason,
+                basis,
             },
         });
     }

@@ -73,6 +73,25 @@ line depends on the one above it.
 diagnostic (`unstable-observation`, `not-found`, `permission-denied`, `not-a-regular-file`,
 `read-error`).
 
+### What a verdict rests on
+
+Each line of `changes` (and the comparison lines of `show`) states, besides the verdict and its
+subject `path=` (`UD-034`):
+
+- `reference=<run>:<path>` and `compared=<run>:<path>` — the observation the verdict relates on
+  each side, each followed by `reference-fields=` / `compared-fields=`: the fields the rules
+  consulted on it (`dev,ino,kind,size,mtime,hash`, a subset of them, or `none`);
+- `reference-absent=<run>` / `compared-absent=<run>` instead, where the verdict rests on the
+  path having no observation in that run (`created`, `deleted`, `unobserved`) — written only when
+  that is so;
+- `counterpart=<run>:<path>`, once per entry, with `counterpart-fields=` — other entries the
+  verdict rests on: every surviving hard link of a `deleted` entry, every other member of a group
+  of conflicting candidates;
+- `reference-complete=` and `compared-complete=` — how complete each run was. A verdict is
+  relative to both.
+
+The header line names the two runs: `compared  reference-run=…  compared-run=…`.
+
 ## What this is NOT
 
 - **Not the product.** This is development code for one version. Nothing here is a selected

@@ -33,8 +33,10 @@ use crate::acquisition::{
     content_diagnostic, content_state, metadata_state, AcquisitionState, FAILED_DIAGNOSTICS,
 };
 use crate::content::{hex_short, Stability};
-use crate::log::{Observation, ObservationLog, RunMeta};
-use crate::reconcile::{reconcile, Mutation, MutationKind, ObservationSet, ObservedPath};
+use crate::log::{Observation, ObservationLog, RunId, RunMeta};
+use crate::reconcile::{
+    reconcile, Mutation, MutationKind, ObservationSet, ObservedPath, Side, SideBasis,
+};
 use crate::scan::EntryKind;
 use crate::workspace::Workspace;
 
@@ -240,8 +242,19 @@ pub const DERIVED_ONLY_FIELDS: &[&str] = &[
     // Assigned identifiers
     "run=",
     "last-run=",
-    "from-run=",
-    "to-run=",
+    "reference-run=",
+    "compared-run=",
+    // What a verdict rests on (`UD-034`)
+    "reference=",
+    "compared=",
+    "counterpart=",
+    "reference-fields=",
+    "compared-fields=",
+    "counterpart-fields=",
+    "reference-absent=",
+    "compared-absent=",
+    "reference-complete=",
+    "compared-complete=",
     // The tool's own clock readings
     "started=",
     "finished=",
@@ -667,8 +680,11 @@ pub fn changes(
     let r = reconcile(&ps, &cs);
 
     let mut out = vec![Line::derived(format!(
-        "compared  from-run={}  to-run={}  complete={}",
-        prev.id, cur.id, r.complete
+        "compared  reference-run={}  compared-run={}  reference-complete={}  compared-complete={}",
+        prev.id,
+        cur.id,
+        prev.complete(),
+        cur.complete()
     ))];
 
     // Every count is printed, including zeros. A count that is merely absent would make
@@ -696,26 +712,44 @@ pub fn changes(
         .iter()
         .filter(|m| m.kind != MutationKind::Unchanged)
     {
-        out.extend(mutation_line(m));
+        out.extend(mutation_line(m, prev.id, cur.id));
     }
 
     Ok(out)
 }
 
-fn mutation_line(m: &Mutation) -> Vec<Line> {
+/// One verdict, with what it rests on (`UD-033`, `UD-034`): the subject (`path=`), the
+/// observation it relates on each side — or that side's absence — with the fields the rules
+/// consulted, every other entry it rests on, and both sides' completeness.
+fn mutation_line(m: &Mutation, reference_run: RunId, compared_run: RunId) -> Vec<Line> {
     let path = render_path(&m.path);
-    let old = m.old_path.as_ref().map(|p| render_path(p));
+    let basis = &m.evidence.basis;
     let mut parts = vec![path.field("path")];
-    // `created` is relative to the reference run: an entry absent from an incomplete
-    // reference may have existed unseen. Stated explicitly, true or false (D-V01-9).
-    if m.kind == MutationKind::Created {
-        parts.push(format!(
-            "reference-complete={}",
-            m.evidence.reference_complete
-        ));
+    for (key, side, run) in [
+        ("reference", &basis.reference, reference_run),
+        ("compared", &basis.compared, compared_run),
+    ] {
+        match side {
+            SideBasis::Related { path, fields } => {
+                parts.push(reference_field(key, run, path));
+                parts.push(format!("{key}-fields={}", field_list(fields)));
+            }
+            SideBasis::Absent => parts.push(format!("{key}-absent={run}")),
+            SideBasis::NotRelated => {}
+        }
     }
-    if let Some(o) = &old {
-        parts.push(o.field("old-path"));
+    for (side, p) in &basis.counterparts {
+        let run = match side {
+            Side::Reference => reference_run,
+            Side::Compared => compared_run,
+        };
+        parts.push(reference_field("counterpart", run, p));
+    }
+    if !basis.counterparts.is_empty() {
+        parts.push(format!(
+            "counterpart-fields={}",
+            field_list(&basis.counterpart_fields)
+        ));
     }
     if let Some(b) = m.evidence.content_changed {
         parts.push(format!("content-changed={b}"));
@@ -726,13 +760,31 @@ fn mutation_line(m: &Mutation) -> Vec<Line> {
     if let Some(r) = m.evidence.reason {
         parts.push(format!("reason={}", r.as_str()));
     }
-    parts.push(format!("scan-complete={}", m.evidence.complete_scan));
+    // A verdict is relative to both runs it compares, and to how complete each was (A2-V7).
+    parts.push(format!(
+        "reference-complete={}  compared-complete={}",
+        m.evidence.reference_complete, m.evidence.complete_scan
+    ));
     let text = parts.join("  ");
     let line = match m.kind {
         MutationKind::Ambiguous => Line::ambiguous(format!("{}  {text}", m.kind.as_str())),
         _ => Line::derived(format!("{}  {text}", m.kind.as_str())),
     };
     vec![line]
+}
+
+/// `<key>=<run>:<path>`, written by the contract (`CONTRACT.md` §6a).
+fn reference_field(key: &str, run: RunId, path: &Path) -> String {
+    crate::contract::write_reference(run as u64, &path_key(path)).field(key)
+}
+
+/// A list of consulted field names; `none` when the rules consulted none.
+fn field_list(fields: &[&str]) -> String {
+    if fields.is_empty() {
+        "none".to_string()
+    } else {
+        fields.join(",")
+    }
 }
 
 // ---------------------------------------------------------------------------------------
@@ -852,13 +904,9 @@ pub fn show(
         let set_a = ObservationSet::new(vec![observed_path(a)], complete_a);
         let set_b = ObservationSet::new(vec![observed_path(b)], complete);
         let rec = reconcile(&set_a, &set_b);
+        // The same verdict line as `changes`: its references name both runs.
         for m in &rec.mutations {
-            for line in mutation_line(m) {
-                out.push(Line {
-                    label: line.label,
-                    text: format!("run={} -> {}  {}", a.run_id, b.run_id, line.text),
-                });
-            }
+            out.extend(mutation_line(m, a.run_id, b.run_id));
         }
     }
 

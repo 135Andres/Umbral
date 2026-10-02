@@ -332,7 +332,9 @@ fn created_states_whether_its_reference_was_complete() {
     let log = SqliteLog::open_read_only(&path).unwrap();
     let rendered = umbral::report::render(&umbral::report::changes(&ws(), &log).unwrap());
     assert!(
-        rendered.contains("created  path=c  reference-complete=true"),
+        rendered.contains(
+            "created  path=c  reference-absent=2  compared=3:c  compared-fields=dev,ino  reference-complete=true"
+        ),
         "got:\n{rendered}"
     );
 
@@ -352,7 +354,9 @@ fn created_states_whether_its_reference_was_complete() {
     let log2 = SqliteLog::open_read_only(&path2).unwrap();
     let rendered = umbral::report::render(&umbral::report::changes(&ws(), &log2).unwrap());
     assert!(
-        rendered.contains("created  path=b  reference-complete=false"),
+        rendered.contains(
+            "created  path=b  reference-absent=1  compared=2:b  compared-fields=dev,ino  reference-complete=false"
+        ),
         "got:\n{rendered}"
     );
 }
