@@ -24,6 +24,7 @@ on:
     paths:
       - 'umbral/**'
       - 'Cargo.toml'
+      - 'Cargo.lock'
       - '.github/workflows/umbral.yml'
 
 jobs:
@@ -48,7 +49,8 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-umbral-${{ hashFiles('umbral/Cargo.lock') }}
+          # The lockfile is the workspace's, at the repository root: `umbral/` has none of its own.
+          key: ${{ runner.os }}-umbral-${{ hashFiles('Cargo.lock') }}
 
       - name: cargo fmt --check
         run: cargo fmt --check
