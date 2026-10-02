@@ -487,3 +487,21 @@ proptest! {
         }
     }
 }
+
+/// D-V01-9: the reference's completeness travels with every verdict.
+#[test]
+fn every_verdict_carries_the_completeness_of_its_reference() {
+    let prev = set(vec![mk("a.txt", 1, 10, Some(1))], false);
+    let cur = set(
+        vec![mk("a.txt", 1, 10, Some(1)), mk("b.txt", 1, 11, Some(2))],
+        true,
+    );
+    let r = reconcile(&prev, &cur);
+    let created = kinds(&r, MutationKind::Created);
+    assert_eq!(created.len(), 1);
+    assert!(!created[0].evidence.reference_complete);
+    assert!(r.mutations.iter().all(|m| !m.evidence.reference_complete));
+
+    let r = reconcile(&set(prev.paths.clone(), true), &cur);
+    assert!(r.mutations.iter().all(|m| m.evidence.reference_complete));
+}
