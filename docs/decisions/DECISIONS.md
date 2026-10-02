@@ -916,6 +916,30 @@ Reversibility: high — each correction is a separate commit with its own test.
 Status: DECIDED (scoped to `umbral/` v0.1 defects).
 
 ================================================================================
+UD-030 — v0.2 acceptance criteria and slice 1 (output contract `umbral-output/1`)
+Authority: USER (owner instruction, private, 2026-10-02 — accepted after reading the drafts).
+Statement: the owner accepts, as written on 2026-10-02:
+  - the version criteria `A2-V1`–`A2-V14` in `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.2;
+  - slice 1, "output grammar and contract version": criteria `A2-T1-1`–`A2-T1-11` (§9.3) and
+    the specification `umbral/CONTRACT.md`, edition `umbral-output/1` — including its escape
+    table, its space rule, its deceptive-character set, its header, its encoding annotation on
+    the line of the value it describes, and its strict reader (non-canonical escapes rejected).
+The 2026-09-12 criteria `A2-1`–`A2-9` are superseded by them (§9.4 keeps them as written).
+Relationship to existing records: this is the exact escape specification, header representation
+and version value that `UD-022` left open; `UD-022`'s family, error semantics and versioning
+mechanism are unchanged. It is the owner acceptance that `docs/versions/v0.2.md` requires before
+production code.
+Consequences: slice 1 may be implemented, test-first. Each later slice needs its own criteria and
+its own acceptance. v0.2 may be declared evidence complete with `A2-V13` (human legibility)
+recorded NOT SATISFIED.
+Scope guard: this record does NOT select M1 or M2, the reference representation, the `basis`
+field name, the persistence schema or B1; does NOT decide D-PEND-2 (`ctime`), Q25 or Q26; does
+NOT authorize any slice other than slice 1; does NOT declare v0.2 complete.
+Reversibility: medium — a later edition (`umbral-output/2`) can change the contract, but only as
+a recorded breaking change.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -927,7 +951,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
                          (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023, UD-024,
-                         UD-025, UD-026, UD-027.) A scoped commitment expires with its version
+                         UD-025, UD-026, UD-027, UD-030.) A scoped commitment expires with its version
                          unless a later record extends it.
   DECIDED (scoped to `umbral/` v0.1 defects)
                        — committed for the named corrections only (UD-029).
