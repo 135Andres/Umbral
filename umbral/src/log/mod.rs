@@ -92,6 +92,18 @@ impl Observation {
     }
 }
 
+/// One stored value that this build cannot interpret.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InvalidValue {
+    pub run_id: RunId,
+    /// The observation's path; `None` for a value stored on the run itself.
+    pub path: Option<PathBuf>,
+    /// The stored column.
+    pub field: &'static str,
+    /// Why the value is not interpretable, as a token.
+    pub reason: String,
+}
+
 /// An observation on its way into the log.
 #[derive(Debug, Clone)]
 pub struct NewObservation {
@@ -174,9 +186,14 @@ pub trait ObservationLog {
     /// answerable without any separate index.
     fn observations_for_path(&self, path: &Path) -> Result<Vec<Observation>, LogError>;
 
-    /// Every observation in the log, ordered by (run, path). Used by `check`, which
-    /// recomputes derived state from the raw rows rather than from any cached form.
+    /// Every observation in the log, ordered by (run, path).
     fn all_observations(&self) -> Result<Vec<Observation>, LogError>;
+
+    /// Stored values this build cannot interpret, read raw — before any normalisation. Used by
+    /// `check`: the readers above map an unknown value to an absence (a hash of the wrong
+    /// length reads as no hash), so only a raw reading can show that a row is corrupt
+    /// (D-V01-11).
+    fn invalid_values(&self) -> Result<Vec<InvalidValue>, LogError>;
 
     /// Count of runs and observations. Cheap enough for `status`.
     fn counts(&self) -> Result<(u64, u64), LogError>;
