@@ -290,3 +290,69 @@ fn check_reports_a_clean_log_as_consistent() {
     assert!(rendered.contains("consistent=true"), "got:\n{rendered}");
     assert!(rendered.contains("derived-state-persisted=false"));
 }
+
+/// D-V01-9. `created` is a claim relative to the reference run. When that reference was
+/// incomplete — some path could not be observed — the entry may have existed and simply not
+/// been seen, so the line must say so. Before the fix the reference's completeness was not
+/// part of the evidence at all.
+#[test]
+fn created_states_whether_its_reference_was_complete() {
+    let t = tempfile::TempDir::new().unwrap();
+    let path = t.path().join("log.sqlite");
+    {
+        let mut log = SqliteLog::open(&path).unwrap();
+        let mut incomplete = run(vec![(entry("a", 1, 1), Some(verified(1, 1)))]);
+        incomplete.observations.push(NewObservation {
+            entry: Entry {
+                path: PathBuf::from("locked"),
+                kind: EntryKind::Other,
+                dev: None,
+                ino: None,
+                size: None,
+                mtime: None,
+            },
+            content: None,
+            error: Some("permission denied".into()),
+        });
+        log.append_run(incomplete).unwrap();
+        log.append_run(run(vec![
+            (entry("a", 1, 1), Some(verified(1, 1))),
+            (entry("b", 2, 1), Some(verified(2, 1))),
+        ]))
+        .unwrap();
+        log.append_run(run(vec![
+            (entry("a", 1, 1), Some(verified(1, 1))),
+            (entry("b", 2, 1), Some(verified(2, 1))),
+            (entry("c", 3, 1), Some(verified(3, 1))),
+        ]))
+        .unwrap();
+    }
+
+    // Runs 2 -> 3: the reference (run 2) was complete.
+    let log = SqliteLog::open_read_only(&path).unwrap();
+    let rendered = umbral::report::render(&umbral::report::changes(&ws(), &log).unwrap());
+    assert!(
+        rendered.contains("created  path=c  reference-complete=true"),
+        "got:\n{rendered}"
+    );
+
+    // Runs 1 -> 2: the reference (run 1) was incomplete.
+    let t2 = tempfile::TempDir::new().unwrap();
+    let path2 = t2.path().join("log.sqlite");
+    {
+        let src = rusqlite::Connection::open(&path).unwrap();
+        src.execute_batch(&format!("VACUUM INTO '{}'; ", path2.display()))
+            .unwrap();
+        let dst = rusqlite::Connection::open(&path2).unwrap();
+        dst.execute_batch(
+            "DELETE FROM observation WHERE run_id = 3; DELETE FROM run WHERE run_id = 3;",
+        )
+        .unwrap();
+    }
+    let log2 = SqliteLog::open_read_only(&path2).unwrap();
+    let rendered = umbral::report::render(&umbral::report::changes(&ws(), &log2).unwrap());
+    assert!(
+        rendered.contains("created  path=b  reference-complete=false"),
+        "got:\n{rendered}"
+    );
+}
