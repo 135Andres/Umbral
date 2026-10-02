@@ -291,7 +291,15 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
     }
 
     // ---- Phase 3: same path without shared identity ---------------------------------
+    // A pair is classified here only when its current entry was not already explained by
+    // phase 2. Otherwise a path swap would be reported as two renames AND two same-path
+    // verdicts (D-V01-6). This is the frozen V0 experiment's rule. When only the previous
+    // entry was consumed by phase 2 (its object moved away and a new one took the path), the
+    // current entry is still classified against it here.
     for (pi, ci) in deferred {
+        if cur_matched[ci] {
+            continue;
+        }
         let prev = &previous.paths[pi];
         let cur = &current.paths[ci];
         prev_matched[pi] = true;

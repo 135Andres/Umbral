@@ -247,6 +247,27 @@ fn a_path_swap_is_two_renames() {
     assert_eq!(r.count(MutationKind::RenamedOrMoved), 2);
     assert_eq!(r.count(MutationKind::Modified), 0);
     assert_eq!(r.count(MutationKind::Unchanged), 0);
+    // D-V01-6: counting the renames is not enough. The same-path pairs that phase 2 already
+    // explained must not be classified again, so the swap is exactly two verdicts.
+    assert_eq!(r.count(MutationKind::Recreated), 0);
+    assert_eq!(r.count(MutationKind::Ambiguous), 0);
+    assert_eq!(r.mutations.len(), 2, "got: {:?}", r.mutations);
+}
+
+/// D-V01-6, partial case: `a` moved to `c` and a new object took `a`. The previous `a` is
+/// explained by the rename, and the new `a` is still classified against it — once.
+#[test]
+fn a_path_vacated_by_a_rename_and_refilled_is_classified_once() {
+    let prev = set(vec![mk("a.txt", 1, 10, Some(1))], true);
+    let cur = set(
+        vec![mk("a.txt", 1, 11, Some(2)), mk("c.txt", 1, 10, Some(1))],
+        true,
+    );
+    let r = reconcile(&prev, &cur);
+
+    assert_eq!(r.count(MutationKind::RenamedOrMoved), 1);
+    assert_eq!(r.count(MutationKind::Recreated), 1);
+    assert_eq!(r.mutations.len(), 2, "got: {:?}", r.mutations);
 }
 
 /// Two hard links to one object: one physical id, two entries. When the pairing is
@@ -330,17 +351,27 @@ proptest! {
     #![proptest_config(ProptestConfig::with_cases(256))]
 
     /// With unique physical ids (no hard links), every previous path is consumed by exactly
-    /// one mutation and every current path is named by exactly one mutation.
+    /// one mutation and every current path is named by exactly one current-side mutation.
+    ///
+    /// Current objects either keep their own path's identity, take a fresh one, or take the
+    /// identity of another previous path (`perm`) — which generates renames, swaps and
+    /// renames over an existing path. Before D-V01-6 the generator produced no renames at
+    /// all, which is why a path swap classified twice went unnoticed.
     #[test]
     fn every_path_is_accounted_for_exactly_once(
-        spec in prop::collection::vec((any::<bool>(), any::<bool>(), any::<bool>(), 0u8..4u8), 1..8)
+        (spec, perm, fresh) in (1usize..8).prop_flat_map(|n| (
+            prop::collection::vec((any::<bool>(), any::<bool>(), 0u8..4u8), n),
+            Just((0..n).collect::<Vec<usize>>()).prop_shuffle(),
+            prop::collection::vec(any::<bool>(), n),
+        ))
     ) {
         let mut prev_paths = Vec::new();
         let mut cur_paths = Vec::new();
-        for (i, (in_prev, in_cur, same_id, h)) in spec.iter().enumerate() {
+        for (i, (in_prev, in_cur, h)) in spec.iter().enumerate() {
             let name = format!("p{i}.txt");
             let prev_ino = 100 + i as u64;
-            let cur_ino = if *same_id { prev_ino } else { 500 + i as u64 };
+            // `perm` is a permutation, so current identities stay unique.
+            let cur_ino = if fresh[i] { 500 + i as u64 } else { 100 + perm[i] as u64 };
             if *in_prev {
                 prev_paths.push(mk(&name, 1, prev_ino, Some(*h)));
             }
@@ -353,21 +384,39 @@ proptest! {
 
         let r = reconcile(&set(prev_paths, true), &set(cur_paths, true));
 
-        // P1: every previous path is accounted for exactly once, either by a same-path
-        // mutation or as the source of a rename.
+        // P1: every previous path is accounted for, at most once as the source of a rename and
+        // at most once by a same-path mutation. Both happen together in exactly one case: the
+        // path's object moved away AND a new object took the path. Then the rename describes
+        // the object and the same-path verdict describes the path — the frozen V0
+        // experiment's rule, fixed by UD-029. Nothing else may account for a path twice.
         for p in &prev_names {
-            let n = r.mutations.iter()
-                .filter(|m| {
-                    (m.old_path.is_none() && &m.path == p)
-                        || m.old_path.as_ref() == Some(p)
-                })
+            let as_source = r.mutations.iter()
+                .filter(|m| m.old_path.as_ref() == Some(p))
                 .count();
-            prop_assert_eq!(n, 1, "previous path {} accounted for {} times", p.display(), n);
+            let same_path = r.mutations.iter()
+                .filter(|m| m.old_path.is_none() && &m.path == p)
+                .count();
+            prop_assert!(as_source + same_path >= 1, "previous path {} not accounted for", p.display());
+            prop_assert!(as_source <= 1, "previous path {} is the source of {} renames", p.display(), as_source);
+            prop_assert!(same_path <= 1, "previous path {} has {} same-path verdicts", p.display(), same_path);
+            if as_source == 1 && same_path == 1 {
+                prop_assert!(
+                    cur_names.contains(p),
+                    "previous path {} renamed away and also given a same-path verdict, but no current entry holds it",
+                    p.display()
+                );
+            }
         }
 
-        // P2: every current path is named by exactly one mutation.
+        // P2: every current path is named by exactly one current-side mutation. `deleted`
+        // and `unobserved` are claims about the previous side: when an object is renamed
+        // over an existing path, the object that was there is reported `deleted` under the
+        // same path (V0's behaviour, kept by UD-029; OPEN-QUESTIONS Q26).
         for c in &cur_names {
-            let n = r.mutations.iter().filter(|m| m.path.as_path() == c.as_path()).count();
+            let n = r.mutations.iter()
+                .filter(|m| m.path.as_path() == c.as_path())
+                .filter(|m| !matches!(m.kind, MutationKind::Deleted | MutationKind::Unobserved))
+                .count();
             prop_assert_eq!(n, 1, "current path {} named {} times", c.display(), n);
         }
     }
