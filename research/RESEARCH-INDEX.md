@@ -158,6 +158,16 @@ S12 Linux kernel documentation — Multigrain Timestamps
   in the report as a limitation).
 
 -------------------------------------------------------------------------------
+2026-09-13 CYCLE — v0.2 HISTORICAL CONTRACT (pointer)
+-------------------------------------------------------------------------------
+  The derivation of the historical guarantees (UD-023–UD-027) and of the candidate minimal
+  core was carried out in agent working reports that belong to the owner's private record
+  and are NOT archived here. The definitions the public decision records cite (D1–D9,
+  N1–N10, M6) are published as an extract in research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md
+  (2026-10-02). The arguments behind them are not, and cannot be checked from this
+  repository — the same situation as the `MC §n` citations.
+
+-------------------------------------------------------------------------------
 GAPS IN THE CORPUS
 -------------------------------------------------------------------------------
   1  [RESOLVED 2026-09-10] The master context document was recovered from the project's
