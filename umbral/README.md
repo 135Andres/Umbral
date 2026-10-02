@@ -48,6 +48,31 @@ The library reads it back (`umbral::contract::parse`), refusing anything it cann
 exactly — an unknown edition, a malformed or non-canonical escape, a truncated output — and
 keeping fields it does not know. Standard error is not part of the contract.
 
+### How each value was obtained
+
+Every observation has two components: its **metadata** (kind, size, mtime, physical identity),
+read for every entry, and — for a regular file only — its **content**, read and hashed. For each
+component the output states how it was obtained, in a closed vocabulary (`UD-031`, `UD-033`):
+
+| State | Meaning |
+|---|---|
+| `fresh` | obtained in this run; a value exists |
+| `reused` | carried from an earlier observation, which is named; never content verification. Not emitted yet: it arrives with the skip (v0.2 slice 3) |
+| `failed` | attempted, and no value was obtained — including a reading that kept changing |
+| `not-attempted` | it is recorded that no attempt was made (a path whose metadata failed: its kind is unknown) |
+| `not-recorded` | it is not recorded whether an attempt was made (a row written by an older build) |
+
+`show` writes `metadata=` and `content=` on each observation's line; a directory, symlink or
+special file has no `content=` because it has no content component. Every line of `show` names
+the observation it reports, `observation=<run>:<path>` ([`CONTRACT.md`](CONTRACT.md) §6a), so no
+line depends on the one above it.
+
+`observe` and `status` count by state, on lines that name their run: `metadata-fresh`,
+`metadata-failed`; `content-fresh`, `content-reused`, `content-failed`, `content-not-attempted`,
+`content-not-recorded` (they sum to `files + kind-unknown`); and the failed content readings by
+diagnostic (`unstable-observation`, `not-found`, `permission-denied`, `not-a-regular-file`,
+`read-error`).
+
 ## What this is NOT
 
 - **Not the product.** This is development code for one version. Nothing here is a selected

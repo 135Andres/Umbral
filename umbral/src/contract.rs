@@ -216,6 +216,55 @@ pub fn read_value(text: &str) -> Result<Vec<u8>, ValueError> {
     Ok(out)
 }
 
+/// A reference to one observation: `<run>:<path>` (`CONTRACT.md` §6a, `UD-033`). The run is
+/// written in decimal without leading zeros; the path is its bytes. The whole value is then
+/// written like any other.
+pub fn write_reference(run: u64, path: &[u8]) -> Written {
+    let mut value = format!("{run}:").into_bytes();
+    value.extend_from_slice(path);
+    write_value(&value)
+}
+
+/// Why a decoded value is not an observation reference.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReferenceError {
+    /// No `:` at all.
+    MissingSeparator,
+    /// Nothing before the first `:`.
+    EmptyRun,
+    /// The run is not made of decimal digits only.
+    NotDecimal,
+    /// The run has a leading zero: not the one way it is written.
+    LeadingZero,
+    /// The run does not fit the log's signed 64-bit identifier.
+    OutOfRange,
+}
+
+/// Read a decoded value as an observation reference. It splits at the **first** `:` — a run
+/// never contains one, so a path may.
+pub fn read_reference(value: &[u8]) -> Result<(u64, Vec<u8>), ReferenceError> {
+    let sep = value
+        .iter()
+        .position(|&b| b == b':')
+        .ok_or(ReferenceError::MissingSeparator)?;
+    let (run, path) = (&value[..sep], &value[sep + 1..]);
+    if run.is_empty() {
+        return Err(ReferenceError::EmptyRun);
+    }
+    if !run.iter().all(u8::is_ascii_digit) {
+        return Err(ReferenceError::NotDecimal);
+    }
+    if run.len() > 1 && run[0] == b'0' {
+        return Err(ReferenceError::LeadingZero);
+    }
+    let run: u64 = std::str::from_utf8(run)
+        .ok()
+        .and_then(|r| r.parse().ok())
+        .filter(|&r| r <= i64::MAX as u64)
+        .ok_or(ReferenceError::OutOfRange)?;
+    Ok((run, path.to_vec()))
+}
+
 /// One item of a line.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {

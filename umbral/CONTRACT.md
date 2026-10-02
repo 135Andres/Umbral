@@ -136,6 +136,36 @@ There is no recovery: no skipping, no resynchronising at a later delimiter, no b
 reading (`UD-022`). Unknown fields are the only thing that is tolerated, because that is what
 lets a later edition add fields without breaking earlier readers.
 
+## 6a. Observation references and the identification field
+
+Added 2026-10-02 by v0.2 slice 2a (`UD-033`); additive, so the edition is unchanged (§7).
+
+A **reference** names one stored observation. Its value is
+
+```
+<run>:<path>
+```
+
+- `<run>` is the run identifier in decimal, without leading zeros (`0` is written `0`);
+- `<path>` is the path's bytes, relative to the observed root, as stored;
+- the whole value — run, `:` and path — is written by §4 like any other value, so a path with a
+  line feed or bytes that are not UTF-8 is escaped, and annotated (§5), as usual;
+- it is read by splitting the decoded value at the **first** `:`. A run never contains one, so a
+  path may: `12:a:b` is run 12, path `a:b`.
+
+`umbral::contract::read_reference` refuses, with a reason: a value with no `:`; nothing before it;
+a run that is not made of decimal digits only (a sign is not); a leading zero; a run larger than
+the log's signed 64-bit identifier.
+
+`observation=<reference>` is an **identification field**: it says which observation a line is
+about and states nothing about the filesystem. Like the encoding annotation, it may stand on a
+line of any label and is not counted as a field of an `observed` line.
+
+```
+derived   observation=2:docs/api.md  hash=6d333f581dde  stability=stable  metadata=fresh  content=fresh
+observed  observation=2:docs/api.md  kind=file  size=36  mtime=2026-10-02T23:38:58.639Z
+```
+
 ## 7. Versioning
 
 - The edition is `umbral-output/1`. It is its own number. It is not the log schema version

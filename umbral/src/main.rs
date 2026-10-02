@@ -254,18 +254,10 @@ fn observe(root: &Path) -> u8 {
     };
 
     let mut observations: Vec<NewObservation> = Vec::with_capacity(scan.entries.len());
-    let mut verified: u64 = 0;
-    let mut not_verified: u64 = 0;
 
     for entry in &scan.entries {
         let content_obs = if entry.kind == umbral::EntryKind::File {
-            let c = content::observe_content(&root.join(&entry.path));
-            if c.is_content_verified() {
-                verified += 1;
-            } else {
-                not_verified += 1;
-            }
-            Some(c)
+            Some(content::observe_content(&root.join(&entry.path)))
         } else {
             None
         };
@@ -339,9 +331,14 @@ fn observe(root: &Path) -> u8 {
         Err(e) => return runtime_error(&e),
     };
 
+    // The summary is counted from what the log stored, so it says what was recorded.
+    let stored = match log.observations_for_run(run_id) {
+        Ok(o) => o,
+        Err(e) => return runtime_error(&e),
+    };
     print!(
         "{}",
-        report::render(&report::observe_summary(&ws, &meta, verified, not_verified))
+        report::render(&report::observe_summary(&ws, &meta, &stored))
     );
 
     if meta.complete() {

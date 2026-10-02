@@ -416,7 +416,7 @@ fn a_content_acquisition_error_survives_the_log() {
     let lines = umbral::report::show(&ws(), &log, std::path::Path::new("b")).unwrap();
     let rendered = umbral::report::render(&lines);
     assert!(
-        rendered.contains("unknown   run=1  content-error=permission-denied"),
+        rendered.contains("unknown   observation=1:b  content-error=permission-denied"),
         "got:\n{rendered}"
     );
 }
@@ -441,7 +441,7 @@ fn an_unstable_content_reading_is_shown_as_unknown() {
     let rendered = umbral::report::render(&lines);
     assert!(
         rendered.contains(
-            "unknown   run=1  reason=unstable-observation  deltas=size-changed,mtime-changed"
+            "unknown   observation=1:a  reason=unstable-observation  deltas=size-changed,mtime-changed"
         ),
         "got:\n{rendered}"
     );

@@ -12,7 +12,7 @@ use common::{assert_all_labelled, labels_used, lines, Sandbox};
 use umbral::report::{
     contract_violations, fields_in, first_banned_word, label_contract_violations,
     label_contract_violations_in_text, render_path, unlabelled_lines, Line, BANNED_LEXICON,
-    DERIVED_ONLY_FIELDS, OBSERVED_FIELDS,
+    DERIVED_ONLY_FIELDS, IDENTIFICATION_FIELDS, OBSERVED_FIELDS,
 };
 
 /// Every line of every command declares exactly one of the four labels.
@@ -425,6 +425,10 @@ fn observed_lines_carry_only_filesystem_facts() {
     );
     for line in observed {
         for field in fields_in(line) {
+            // The identification field names the observation; it is not a claim (`UD-033`).
+            if IDENTIFICATION_FIELDS.contains(&field.as_str()) {
+                continue;
+            }
             assert!(
                 OBSERVED_FIELDS.contains(&field.as_str()),
                 "observed line carries `{field}`: {line}"
