@@ -1,12 +1,10 @@
 # umbral-output/1 — the output contract
 
-Status: **PROPOSED — not implemented.** Drafted 2026-10-02 as the specification for v0.2's first
-slice (`docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9, criteria `A2-T1-*`). The grammar family,
-the error semantics and the versioning mechanism are decided (`UD-022`); the exact choices
+Status: **ACCEPTED — being implemented** (owner, 2026-10-02, `UD-030`). The specification for
+v0.2's first slice (`docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.3, criteria `A2-T1-*`). The
+grammar family, the error semantics and the versioning mechanism are `UD-022`; the exact choices
 below — the escape table, the space rule, the deceptive-character set, the header and the
-version value — were made by the owner on 2026-10-02 (private record) and become binding only
-when the owner accepts the slice. Until then the tool does **not** emit this format; its current
-output has no header and escapes paths only.
+version value — are `UD-030`. Until the slice lands the tool does **not** emit this format.
 
 This document defines how `umbral` **writes** its standard output and how that output is
 **read back**. It does not define what any field *means*; that is in [`README.md`](README.md)
