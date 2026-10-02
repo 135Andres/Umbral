@@ -2,7 +2,8 @@
 
 Status: **DERIVED INDEX (DT8) — navigational only. Not authority.**
 It points at the documents that own each namespace; it never restates what an identifier means.
-Last audited: 2026-09-13, after `UD-026`/`UD-027` were added on branch `v0.2`.
+Last audited: 2026-10-02, by the repository audit of that date (`research/history/AUDIT-2026-10-02.md`),
+after `UD-028`/`UD-029` were added on branch `v0.2`.
 
 ## 1. What this document is, and what it is not
 
@@ -52,7 +53,7 @@ inside one experiment's own files, and must not be cited from outside it.
 | PREFIX | OWNER | RANGE | KIND | SCOPE | COLLISION |
 |---|---|---|---|---|---|
 | `MC §n` | `research/sources/PROJECT-MASTER-CONTEXT.md` (**private, untracked**) | §1–§52+ | charter / user intent | project | — |
-| `UD` | `docs/decisions/DECISIONS.md` | UD-001–UD-027 | decision record | project | — |
+| `UD` | `docs/decisions/DECISIONS.md` | UD-001–UD-029 | decision record | project | — |
 | `A` | `docs/canonical/INVARIANTS.md` | A1–A11 | invariant | project | **yes** — see §4.8 |
 | `P` | `docs/canonical/PRINCIPLES.md` | P1–P9 | principle | project | **yes** — see §4.2 |
 | `C` | `docs/canonical/CONSTRAINTS.md` | C1–C12 | constraint | project | — |
@@ -84,7 +85,7 @@ inside one experiment's own files, and must not be cited from outside it.
 | `INV` | `docs/v0/V0-IMPLEMENTATION-PLAN.md` §12 | INV-1–INV-8 | invariant | V0 | — |
 | `F-V01` | `experiments/v0.1-reader-protocol/README.md` | F-V01-1–F-V01-9 | reader-protocol finding | version-local (v0.1) | — |
 | `P-V01` | `experiments/v0.1-reader-protocol/EVIDENCE-B.md` | P-V01-1–P-V01-2 | protocol defect | version-local (v0.1) | — |
-| `D-V01` | `docs/versions/v0.1.md` | D-V01-1–D-V01-4 | implementation defect | version-local (v0.1) | **yes** — written bare as `D4`, see §4.10 |
+| `D-V01` | `docs/versions/v0.1.md` | D-V01-1–D-V01-12 | implementation defect | version-local (v0.1) | **yes** — written bare as `D4`, see §4.10 |
 | `N-V01` | `docs/versions/v0.1.md` | N-V01-1 | presentation note | version-local (v0.1) | — |
 | `A1-AI` | `experiments/exp-ai-01/` | A1-AI | evidence class | project | — |
 | `DOC-FRICTION` | `experiments/exp-doc1/DOC-FRICTION-LOG.md` | 001–018 | friction finding | experiment-local (EXP-DOC-1) | — |
@@ -108,6 +109,10 @@ inside one experiment's own files, and must not be cited from outside it.
 | `P-D2` | `docs/candidates/V0.2-TECHNICAL-DESIGN.md` | P-D2 | property (ctime) | version-local (v0.2) | — |
 | `H11` | `docs/candidates/V0.2-TECHNICAL-DESIGN.md` | H11-a–H11-g | hypothesis (E-TD-11) | version-local (v0.2) | — |
 | `M` (design) | `docs/candidates/V0.2-TECHNICAL-DESIGN.md` | M1–M5 | evidence-representation model | version-local (v0.2) | **yes** — see §4.1 |
+| `M6` | `research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md` §3 | M6 | evidence-representation model (later candidate, not selected) | version-local (v0.2) | **yes** — continues `M` (design); see §4.1 |
+| `D` (guarantees) | `docs/decisions/DECISIONS.md` (`UD-023` §1–§5, `UD-024`–`UD-027`); index in `research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md` §1 | D1–D9 | label of an adopted historical guarantee | version-local (v0.2) | **yes** — see §4.10 |
+| `N` (core) | `research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md` §2 | N1–N10 | candidate minimal-core distinction (analysis) | version-local (v0.2) | **yes** — see §4.13 |
+| `P5` / `H1`, `H2` (P5 record) | `docs/decisions/DECISIONS.md`, P5 interpretive record | P5; H1–H2 | interpretive question; its two test histories | version-local (v0.2) | **yes** — see §4.2, §4.12 |
 | `R` (scope) | `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §7 | R1–R5 | risk | version-local (v0.2) | **yes** — see §4.4 |
 | `D-PEND` | `docs/decisions/DECISIONS.md` + `docs/candidates/V0.2-TECHNICAL-DESIGN.md` | D-PEND-1, D-PEND-2 | pending decision | project | — (two documents, one namespace, by design) |
 | `J.1` | `docs/decisions/DECISIONS.md` + `docs/candidates/V0.2-TECHNICAL-DESIGN.md` §E.5 | J.1 | owner decision (traceability) | project | **yes** — see §4.6 |
@@ -130,22 +135,26 @@ identifier knows it is ambiguous *before* drawing a conclusion from it.
 | 4.7 | `S` | 2 | S1–S12 vs S1–S13 |
 | 4.8 | `A` | 2 | A1 is both |
 | 4.9 | `L` | 2 | L1–L5 in two owners, different subjects |
-| 4.10 | `D` | 2 | D1–D4 vs `D-V01-4` written bare |
+| 4.10 | `D` | 3+ | D1–D4 (design) vs D1–D9 (guarantees) vs `D-V01-4` written bare |
 | 4.11 | `K` | 1 | **not a collision** — recorded for completeness |
 | 4.12 | `DQ`, `EXP`, `H`, `Q` | 2+ | four further collisions found by the audit |
+| 4.13 | `N` | 3 | N1–N10 (core) vs N1–N3 (vision) vs N1–N5 (EXP-DOC-1) |
 
-**4.1 — `M`.** Four owners. `docs/candidates/COEXISTENCE-STRATEGIES.md` (M1–M8) and
+**4.1 — `M`.** Four owners, plus `M6`. `docs/candidates/COEXISTENCE-STRATEGIES.md` (M1–M8) and
 `docs/candidates/ENVIRONMENT-INTELLIGENCE.md` (M9–M10) share one proposed-mechanism namespace;
 `experiments/exp1/EXP-1.md` (M1–M10) uses it for mutation classes; `experiments/exp-doc1/DOC-FRICTION-LOG.md`
 (M0–M10) for reader findings; and `docs/candidates/V0.2-TECHNICAL-DESIGN.md` (M1–M5) for the
 evidence-representation models. The last is the one in active use, and `docs/decisions/DECISIONS.md`
 cites `M1`/`M2` in that sense. `docs/DOCUMENTATION-ARCHITECTURE.md` §12 records the first four and
 declares them scoped; the fifth postdates that note.
+`M6` (`research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md` §3, added 2026-10-02) continues the design's
+evidence-representation series; `UD-023` and `docs/versions/v0.2.md` name it only as not selected.
 **Until renamed or qualified, write the context: "M1 (design)", "M1 (coexistence)".**
 
-**4.2 — `P`.** Three owners: `docs/canonical/PRINCIPLES.md` (P1–P9),
+**4.2 — `P`.** Four owners: `docs/canonical/PRINCIPLES.md` (P1–P9),
 `research/PROJECT-REALITY-MINIMUM-MODEL.md` (P1–P2, model primitives), and
-`docs/candidates/V0.2-TECHNICAL-DESIGN.md` (P1–P42, falsifiable properties). The ranges nest, so a
+`docs/candidates/V0.2-TECHNICAL-DESIGN.md` (P1–P42, falsifiable properties); and the P5 interpretive record in `docs/decisions/DECISIONS.md`,
+whose `P5` is a question about multiplicity of emissions. The ranges nest, so a
 number alone does not resolve. **Qualify: "P34 (design property)", "P6 (principle)".**
 
 **4.3 — `V`.** Two owners, and the ambiguity reaches into a decision record.
@@ -186,7 +195,11 @@ Same numbers, different subjects. **Qualify by document.**
 
 **4.10 — `D`.** `docs/candidates/V0.2-TECHNICAL-DESIGN.md` defines D1–D4 as the E-TD-11 defect
 classes. `docs/versions/v0.1.md` defines the namespace `D-V01-n` but writes one of its own defects
-bare as "the first run's D4 weakness". **Always write `D-V01-4` in full.**
+bare as "the first run's D4 weakness". **Always write `D-V01-4` in full.** A third use was added on 2026-09-13: `D1`–`D9` label the
+adopted historical guarantees (`UD-023`–`UD-027`; index in
+`research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md` §1), and `UD-014`, `UD-016`–`UD-018` also cite the
+owner's mandate items as "decision D1", "D2 and D3" — a fourth, unregistered sense used only as
+quotations of a mandate. **Write "D6 (guarantee, `UD-024`)" or "D2 (design defect class)".**
 
 **4.11 — `K`.** Single owner (`docs/candidates/RESEARCH-AGENDA.md` §7.6, K1–K9, comparison
 criteria). Recorded here because `docs/canonical/PROJECT-DIRECTION.md` and
@@ -201,7 +214,13 @@ name in `research/RESEARCH-INDEX.md` and `research/history/STAGE-2026-09-11b-v0-
 `H` (H1–H25 hypotheses; `H-DOC-1`/`H-DOC-2` experiment hypotheses; `H11-a`…`H11-g` design
 hypotheses). `Q` (Q1–Q25 project questions; `XQ-1`–`XQ-5` experiment questions — the `XQ` prefix
 disambiguates, but `Q29` is cited in `DOC-FRICTION-018` as a *phantom* identifier that never
-existed).
+existed). The P5 interpretive record adds `H1`/`H2` as the names of two test histories, which
+collide with hypotheses H1–H2.
+
+**4.13 — `N`.** Three owners: `research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md` §2 (N1–N10, candidate
+minimal-core distinctions, cited by `UD-024`/`UD-025` as "N3→N8" and "N5→derivable");
+`docs/canonical/VISION.md` (N1–N3, north-star candidates); and `experiments/exp-doc1/navigation-run-2.md`
+(N1–N5, experiment-local findings). **Write "N3 (core)" or "N3 (vision)".**
 
 ## 5. Tokens that look like identifiers but are not
 
@@ -227,6 +246,9 @@ audit was incomplete, the difference is recorded here rather than silently fixed
   against the files.
 - `INV`, `SC`, `EI`, `CO`, `PASS`, `FAL`, `E-MIN`, `MIN`, `XQ`, `O`, `H-DOC`, `PC`, `A1-AI` and the
   `D-PEND` namespace were missing from that earlier audit entirely.
+- 2026-10-02: `M6`, `N1`–`N10`, `D1`–`D9` (guarantees) and the P5 record's `P5`/`H1`/`H2` were cited
+  by decision records but registered nowhere, and the first three were defined only outside the
+  repository. They are now registered and their definitions published as an extract.
 - `Q29` and `H14` are cited once as *phantom* identifiers in `DOC-FRICTION-018`; neither was ever
   defined. They are recorded as phantoms, not as ranges.
 
