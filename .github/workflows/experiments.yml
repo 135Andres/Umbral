@@ -1,0 +1,40 @@
+# Pre-registered experiments that need a filesystem this project cannot probe locally.
+#
+# E-TD-2 and E-TD-3 (experiments/e-td-2-3/README.md, specified before the run): ubuntu-latest's
+# ext4 is the filesystem where v0.1 observed inode reuse, so it is the arm that matters. The
+# probe writes one JSON document to the job log; the result is copied into the experiment's
+# README by hand, with the run's URL. Nothing here gates a merge: an experiment's outcome is a
+# result, not a pass or a failure.
+
+name: experiments
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [v0.2]
+    paths:
+      - 'experiments/e-td-2-3/**'
+      - '.github/workflows/experiments.yml'
+
+jobs:
+  e-td-2-3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Build umbral
+        run: cargo build --release -p umbral
+
+      - name: Record the environment
+        run: |
+          uname -a
+          findmnt -T "$RUNNER_TEMP" -o TARGET,FSTYPE,OPTIONS
+          findmnt -T "$GITHUB_WORKSPACE" -o TARGET,FSTYPE,OPTIONS
+
+      - name: Probe the runner's temporary directory
+        run: python3 experiments/e-td-2-3/probe.py --umbral target/release/umbral --label ci-runner-temp "$RUNNER_TEMP"
