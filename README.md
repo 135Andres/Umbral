@@ -58,7 +58,8 @@ derived   run=1  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
 derived   run=1  metadata-fresh=5  metadata-failed=0
 derived   run=1  content-fresh=3  content-reused=0  content-failed=0  content-not-attempted=0  content-not-recorded=0
 derived   run=1  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
-derived   run=1  started=2026-10-02T23:48:58.306Z  finished=2026-10-02T23:48:58.306Z
+derived   run=1  content-read-entries=3  content-read-bytes=82
+derived   run=1  started=2026-10-03T04:21:43.434Z  finished=2026-10-03T04:21:43.434Z
 derived   run=1  complete=true
 
 # ... api.md edited, faq.md added, latency-notes.md removed ...
@@ -69,9 +70,10 @@ observed  canonical=/tmp/umbral-demo
 derived   run=2  root=/tmp/umbral-demo
 derived   run=2  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
 derived   run=2  metadata-fresh=5  metadata-failed=0
-derived   run=2  content-fresh=3  content-reused=0  content-failed=0  content-not-attempted=0  content-not-recorded=0
+derived   run=2  content-fresh=2  content-reused=1  content-failed=0  content-not-attempted=0  content-not-recorded=0
 derived   run=2  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
-derived   run=2  started=2026-10-02T23:48:58.319Z  finished=2026-10-02T23:48:58.320Z
+derived   run=2  content-read-entries=2  content-read-bytes=53
+derived   run=2  started=2026-10-03T04:21:43.437Z  finished=2026-10-03T04:21:43.437Z
 derived   run=2  complete=true
 
 $ umbral changes /tmp/umbral-demo
@@ -94,23 +96,29 @@ derived   contract=umbral-output/1
 observed  canonical=/tmp/umbral-demo
 derived   root=/tmp/umbral-demo
 derived   workspace-id=b8e1aa4d4ff5946a
-derived   last-run=2  started=2026-10-02T23:48:58.319Z
+derived   last-run=2  started=2026-10-03T04:21:43.437Z
 derived   last-run=2  complete=true
 derived   run=2  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
 derived   run=2  metadata-fresh=5  metadata-failed=0
-derived   run=2  content-fresh=3  content-reused=0  content-failed=0  content-not-attempted=0  content-not-recorded=0
+derived   run=2  content-fresh=2  content-reused=1  content-failed=0  content-not-attempted=0  content-not-recorded=0
 derived   run=2  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
 derived   run=2  unobservable-paths=0  reason=not-observed-at-observation-time
 derived   log-runs=2  log-observations=10
 
-$ umbral show /tmp/umbral-demo docs/api.md
+$ umbral show /tmp/umbral-demo docs/overview.md
 derived   contract=umbral-output/1
-derived   observation=1:docs/api.md  hash=6a417660a09d  stability=stable  metadata=fresh  content=fresh
-observed  observation=1:docs/api.md  kind=file  size=32  mtime=2026-10-02T23:48:58.296Z
-derived   observation=2:docs/api.md  hash=6d333f581dde  stability=stable  metadata=fresh  content=fresh
-observed  observation=2:docs/api.md  kind=file  size=36  mtime=2026-10-02T23:48:58.312Z
-derived   modified  path=docs/api.md  reference=1:docs/api.md  reference-fields=dev,ino,kind,size,mtime,hash  compared=2:docs/api.md  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=true  reference-complete=true  compared-complete=true
+derived   observation=1:docs/overview.md  hash=139e3fda7011  stability=stable  metadata=fresh  content=fresh
+observed  observation=1:docs/overview.md  kind=file  size=30  mtime=2026-10-03T04:21:43.431Z  ctime=2026-10-03T04:21:43.431Z
+derived   observation=2:docs/overview.md  hash=139e3fda7011  stability=stable  metadata=fresh  content=reused  content-source=1:docs/overview.md
+observed  observation=2:docs/overview.md  kind=file  size=30  mtime=2026-10-03T04:21:43.431Z  ctime=2026-10-03T04:21:43.431Z
+derived   unchanged  path=docs/overview.md  reference=1:docs/overview.md  reference-fields=dev,ino,kind,size,mtime,hash  compared=2:docs/overview.md  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=true  compared-complete=true
 ```
+
+The second `observe` read only what could have changed — the edited file and the new one,
+`content-read-entries=2` — and carried the third file's reading forward: `show` reports it as
+`content=reused` and names the observation that actually read its bytes
+(`content-source=1:docs/overview.md`). A reused reading is never presented as verified in that
+run.
 
 Every output begins with the edition of the output contract it follows
 (`contract=umbral-output/1`, specified in [`umbral/CONTRACT.md`](umbral/CONTRACT.md)), so a

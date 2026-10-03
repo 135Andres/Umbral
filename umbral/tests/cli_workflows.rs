@@ -70,7 +70,15 @@ fn two_observations_of_an_unchanged_tree_agree() {
     let r = s.root().to_string_lossy().to_string();
 
     let second = s.run_ok(&["observe", r.as_str()]);
-    assert!(second.contains("content-fresh=2"), "got:\n{second}");
+    // Nothing changed, so nothing is read again: both readings are carried (`UD-036`).
+    assert!(
+        second.contains("content-fresh=0  content-reused=2"),
+        "got:\n{second}"
+    );
+    assert!(
+        second.contains("content-read-entries=0  content-read-bytes=0"),
+        "got:\n{second}"
+    );
 
     let changes = s.run_ok(&["changes", r.as_str()]);
     assert!(changes.contains("count  unchanged=3"), "got:\n{changes}");

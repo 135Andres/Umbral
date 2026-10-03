@@ -33,9 +33,11 @@ pub mod content;
 pub mod contract;
 pub mod identity;
 pub mod log;
+pub mod observe;
 pub mod reconcile;
 pub mod report;
 pub mod scan;
+pub mod skip;
 pub mod workspace;
 
 pub use content::{ContentObservation, Stability};

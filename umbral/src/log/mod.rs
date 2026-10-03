@@ -66,9 +66,17 @@ pub struct Observation {
     pub ino: Option<u64>,
     pub size: Option<u64>,
     pub mtime: Option<(i64, u32)>,
+    pub ctime: Option<(i64, u32)>,
+    /// Whether this observation's run recorded `ctime` at all. Runs written before
+    /// `umbral-v0.2` did not: their absent `ctime` is "not recorded", never "not obtainable".
+    pub ctime_recorded: bool,
     pub hash: Option<[u8; 32]>,
     pub hashed_len: Option<u64>,
     pub stability: Option<Stability>,
+    /// The run in which the stored reading's bytes were actually read (`UD-021`, `UD-036`).
+    /// Equal to `run_id` for a fresh reading, earlier for one carried by a skip, `None` when
+    /// there is no reading.
+    pub hash_read_run: Option<RunId>,
     pub deltas: Vec<crate::content::GuardDelta>,
     pub error: Option<String>,
     /// Why no content result was obtained, as recorded at observation time
@@ -122,6 +130,9 @@ pub struct NewObservation {
     pub entry: Entry,
     pub content: Option<ContentObservation>,
     pub error: Option<String>,
+    /// `Some(run)` when `content` is a reading carried from `run` by a skip: its bytes were not
+    /// read in this run. `None` for a reading made now.
+    pub reused_from: Option<RunId>,
 }
 
 /// A run on its way into the log.
@@ -170,11 +181,14 @@ impl From<std::io::Error> for LogError {
 
 /// The log schema version this build writes.
 ///
-/// `umbral-v0.1.1` adds `observation.content_error` (D-V01-10). A `umbral-v0.1` log is still
-/// read, and is migrated in place, additively, the first time it is opened for writing.
-pub const SCHEMA_VERSION: &str = "umbral-v0.1.1";
+/// `umbral-v0.1.1` added `observation.content_error` (D-V01-10). `umbral-v0.2` adds
+/// `hash_read_run`, `ctime_s` and `ctime_ns`, and records in `schema_meta` the first run whose
+/// `ctime` was recorded (`UD-036`). Earlier logs are still read, and are migrated in place,
+/// additively, the first time they are opened for writing.
+pub const SCHEMA_VERSION: &str = "umbral-v0.2";
 
-/// The previous log schema version, read and migrated by this build.
+/// The earlier log schema versions, read and migrated by this build.
+pub const SCHEMA_VERSION_V0_1_1: &str = "umbral-v0.1.1";
 pub const SCHEMA_VERSION_V0_1: &str = "umbral-v0.1";
 
 /// The persistence seam.

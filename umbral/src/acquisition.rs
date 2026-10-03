@@ -14,8 +14,8 @@ use crate::scan::EntryKind;
 pub enum AcquisitionState {
     /// Acquired in this act; a value exists.
     Fresh,
-    /// A value carried from an earlier observation. Never content verification. No v0.2 build
-    /// emits it before the skip exists (slice 3).
+    /// A value carried from an earlier observation by a skip (slice 3). Never content
+    /// verification; its source is named.
     Reused,
     /// Attempted; no value was obtained — including a reading that kept changing.
     Failed,
@@ -79,7 +79,13 @@ pub fn content_state(o: &Observation) -> Option<AcquisitionState> {
         return Some(AcquisitionState::NotRecorded);
     }
     if o.valid_hash().is_some() {
-        return Some(AcquisitionState::Fresh);
+        // A reading read in an earlier run and carried by a skip is reused, never fresh
+        // (`UD-017`). A reading with no recorded run cannot be attributed: not recorded.
+        return Some(match o.hash_read_run {
+            Some(r) if r == o.run_id => AcquisitionState::Fresh,
+            Some(r) if r < o.run_id => AcquisitionState::Reused,
+            _ => AcquisitionState::NotRecorded,
+        });
     }
     if o.stability == Some(Stability::Unstable) || o.content_error.is_some() {
         return Some(AcquisitionState::Failed);
@@ -87,6 +93,14 @@ pub fn content_state(o: &Observation) -> Option<AcquisitionState> {
     // A file row with neither a reading nor a recorded error: nothing says whether a reading
     // was attempted.
     Some(AcquisitionState::NotRecorded)
+}
+
+/// The run whose observation of the same path read a reused reading (`content-source=`).
+pub fn content_source(o: &Observation) -> Option<crate::log::RunId> {
+    match content_state(o) {
+        Some(AcquisitionState::Reused) => o.hash_read_run,
+        _ => None,
+    }
 }
 
 /// The diagnostic of a failed content acquisition, as one of [`FAILED_DIAGNOSTICS`].

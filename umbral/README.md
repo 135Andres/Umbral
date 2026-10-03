@@ -57,7 +57,7 @@ component the output states how it was obtained, in a closed vocabulary (`UD-031
 | State | Meaning |
 |---|---|
 | `fresh` | obtained in this run; a value exists |
-| `reused` | carried from an earlier observation, which is named; never content verification. Not emitted yet: it arrives with the skip (v0.2 slice 3) |
+| `reused` | carried from an earlier observation by the skip; never content verification. `show` names the observation that read the bytes: `content-source=<run>:<path>` |
 | `failed` | attempted, and no value was obtained — including a reading that kept changing |
 | `not-attempted` | it is recorded that no attempt was made (a path whose metadata failed: its kind is unknown) |
 | `not-recorded` | it is not recorded whether an attempt was made (a row written by an older build) |
@@ -72,6 +72,39 @@ line depends on the one above it.
 `content-not-recorded` (they sum to `files + kind-unknown`); and the failed content readings by
 diagnostic (`unstable-observation`, `not-found`, `permission-denied`, `not-a-regular-file`,
 `read-error`).
+
+### Reading only what changed
+
+`observe` re-reads a regular file only when it may have changed (`UD-035`, `UD-036`). It compares
+the file with the previous run's observation **of the same path**, and carries that reading
+forward without reading the bytes when all of these are present and equal: the physical identity
+(`dev`, `ino`), the size, the mtime and the **ctime** — and the previous reading was valid.
+Anything else, anything absent, a path new to that run (a rename included): the file is read.
+
+`ctime` is in the condition because a writer can restore size and mtime but cannot set `ctime`.
+Measured before the decision (`experiments/e-td-2-3/`): on ext4, deleting and recreating a file
+with different bytes, the same length and the original mtime kept its inode in 1000 of 1000
+attempts; without `ctime` every one would have been skipped, with it none was.
+
+What each run read is counted, never timed:
+
+```
+derived   run=3  content-read-entries=1  content-read-bytes=36
+```
+
+An unchanged tree reads `0` entries and `0` bytes; one modified file reads exactly that file.
+
+Known limits, stated rather than hidden:
+
+- **It is a heuristic, not a guarantee** (`UD-018`). A change that leaves identity, size, mtime
+  and `ctime` all equal is not seen until something else moves: on a filesystem that does not
+  generate its own timestamps, or within one tick of a coarse clock. None was provoked in the
+  experiments; that does not make it impossible. A reused reading is therefore never presented
+  as verified in that run.
+- **A metadata change costs a read.** `chmod`, `chown` or a new hard link moves `ctime`, so the
+  file is read again although its bytes did not change.
+- `ctime` is recorded with every observation and shown on `show`'s `observed` line. Runs written
+  before this version did not record it, and say so (`fields=ctime  reason=not-recorded`).
 
 ### What a verdict rests on
 
@@ -160,8 +193,14 @@ there is no projection table, no cached current state, no stored reconciliation 
 Everything derived is recomputed on read, so nothing can drift out of agreement with the log.
 `umbral check` verifies the structural half of that claim — the stored tables are the log and
 nothing else — together with referential integrity and that every stored value is one this
-build can interpret. Each of its verifications is shown failing by a test that corrupts a log on
-purpose; verifications that could not fail were removed (D-V01-11).
+build can interpret, and that every reading names the run that actually read its bytes — never a
+later one, and a carried reading equal to the one it came from (`readings-consistent=`). Each of
+its verifications is shown failing by a test that corrupts a log on purpose; verifications that
+could not fail were removed (D-V01-11).
+
+The log schema is `umbral-v0.2`. Logs written by earlier builds (`umbral-v0.1`, `umbral-v0.1.1`)
+are read as they are, and migrated in place, additively and in one transaction, the first time
+`observe` writes to them.
 
 ## Building and testing
 

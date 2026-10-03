@@ -347,6 +347,7 @@ fn entry(path: &str, ino: u64, size: u64) -> Entry {
         ino: Some(ino),
         size: Some(size),
         mtime: Some((1_000, 0)),
+        ctime: None,
     }
 }
 
@@ -367,6 +368,7 @@ fn append(log: &mut SqliteLog, obs: Vec<(Entry, Option<ContentObservation>)>, er
             entry,
             content,
             error: None,
+            reused_from: None,
         })
         .collect();
     // A directory that could not be read makes the run incomplete.
@@ -378,6 +380,7 @@ fn append(log: &mut SqliteLog, obs: Vec<(Entry, Option<ContentObservation>)>, er
             },
             content: None,
             error: Some("Permission denied (os error 13)".into()),
+            reused_from: None,
         });
     }
     log.append_run(NewRun {
