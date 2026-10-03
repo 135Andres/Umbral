@@ -130,8 +130,8 @@ Each line of `changes` (and the comparison lines of `show`) states, besides the 
 subject `path=` (`UD-034`):
 
 - `reference=<run>:<path>` and `compared=<run>:<path>` — the observation the verdict relates on
-  each side, each followed by `reference-fields=` / `compared-fields=`: the fields the rules
-  consulted on it (`dev,ino,kind,size,mtime,hash`, a subset of them, or `none`);
+  each side, each with `reference-fields=` / `compared-fields=` — fields are associated by
+  key, not by position — listing the fields the rules consulted on it (`dev,ino,kind,size,mtime,hash`, a subset of them, or `none`);
 - `reference-absent=<run>` / `compared-absent=<run>` instead, where the verdict rests on the
   path having no observation in that run (`created`, `deleted`, `unobserved`) — written only when
   that is so;
