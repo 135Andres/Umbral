@@ -277,16 +277,19 @@ why.
 This repository's history was rewritten once, before its first public release, to remove a
 document that is not part of the public edition. That is why no commit hash from before
 that rewrite is cited anywhere in this repository: the rewrite changed all of them. A few
-records written afterwards do cite later commits; those hashes are real, but a hash on a
-development branch only stays valid if that branch is merged without rewriting it. The development trail — what was done, in what order,
-with what evidence — is preserved.
+records written afterwards do cite later commits. On 2026-10-03 the history was rewritten a
+second time, only to change the owner's author name from `Andres` to `135Andres`; that changed
+those hashes too, and each old one resolves to its new one in
+[`research/history/COMMIT-REWRITE-2026-10-03.md`](research/history/COMMIT-REWRITE-2026-10-03.md).
+The development trail — what was done, in what order, with what evidence — is preserved.
 
 ## How this project is developed
 
 Umbral is developed by its owner together with AI agents. The commit history carries two
 identities: the earlier commits were authored by an agent identity (`Hermes`), and the later
-ones by the owner's identity, under which agent-assisted work is also committed. The project
-has not rewritten that history to look otherwise.
+ones by the owner's identity (`135Andres`), under which agent-assisted work is also committed.
+The project has not rewritten that history to look otherwise; the 2026-10-03 rewrite changed only
+the owner's name.
 
 The project's own rules exist precisely because of this. Agent output — including the
 output of the agents that wrote and maintain these documents — is **never authority**:
