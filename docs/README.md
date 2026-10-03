@@ -2,7 +2,7 @@
 
 This directory holds the project's working documentation, grouped by function. Each file
 has exactly one role and one home; this page is only a map. The repository's full
-authority ladder and reading rules live in the [root README](../README.md).
+authority ladder and reading rules live in [Reading this repository](READING-THIS-REPOSITORY.md).
 
 | Category | Files | For |
 |---|---|---|
@@ -11,7 +11,7 @@ authority ladder and reading rules live in the [root README](../README.md).
 | [Commitments](decisions/) | [`DECISIONS`](decisions/DECISIONS.md) | **the only place decisions live** (`UD-nnn`, immutable records) |
 | [Candidates and open questions](candidates/) | [`ARCHITECTURE-HYPOTHESES`](candidates/ARCHITECTURE-HYPOTHESES.md) · [`OPEN-QUESTIONS`](candidates/OPEN-QUESTIONS.md) · [`RESEARCH-AGENDA`](candidates/RESEARCH-AGENDA.md) | candidate mechanisms — all explicitly *not selected*; what is unresolved; what must be investigated |
 | [Product-level hypotheses](candidates/) | [`COEXISTENCE-STRATEGIES`](candidates/COEXISTENCE-STRATEGIES.md) · [`ENVIRONMENT-INTELLIGENCE`](candidates/ENVIRONMENT-INTELLIGENCE.md) | proposed, unratified hypothesis sets from the research cycles |
-| [Active version](versions/v0.2.md) | [`v0.2`](versions/v0.2.md) · [`V0.2-SCOPE-PROPOSAL`](candidates/V0.2-SCOPE-PROPOSAL.md) · [`V0.2-TECHNICAL-DESIGN`](candidates/V0.2-TECHNICAL-DESIGN.md) | v0.2 is active in contract integration; scope criteria and technical mechanisms remain proposals until accepted |
+| [Latest version](versions/v0.2.md) | [`v0.2`](versions/v0.2.md) · [`V0.2-SCOPE-PROPOSAL`](candidates/V0.2-SCOPE-PROPOSAL.md) · [`V0.2-TECHNICAL-DESIGN`](candidates/V0.2-TECHNICAL-DESIGN.md) | v0.2, declared evidence complete (`UD-038`); its accepted criteria are in the scope proposal §9 |
 | [V0](v0/) | [`V0-IMPLEMENTATION-PLAN`](v0/V0-IMPLEMENTATION-PLAN.md) | the frozen prototype's plan, invariants, criteria |
 | [Versions](versions/) | [`versions/README`](versions/README.md) | what each development version did — goal, evidence, known limitations. Frozen once the version closes |
 

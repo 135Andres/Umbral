@@ -7,8 +7,8 @@ The most valuable contribution right now is usually **not code**. It is a well-f
 argument, a counter-example, a source, or an experiment that contradicts something the
 project currently assumes.
 
-Before anything else, read [`README.md`](README.md) — especially
-[How to read claims here](README.md#how-to-read-claims-here). It takes a few minutes and
+Before anything else, read [`README.md`](README.md) and then
+[Reading this repository](docs/READING-THIS-REPOSITORY.md). It takes a few minutes and
 prevents most of the confusion this project is designed to avoid.
 
 ---
