@@ -13,7 +13,7 @@ on:
   push:
     branches: [v0.2]
     paths:
-      - 'experiments/e-td-2-3/**'
+      - 'experiments/e-td-2-3/probe.py'
       - '.github/workflows/experiments.yml'
 
 jobs:

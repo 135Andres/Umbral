@@ -1,0 +1,202 @@
+{
+ "e_td_2": {
+  "atomic": {
+   "bytes_differ": 50,
+   "ctime_delta_ns_min": 1005190036,
+   "ctime_equal": 0,
+   "detected_ctime": 50,
+   "detected_metadata": 50,
+   "invalid": 0,
+   "repetitions": 50,
+   "skip_ctime": 0,
+   "skip_metadata": 0,
+   "verdicts_v01": {
+    "recreated": 50
+   },
+   "verdicts_v02_derived_ctime": {
+    "recreated": 50
+   },
+   "verdicts_v02_derived_metadata": {
+    "recreated": 50
+   }
+  },
+  "chmod": {
+   "bytes_differ": 0,
+   "ctime_delta_ns_min": 1004263992,
+   "ctime_equal": 0,
+   "detected_ctime": 0,
+   "detected_metadata": 0,
+   "invalid": 0,
+   "repetitions": 50,
+   "skip_ctime": 0,
+   "skip_metadata": 50,
+   "verdicts_v01": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_ctime": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_metadata": {
+    "unchanged": 50
+   }
+  },
+  "h2a_visible_without_ctime": 0,
+  "h2b_counterexamples": 0,
+  "h2d_disagreements": {
+   "ctime": 0,
+   "metadata": 0
+  },
+  "restore": {
+   "bytes_differ": 50,
+   "ctime_delta_ns_min": 1005701322,
+   "ctime_equal": 0,
+   "detected_ctime": 50,
+   "detected_metadata": 0,
+   "invalid": 0,
+   "repetitions": 50,
+   "skip_ctime": 0,
+   "skip_metadata": 50,
+   "verdicts_v01": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_ctime": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_metadata": {
+    "unchanged": 50
+   }
+  },
+  "touch": {
+   "bytes_differ": 0,
+   "ctime_delta_ns_min": 1004157163,
+   "ctime_equal": 0,
+   "detected_ctime": 0,
+   "detected_metadata": 0,
+   "invalid": 0,
+   "repetitions": 50,
+   "skip_ctime": 0,
+   "skip_metadata": 0,
+   "verdicts_v01": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_ctime": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_metadata": {
+    "unchanged": 50
+   }
+  }
+ },
+ "e_td_3": {
+  "budget": 1000,
+  "ctime_equal": 0,
+  "first_cases": [
+   {
+    "attempt": 1,
+    "ctime_equal": false,
+    "decision": {
+     "ctime": "read",
+     "metadata": "skip"
+    },
+    "mtime_equal": true,
+    "size_equal": true,
+    "verdict_v01": "unchanged",
+    "verdict_v02_derived": {
+     "ctime": "unchanged",
+     "metadata": "unchanged"
+    }
+   },
+   {
+    "attempt": 2,
+    "ctime_equal": false,
+    "decision": {
+     "ctime": "read",
+     "metadata": "skip"
+    },
+    "mtime_equal": true,
+    "size_equal": true,
+    "verdict_v01": "unchanged",
+    "verdict_v02_derived": {
+     "ctime": "unchanged",
+     "metadata": "unchanged"
+    }
+   },
+   {
+    "attempt": 3,
+    "ctime_equal": false,
+    "decision": {
+     "ctime": "read",
+     "metadata": "skip"
+    },
+    "mtime_equal": true,
+    "size_equal": true,
+    "verdict_v01": "unchanged",
+    "verdict_v02_derived": {
+     "ctime": "unchanged",
+     "metadata": "unchanged"
+    }
+   },
+   {
+    "attempt": 4,
+    "ctime_equal": false,
+    "decision": {
+     "ctime": "read",
+     "metadata": "skip"
+    },
+    "mtime_equal": true,
+    "size_equal": true,
+    "verdict_v01": "unchanged",
+    "verdict_v02_derived": {
+     "ctime": "unchanged",
+     "metadata": "unchanged"
+    }
+   },
+   {
+    "attempt": 5,
+    "ctime_equal": false,
+    "decision": {
+     "ctime": "read",
+     "metadata": "skip"
+    },
+    "mtime_equal": true,
+    "size_equal": true,
+    "verdict_v01": "unchanged",
+    "verdict_v02_derived": {
+     "ctime": "unchanged",
+     "metadata": "unchanged"
+    }
+   }
+  ],
+  "first_reuse_attempt": 1,
+  "outcome": "reuse observed",
+  "reuse_observed": 1000,
+  "skip_ctime": 0,
+  "skip_metadata": 1000,
+  "verdicts_v01": {
+   "unchanged": 1000
+  },
+  "verdicts_v02_derived_ctime": {
+   "unchanged": 1000
+  },
+  "verdicts_v02_derived_metadata": {
+   "unchanged": 1000
+  }
+ },
+ "filesystem": {
+  "options": "rw,relatime,discard,journal_async_commit,nobarrier,errors=remount-ro,commit=30,data=writeback",
+  "type": "ext4"
+ },
+ "h2c": {
+  "cases": 128,
+  "counterexamples": 0
+ },
+ "kernel": "6.17.0-1022-azure",
+ "label": "ci-runner-temp",
+ "parameters": {
+  "budget": 1000,
+  "granularity_wait_s": 1.0,
+  "length": 16,
+  "repetitions": 50
+ },
+ "seconds": 220.3
+}
