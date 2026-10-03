@@ -1,15 +1,42 @@
-# Contributing to Umbral
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/mark-dark.svg">
+    <img src="assets/brand/mark-light.svg" alt="" width="48">
+  </picture>
+</p>
 
-Umbral is an early research project, and **contributions are open** — from people and from
-AI agents working alongside them.
+<h1 align="center">Contributing to Umbral</h1>
 
-The most valuable contribution right now is usually **not code**. It is a well-founded
-argument, a counter-example, a source, or an experiment that contradicts something the
-project currently assumes.
+<p align="center">Thank you for being here. Umbral is an early research project, and contributions are open —<br>from people, and from AI agents working alongside them.</p>
 
-Before anything else, read [`README.md`](README.md) and then
-[Reading this repository](docs/READING-THIS-REPOSITORY.md). It takes a few minutes and
-prevents most of the confusion this project is designed to avoid.
+---
+
+## Ways to help
+
+| You can… | How |
+|---|---|
+| **try the tool and tell us what confused you** | [open an issue](https://github.com/135Andres/Umbral/issues/new/choose) with what you ran, what you saw and what you expected — see §4 |
+| **challenge an assumption** | a well-founded argument, a counter-example or a source that contradicts something the project assumes is often the most valuable contribution — see §5 |
+| **propose an experiment** | describe what it would show and what result would prove the idea wrong — see §5 |
+| **improve the code** | the development crate is [`umbral/`](umbral/) — see §6a and §7 |
+| **improve the documentation** | one fact has one home; fix it there — see §1 and §9 |
+
+## The short version
+
+- Read the [README](README.md), then [Reading this repository](docs/READING-THIS-REPOSITORY.md).
+  It takes a few minutes and prevents most of the confusion this project is designed to avoid.
+- **Only the project owner makes decisions.** Anyone can propose, question or provide evidence.
+- Keep **decisions, hypotheses, evidence and experiments** apart — §2 explains how.
+- A change to the code comes with its tests and with the documentation it makes untrue — §6a, §6b.
+- Be kind and precise — [Code of Conduct](CODE_OF_CONDUCT.md).
+
+**Sections** — [1 Orient yourself](#1-how-to-orient-yourself) · [2 Four categories](#2-the-four-categories--keep-them-separate) ·
+[3 Propose a change](#3-how-to-propose-a-change) · [4 Bugs](#4-reporting-bugs) ·
+[5 Research](#5-proposing-research) · [6a The crate](#6a-the-development-crate-umbral) ·
+[6b Docs with code](#6b-documentation-moves-with-the-code) · [6c V0 is frozen](#6c-the-v0-prototype-is-frozen) ·
+[6d Branches](#6d-branches--where-a-versions-work-lives) · [7 Pull requests](#7-pull-requests) ·
+[8 Tests](#8-running-the-prototypes-tests) · [9 Style](#9-documentation-style) ·
+[10 Conduct and licence](#10-conduct-and-license)
 
 ---
 
