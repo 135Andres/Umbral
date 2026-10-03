@@ -1148,6 +1148,25 @@ Reversibility: medium — the schema change is additive.
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-038 — v0.2 declared evidence complete
+Authority: USER (owner instruction, private, 2026-10-03).
+Statement: the owner declares v0.2 **evidence complete**, on the evidence recorded in
+`docs/versions/v0.2.md` ("EVIDENCE BY VERSION CRITERION"): `A2-V1`–`A2-V12` and `A2-V14` met,
+`A2-V8` with the exception the owner chose in `UD-036`; **`A2-V13` NOT SATISFIED** — no
+HUMAN-INDEPENDENT reading exists; an AI-INDEPENDENT reading (`experiments/e-td-6-11/`) answered the
+criterion's question correctly and cannot satisfy it (`UD-015`). The legibility difficulties that
+reading found (L-1…L-8) are carried to the next phase's work on the user's experience, not fixed
+in v0.2.
+Consequences: the crate's version becomes `0.2.0`; branch `v0.2` is proposed for integration into
+`main` by pull request, merged by the owner.
+Scope guard: this record does NOT declare v0.1 complete (A1 remains NOT SATISFIED), does NOT
+start v0.3 or V1, does NOT select an architecture, and does NOT settle Q25 or Q26. The
+version-scoped decisions of v0.2 expire with it unless a later record extends them.
+Reversibility: a declaration of evidence completeness can be withdrawn only by a recorded
+decision naming the evidence that failed.
+Status: DECIDED.
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
