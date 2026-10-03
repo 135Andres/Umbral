@@ -1226,6 +1226,9 @@ CITATION NOTES (records are immutable; corrections to how a record cites are rec
       itself; they collide with other namespaces and are registered as such. The P5 record's
       sentence "the identifier registry needs no change" is superseded by that registration.
       (Audit 2026-10-02, F3.)
+  Commit hashes cited by records written before 2026-10-03 (for example `8a50eb2` in UD-019)
+      changed when the author name was rewritten that day; each old hash resolves to its new one
+      in `research/history/COMMIT-REWRITE-2026-10-03.md`.
   UD-029, "reason `ConflictingCandidates`": the output token is `conflicting-candidates` since
       UD-031 made every reason token kebab-case; the decision is unchanged.
 
