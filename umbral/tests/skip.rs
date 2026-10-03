@@ -84,6 +84,7 @@ fn previous(kind: EntryKind, reading: Reading, t: [Term; 5]) -> (Observation, En
         deltas: Vec::new(),
         error: None,
         content_error: None,
+        traversal: None,
     };
     let cur = Entry {
         path: PathBuf::from("a"),
@@ -457,12 +458,14 @@ fn a_run_that_fails_to_persist_leaves_nothing_and_the_next_run_reads() {
         content: None,
         error: None,
         reused_from: Some(1),
+        traversal: None,
     };
     let failed = log.append_run(NewRun {
         started_at_ns: 1,
         finished_at_ns: 2,
         root: t.root().to_path_buf(),
         observations: vec![row(), row()],
+        root_error: None,
     });
     assert!(failed.is_err());
     assert_eq!(

@@ -369,6 +369,7 @@ fn append(log: &mut SqliteLog, obs: Vec<(Entry, Option<ContentObservation>)>, er
             content,
             error: None,
             reused_from: None,
+            traversal: None,
         })
         .collect();
     // A directory that could not be read makes the run incomplete.
@@ -381,6 +382,7 @@ fn append(log: &mut SqliteLog, obs: Vec<(Entry, Option<ContentObservation>)>, er
             content: None,
             error: Some("Permission denied (os error 13)".into()),
             reused_from: None,
+            traversal: None,
         });
     }
     log.append_run(NewRun {
@@ -388,6 +390,7 @@ fn append(log: &mut SqliteLog, obs: Vec<(Entry, Option<ContentObservation>)>, er
         finished_at_ns: 2_000,
         root: PathBuf::from("/tmp/root"),
         observations,
+        root_error: None,
     })
     .unwrap();
 }

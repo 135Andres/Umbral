@@ -106,6 +106,24 @@ Known limits, stated rather than hidden:
 - `ctime` is recorded with every observation and shown on `show`'s `observed` line. Runs written
   before this version did not record it, and say so (`fields=ctime  reason=not-recorded`).
 
+### What the traversal saw, and the rules of each run
+
+When part of the tree cannot be observed, the failure is recorded with its class, decided when it
+happens (`UD-037`): `not-descended` — a directory whose contents could not be listed, so
+everything below it is unobserved — or `metadata-failed` — an entry that could not be `lstat`ed,
+so only that entry is. A root that cannot be listed is a fact of the run. Any failure makes the
+run incomplete, and an incomplete run never reports `deleted` (v0.2 does not narrow that to the
+unobserved subtree).
+
+```
+derived   run=2  traversal-complete=false  traversal-not-descended=1  traversal-metadata-failed=0  traversal-not-recorded=0  root-not-descended=false
+unknown   observation=2:fotos  traversal=not-descended  observation-error=Permission denied (os error 13)
+derived   run=2  tool-version=0.1.0  scope=recursive,symlinks-not-followed,no-exclusions
+```
+
+Every run records the version of the build that wrote it and the scope it applied; runs written
+before this was recorded say so (`fields=tool-version,scope  reason=not-recorded`).
+
 ### What a verdict rests on
 
 Each line of `changes` (and the comparison lines of `show`) states, besides the verdict and its
@@ -198,8 +216,8 @@ later one, and a carried reading equal to the one it came from (`readings-consis
 its verifications is shown failing by a test that corrupts a log on purpose; verifications that
 could not fail were removed (D-V01-11).
 
-The log schema is `umbral-v0.2`. Logs written by earlier builds (`umbral-v0.1`, `umbral-v0.1.1`)
-are read as they are, and migrated in place, additively and in one transaction, the first time
+The log schema is `umbral-v0.2.1`. Logs written by earlier builds (`umbral-v0.1`,
+`umbral-v0.1.1`, `umbral-v0.2`) are read as they are, and migrated in place, additively and in one transaction, the first time
 `observe` writes to them.
 
 ## Building and testing

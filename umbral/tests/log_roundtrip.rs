@@ -45,8 +45,10 @@ fn run(entries: Vec<(Entry, Option<ContentObservation>)>) -> NewRun {
                 content,
                 error: None,
                 reused_from: None,
+                traversal: None,
             })
             .collect(),
+        root_error: None,
     }
 }
 
@@ -160,7 +162,7 @@ fn the_only_stored_tables_are_the_log() {
 
 #[test]
 fn the_schema_version_is_recorded_and_an_unknown_one_is_refused() {
-    assert_eq!(SCHEMA_VERSION, "umbral-v0.2");
+    assert_eq!(SCHEMA_VERSION, "umbral-v0.2.1");
 
     let t = tempfile::TempDir::new().unwrap();
     let path = t.path().join("log.sqlite");
@@ -317,6 +319,7 @@ fn created_states_whether_its_reference_was_complete() {
             content: None,
             error: Some("permission denied".into()),
             reused_from: None,
+            traversal: None,
         });
         log.append_run(incomplete).unwrap();
         log.append_run(run(vec![
@@ -547,7 +550,7 @@ fn a_v0_1_log_is_migrated_in_place_when_opened_for_writing() {
             |r| r.get(0),
         )
         .unwrap();
-    assert_eq!(version, "umbral-v0.2");
+    assert_eq!(version, "umbral-v0.2.1");
 }
 
 /// D-V01-11. `check` must look at the stored values, not at a normalised reading of them:
@@ -686,7 +689,9 @@ fn a_path_whose_metadata_failed_is_not_shown_as_observed() {
             content: None,
             error: Some("No such file or directory (os error 2)".into()),
             reused_from: None,
+            traversal: None,
         }],
+        root_error: None,
     })
     .unwrap();
 
@@ -761,12 +766,12 @@ fn earlier_logs_migrate_with_their_readings_attributed_and_ctime_not_recorded() 
         }
         assert_ne!(
             stored_version(&path),
-            "umbral-v0.2",
+            "umbral-v0.2.1",
             "{name}: a read-only open wrote"
         );
 
         let mut log = SqliteLog::open(&path).unwrap();
-        assert_eq!(stored_version(&path), "umbral-v0.2", "{name}");
+        assert_eq!(stored_version(&path), "umbral-v0.2.1", "{name}");
         let old = log.observations_for_run(1).unwrap();
         let ok = old
             .iter()
