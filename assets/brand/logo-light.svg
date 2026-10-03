@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="88" viewBox="0 0 320 88" role="img" aria-label="Umbral">
+<g transform="translate(4 8) scale(1.15)">
+  <path d="M14 52V26a18 18 0 0 1 36 0v26" fill="none" stroke="#1d1f24" stroke-width="4" stroke-linecap="round"/>
+  <rect x="8" y="50" width="48" height="4" rx="2" fill="#d98c1c"/>
+  <circle cx="32" cy="34" r="3" fill="#d98c1c"/>
+</g>
+<text x="96" y="62" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="50" font-weight="600" letter-spacing="0.5" fill="#1d1f24">umbral</text>
+</svg>
