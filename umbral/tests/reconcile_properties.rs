@@ -505,3 +505,35 @@ fn every_verdict_carries_the_completeness_of_its_reference() {
     let r = reconcile(&set(prev.paths.clone(), true), &cur);
     assert!(r.mutations.iter().all(|m| m.evidence.reference_complete));
 }
+
+/// D-V01-17 (E-TD-2/E-TD-3, `experiments/e-td-2-3/README.md` §5.3). Two valid readings of the
+/// same object that differ are a content change, whatever the metadata says: a rewrite that
+/// keeps size and mtime, or a delete-and-recreate that keeps the inode (1000/1000 on ext4).
+/// Before the fix the verdict was `unchanged`, while the log held two different hashes.
+#[test]
+fn differing_valid_hashes_are_a_modification_even_with_equal_metadata() {
+    let r = reconcile(
+        &set(vec![mk("a.txt", 1, 10, Some(1))], true),
+        &set(vec![mk("a.txt", 1, 10, Some(2))], true),
+    );
+    let m = kinds(&r, MutationKind::Modified);
+    assert_eq!(m.len(), 1, "{:#?}", r.mutations);
+    assert_eq!(m[0].evidence.content_changed, Some(true));
+    assert!(kinds(&r, MutationKind::Unchanged).is_empty());
+
+    // Equal valid readings with equal metadata: compared, and stated as compared.
+    let r = reconcile(
+        &set(vec![mk("a.txt", 1, 10, Some(1))], true),
+        &set(vec![mk("a.txt", 1, 10, Some(1))], true),
+    );
+    let u = kinds(&r, MutationKind::Unchanged);
+    assert_eq!(u[0].evidence.content_changed, Some(false));
+
+    // No comparable reading: metadata alone, and nothing is claimed about the content.
+    let r = reconcile(
+        &set(vec![mk("a.txt", 1, 10, Some(1))], true),
+        &set(vec![mk("a.txt", 1, 10, None)], true),
+    );
+    let u = kinds(&r, MutationKind::Unchanged);
+    assert_eq!(u[0].evidence.content_changed, None);
+}
