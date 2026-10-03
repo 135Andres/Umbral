@@ -1,6 +1,6 @@
 # E-TD-6 and E-TD-11 — an independent reading of the v0.2 output
 
-Status: **SPECIFIED 2026-10-03, BEFORE THE MATERIAL IS DELIVERED.** Protocols:
+Status: **SPECIFIED 2026-10-03, BEFORE THE MATERIAL WAS DELIVERED; RESULTS IN §6.** Protocols:
 [`V0.2-TECHNICAL-DESIGN.md`](../../docs/candidates/V0.2-TECHNICAL-DESIGN.md) §H.3 (E-TD-11, pre-registered)
 and §H.4 (E-TD-6, listed). Requested by the owner before closing v0.2 (private instruction,
 2026-10-03). Results go in §6 of this file, after the readings return.
@@ -92,4 +92,59 @@ splitting it would change the experiment.
 
 ## 6. Results
 
-*(empty until the readings return)*
+Status: **RESULT RECORDED 2026-10-03.** One participant, three replies, saved verbatim in
+[`responses/`](responses) (model not stated by the owner). The participant read the frozen
+material: its timestamps (`run=1  started=2026-10-03T07:25:19.335Z`) and record values match the
+files of §5.
+
+### 6.1 E-TD-11 — classes D1–D4
+
+**On the output as written: no defect found in this configuration** — a complete result (§4).
+
+- **Step 1 (D1, D2, D3).** For every result line of `changes` and `show`, the participant named
+  the subject and the observations and fields of its evidence correctly, including the run-level
+  facts (completeness, absences) as non-field evidence. No name failed to decode
+  (`reply-2.md` C). H11-a, H11-b, H11-e, H11-f hold.
+- **Step 2 (D4).** Every reference resolved to exactly one row; both absence fields named no row
+  and were correct; every listed value matched; `hash_read_run` answered which observation read
+  each reused reading. H11-c and H11-g hold (`reply-3.md` §2–§3).
+- **H11-d** is vacuous by design (§3): the renamed file was read, not carried.
+- **Participant error, recorded as such.** Both later replies report that the session's
+  `show locked` 2→3 line lists `dev,ino` while the transformed copies list `dev,ino,kind`. The
+  frozen `session.txt` (sha256 `8eba5c0b…`) lists `dev,ino,kind` on that line, as do the copies.
+  It is a misreading, not a property of the material or of the output.
+
+**Transformations** — each outcome is what the contract specifies, not an ambiguity:
+
+| | Outcome | Reading |
+|---|---|---|
+| T1 reordering | associations intact on every line; six `show` outputs refused because the header is no longer first | fail-closed by design (`CONTRACT.md` §6, P37). Every line still names its subject |
+| T2 subject removal | `changes`: subject still recoverable from the references; `show`: observation lines lose their subject | expected: the identification field *is* the subject (`UD-033`); removing it removes applicability |
+| T3 re-flow, T4 split, T5 JSON | refused by the reader; values intact to a lenient or JSON reader | fail-closed by design (`UD-022`): an inserted line feed is a boundary, never a wrap |
+| T6 position change | nothing changes | associations are by key; annotations stay adjacent |
+
+One documentation nit came out of T6: `umbral/README.md` said a reference is "followed by" its
+field list, which reads as positional; associations are by key. Corrected on 2026-10-03.
+
+### 6.2 E-TD-6 — legibility from the output alone (the question of A2-V13)
+
+**The participant answered A2-V13's question correctly** from the output alone: for every named
+file of run 3, whether its bytes were read in that run or an earlier reading was used, and which
+(`reply-1.md` §2). This is AI-INDEPENDENT evidence: it supports the design, and it **does not
+satisfy A2-V13**, which needs a human reader (`UD-015`).
+
+What the reader found hard — candidates for later work, none a contract defect:
+
+| # | Finding | Where |
+|---|---|---|
+| L-1 | `created` relative to an incomplete reference reads as a false statement about the filesystem until `reference-complete=false` is understood | reply-1 §6.1 |
+| L-2 | `permission-denied=0` (content diagnostics) beside a traversal `Permission denied` invites misreading | reply-1 §6.2 |
+| L-3 | `deleted` with `object-survives=true` reads as a contradiction | reply-1 §6.3 |
+| L-4 | why a file was read again (a moved `ctime`, a path new to the run) is not shown; the skip's inputs are invisible on the output | reply-1 §6.4, reply-3 §4.3 |
+| L-5 | the meaning of the verdict words (`unobserved`) and of the labels is defined nowhere in the output (F-V01-9 persists) | reply-1 §0, §6.6 |
+| L-6 | `entries` excludes the root, and the output does not say so | reply-1 §6.10 |
+| L-7 | no command lists which files a run read; the third read of run 3 could only be identified from the record | reply-1 §6.8, reply-3 §3 |
+| L-8 | a bare heading token (`content-failed-diagnostics`) among `key=value` items looks like an anomaly | reply-1 §6.14 |
+
+Also noted: the output's `tool-version=0.1.0` beside the log's `umbral-v0.2.1` (reply-3 §4.4) — the
+crate version had not yet been raised for v0.2; it is raised at the version's closure.
