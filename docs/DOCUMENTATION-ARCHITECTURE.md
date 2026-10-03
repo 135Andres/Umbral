@@ -228,6 +228,9 @@ record. That asymmetry is the point.
 Entry points, in the order a stranger encounters them:
   1. README.md — what this repository is, the epistemic contract, the authority ladder,
      the map, the read order, and the routing rule for new information.
+     [2026-10-03: README.md became a short introduction for newcomers (EN, with README.es.md);
+      the epistemic contract, the authority ladder and the naming of sources moved, unchanged,
+      to docs/READING-THIS-REPOSITORY.md, and the map lives in docs/README.md.]
   2. PROJECT-DIRECTION.md — the one-screen answer to "where does this project stand?".
   3. AGENTS.md — the same entry for an AI agent that looks for that convention.
 
