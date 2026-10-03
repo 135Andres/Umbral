@@ -1,6 +1,6 @@
 [package]
 name = "umbral"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Umbral v0.1 — a local, read-only workspace observation instrument (development code; NOT the product architecture)"
 publish = false

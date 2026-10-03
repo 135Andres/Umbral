@@ -27,7 +27,7 @@ filesystem sovereign and make the semantic layer a derived, rebuildable, user-go
 projection (MC §12, §28, §39).
 
 WHAT WE HAVE DECIDED
-See DECISIONS.md (UD-001..UD-037, plus the P5 interpretive record). Headlines: open
+See DECISIONS.md (UD-001..UD-038, plus the P5 interpretive record). Headlines: open
 source, no ads, licensed GPL-3.0-or-later (UD-028); no mandatory taxonomy; no hidden prompt
 injection; Sonora not an authority; local-first with file survivability; incremental
 version development; v0.2's bounded content-read optimisation, observation-basis and
@@ -90,7 +90,7 @@ WHAT COULD CHANGE OUR MIND
 - A candidate architecture scoring K1-K9 so decisively that scope assumptions change.
 - Any new explicit user decision — user authority always outranks research.
 
-CURRENT NEXT STEP (updated 2026-10-03: v0.2 SLICES 1–4 IMPLEMENTED; NEXT, CLOSURE)
+CURRENT NEXT STEP (updated 2026-10-03: v0.2 DECLARED EVIDENCE COMPLETE)
 
 Development proceeds by incremental versions on version branches. v0.2 is active on branch
 `v0.2`. Its acceptance criteria were accepted on 2026-10-02 (`UD-030`): version criteria
@@ -100,9 +100,9 @@ per-observation `basis` on `show`, `status` and `observe`, with `show` naming it
 (`UD-034`), the `basis` of a `changes` verdict as an explicit field list, with both sides'
 completeness. The O(changes) skip (slice 3, `UD-035`, `UD-036`) is implemented, with `ctime` in
 its condition after the pre-registered experiments E-TD-2/E-TD-3. Slice 4 (`UD-037`) records the
-traversal facts and the rules of each run, and verifies A2-V8 and A2-V9. What remains is the
-version's closure: the evidence per criterion, A2-V13 (human legibility), and the owner's
-declaration. The vocabularies those slices use — `unknown` vs
+traversal facts and the rules of each run, and verifies A2-V8 and A2-V9. On 2026-10-03 the owner
+declared v0.2 evidence complete (`UD-038`) with A2-V13 not satisfied; the branch is proposed for
+integration into `main`. What follows is not yet decided. The vocabularies those slices use — `unknown` vs
 `ambiguous`, acquisition states, roles and comparison sides — were adopted on 2026-10-02
 (`UD-031`). On 2026-10-02 a repository audit
 (research/history/AUDIT-2026-10-02.md) found v0.1 defects in `umbral/`; their correction on the
