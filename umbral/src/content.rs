@@ -175,24 +175,37 @@ fn content_error_from(e: &std::io::Error) -> ContentError {
 
 /// Observe the content of a regular file, guarded against concurrent modification.
 pub fn observe_content(path: &Path) -> ContentObservation {
+    observe_content_guarded(path, |_attempt| {}).0
+}
+
+/// [`observe_content`], also returning every byte passed to the hasher — retries included.
+/// That is the work a skip avoids, and what `content-read-bytes` counts (A2-V1).
+pub fn observe_content_counted(path: &Path) -> (ContentObservation, u64) {
     observe_content_guarded(path, |_attempt| {})
 }
 
 /// The guarded read, with a hook called after each read and before the "after" `stat`.
 /// Production passes a no-op; the hook exists so a test can change the file inside the read
 /// window deterministically instead of racing a thread against the read.
-fn observe_content_guarded(path: &Path, mut after_read: impl FnMut(u32)) -> ContentObservation {
+fn observe_content_guarded(
+    path: &Path,
+    mut after_read: impl FnMut(u32),
+) -> (ContentObservation, u64) {
     let mut last_deltas: Vec<GuardDelta> = Vec::new();
+    let mut bytes: u64 = 0;
 
     for attempt in 0..MAX_GUARD_ATTEMPTS {
         // The "before" `stat` is taken on every attempt. Taken once, a retry would compare
         // against the state before the first change and could never succeed (D-V01-7).
         let before = match std::fs::symlink_metadata(path) {
             Ok(m) => m,
-            Err(e) => return ContentObservation::error(content_error_from(&e)),
+            Err(e) => return (ContentObservation::error(content_error_from(&e)), bytes),
         };
         if !before.file_type().is_file() {
-            return ContentObservation::error(ContentError::NotARegularFile);
+            return (
+                ContentObservation::error(ContentError::NotARegularFile),
+                bytes,
+            );
         }
         let before_id = physical_id_of(&before);
         let before_size = before.len();
@@ -211,6 +224,7 @@ fn observe_content_guarded(path: &Path, mut after_read: impl FnMut(u32)) -> Cont
                         Ok(n) => {
                             hasher.update(&buf[..n]);
                             read_total += n as u64;
+                            bytes += n as u64;
                         }
                         Err(e) => {
                             read_error = Some(e);
@@ -219,16 +233,16 @@ fn observe_content_guarded(path: &Path, mut after_read: impl FnMut(u32)) -> Cont
                     }
                 }
             }
-            Err(e) => return ContentObservation::error(content_error_from(&e)),
+            Err(e) => return (ContentObservation::error(content_error_from(&e)), bytes),
         }
         if let Some(e) = read_error {
-            return ContentObservation::error(content_error_from(&e));
+            return (ContentObservation::error(content_error_from(&e)), bytes);
         }
         after_read(attempt);
 
         let after = match std::fs::symlink_metadata(path) {
             Ok(m) => m,
-            Err(e) => return ContentObservation::error(content_error_from(&e)),
+            Err(e) => return (ContentObservation::error(content_error_from(&e)), bytes),
         };
 
         let mut deltas: Vec<GuardDelta> = Vec::new();
@@ -244,24 +258,30 @@ fn observe_content_guarded(path: &Path, mut after_read: impl FnMut(u32)) -> Cont
 
         if deltas.is_empty() {
             let hash = *hasher.finalize().as_bytes();
-            return ContentObservation {
-                hash: Some(hash),
-                hashed_len: Some(read_total),
-                stability: Some(Stability::Stable),
-                deltas: Vec::new(),
-                error: None,
-            };
+            return (
+                ContentObservation {
+                    hash: Some(hash),
+                    hashed_len: Some(read_total),
+                    stability: Some(Stability::Stable),
+                    deltas: Vec::new(),
+                    error: None,
+                },
+                bytes,
+            );
         }
         last_deltas = deltas;
     }
 
-    ContentObservation {
-        hash: None,
-        hashed_len: None,
-        stability: Some(Stability::Unstable),
-        deltas: last_deltas,
-        error: None,
-    }
+    (
+        ContentObservation {
+            hash: None,
+            hashed_len: None,
+            stability: Some(Stability::Unstable),
+            deltas: last_deltas,
+            error: None,
+        },
+        bytes,
+    )
 }
 
 /// Hex rendering of a hash, full length. Used by the report and by tests.
@@ -293,7 +313,7 @@ mod tests {
         let path = dir.path().join("f.txt");
         std::fs::write(&path, b"aaaa").unwrap();
 
-        let obs = observe_content_guarded(&path, |attempt| {
+        let (obs, bytes) = observe_content_guarded(&path, |attempt| {
             if attempt == 0 {
                 append(&path, b"bb");
             }
@@ -303,6 +323,8 @@ mod tests {
         assert_eq!(obs.hash, Some(*blake3::hash(b"aaaabb").as_bytes()));
         assert_eq!(obs.hashed_len, Some(6));
         assert!(obs.deltas.is_empty());
+        // The work counted is every byte read, the abandoned first attempt included (A2-V1).
+        assert_eq!(bytes, 4 + 6);
     }
 
     /// The other side: a file that changes inside every read window is still `Unstable`, with
@@ -313,7 +335,7 @@ mod tests {
         let path = dir.path().join("f.txt");
         std::fs::write(&path, b"aaaa").unwrap();
 
-        let obs = observe_content_guarded(&path, |_attempt| append(&path, b"b"));
+        let (obs, _) = observe_content_guarded(&path, |_attempt| append(&path, b"b"));
 
         assert_eq!(obs.stability, Some(Stability::Unstable));
         assert_eq!(obs.hash, None);

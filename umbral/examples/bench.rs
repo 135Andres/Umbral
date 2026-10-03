@@ -126,9 +126,11 @@ fn main() {
                         ino: p.ino,
                         size: p.size,
                         mtime: p.mtime,
+                        ctime: None,
                     },
                     content: None,
                     error: None,
+                    reused_from: None,
                 })
                 .collect();
             log.append_run(NewRun {

@@ -39,6 +39,7 @@ fn entry(path: &str, kind: EntryKind, ino: u64) -> Entry {
         ino: Some(ino),
         size: Some(4),
         mtime: Some((1_000, 0)),
+        ctime: None,
     }
 }
 
@@ -79,6 +80,7 @@ fn every_case() -> NewRun {
             entry,
             content,
             error: error.map(str::to_string),
+            reused_from: None,
         };
     NewRun {
         started_at_ns: 1_000,
@@ -128,6 +130,7 @@ fn every_case() -> NewRun {
                     ino: None,
                     size: None,
                     mtime: None,
+                    ctime: None,
                 },
                 None,
                 Some("No such file or directory (os error 2)"),
@@ -239,6 +242,7 @@ fn every_line_of_show_names_the_observation_it_reports() {
             entry: entry("fresh.txt", EntryKind::File, 1),
             content: Some(stable(2)),
             error: None,
+            reused_from: None,
         }],
     })
     .unwrap();
@@ -297,6 +301,7 @@ fn each_line_of_show_reports_the_observation_it_names() {
                 },
                 content: Some(stable(byte)),
                 error: None,
+                reused_from: None,
             }],
         })
         .unwrap();

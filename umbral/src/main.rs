@@ -28,13 +28,13 @@
 //!   be observed. Present so a script can see incompleteness instead of missing it.
 
 use std::ffi::{OsStr, OsString};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::ExitCode;
 
 use umbral::log::sqlite::SqliteLog;
-use umbral::log::{NewObservation, NewRun, ObservationLog};
+use umbral::log::ObservationLog;
 use umbral::report;
-use umbral::{content, scan, workspace};
+use umbral::workspace;
 
 const USAGE: &str = "\
 usage: umbral <command> [args]
@@ -243,84 +243,20 @@ fn observe(root: &Path) -> u8 {
         Ok(ws) => ws,
         Err(e) => return runtime_error(&e),
     };
-
-    let started_at_ns = match now_ns() {
-        Ok(t) => t,
-        Err(e) => return runtime_error(&e),
-    };
-    let scan = match scan::scan(root) {
-        Ok(s) => s,
-        Err(e) => return runtime_error(&e),
-    };
-
-    let mut observations: Vec<NewObservation> = Vec::with_capacity(scan.entries.len());
-
-    for entry in &scan.entries {
-        let content_obs = if entry.kind == umbral::EntryKind::File {
-            Some(content::observe_content(&root.join(&entry.path)))
-        } else {
-            None
-        };
-        observations.push(NewObservation {
-            entry: entry.clone(),
-            content: content_obs,
-            error: None,
-        });
-    }
-
-    // Paths that could not be observed at all are recorded as evidence, not dropped.
-    //
-    // A path can be BOTH an entry and an error: a directory whose metadata is readable but
-    // whose contents are not yields an entry (it exists) and an error (it could not be
-    // descended into). One path has one row per run, so the error is attached to the
-    // existing observation rather than duplicated into a second row.
-    let mut by_path: std::collections::BTreeMap<PathBuf, usize> = std::collections::BTreeMap::new();
-    for (i, o) in observations.iter().enumerate() {
-        by_path.insert(o.entry.path.clone(), i);
-    }
-    for err in &scan.errors {
-        match by_path.get(&err.path) {
-            Some(&i) => {
-                observations[i].error = Some(err.message.clone());
-            }
-            None => {
-                let idx = observations.len();
-                observations.push(NewObservation {
-                    entry: umbral::Entry {
-                        path: err.path.clone(),
-                        kind: umbral::EntryKind::Other,
-                        dev: None,
-                        ino: None,
-                        size: None,
-                        mtime: None,
-                    },
-                    content: None,
-                    error: Some(err.message.clone()),
-                });
-                by_path.insert(err.path.clone(), idx);
-            }
-        }
-    }
-
-    let finished_at_ns = match now_ns() {
-        Ok(t) => t,
-        Err(e) => return runtime_error(&e),
-    };
-    let run = NewRun {
-        started_at_ns,
-        finished_at_ns,
-        root: ws.canonical.clone(),
-        observations,
-    };
-
     let mut log = match SqliteLog::open(&ws.log_path()) {
         Ok(l) => l,
         Err(e) => return runtime_error(&e),
     };
-    let run_id = match log.append_run(run) {
-        Ok(id) => id,
+    let observed = match umbral::observe::observe(
+        root,
+        &ws.canonical,
+        &mut log,
+        umbral::observe::Policy::Skip,
+    ) {
+        Ok(o) => o,
         Err(e) => return runtime_error(&e),
     };
+    let run_id = observed.run_id;
 
     let meta = match log.run(run_id) {
         Ok(Some(m)) => m,
@@ -338,7 +274,12 @@ fn observe(root: &Path) -> u8 {
     };
     print!(
         "{}",
-        report::render(&report::observe_summary(&ws, &meta, &stored))
+        report::render(&report::observe_summary(
+            &ws,
+            &meta,
+            &stored,
+            &observed.counters
+        ))
     );
 
     if meta.complete() {
@@ -351,11 +292,4 @@ fn observe(root: &Path) -> u8 {
         );
         3
     }
-}
-
-/// The current time for a run's timestamps. A clock the log cannot represent stops the run:
-/// a run is never recorded at an invented time (D-V01-15).
-fn now_ns() -> Result<i64, String> {
-    report::unix_ns(std::time::SystemTime::now())
-        .ok_or_else(|| "the system clock is outside the range the log can record".to_string())
 }
