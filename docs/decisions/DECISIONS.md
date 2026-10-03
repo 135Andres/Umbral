@@ -220,6 +220,953 @@ Reversibility: high by design.
 Status: DECIDED (scoped adoption, v0.1 only).
 
 ================================================================================
+UD-015 — Evidence classes for validation, and the separation of A1 from A1-AI
+Authority: USER (2026-09-12 mandate, "NUEVA FASE DE TRABAJO — v0.2 + VALIDACIÓN POR
+MÚLTIPLES INTELIGENCIAS", §2 and §3; resolved in the follow-up mandate of the same date,
+D-PEND-1).
+Statement: validation evidence is classified by WHO produced it, and the classes are never
+converted into one another:
+
+  HUMAN-INDEPENDENT  a person other than the author executes a protocol without
+                     interpretive help from the author.
+  AI-INDEPENDENT     an artificial intelligence executes a protocol with controlled
+                     context, without receiving the expected interpretation or conclusion.
+  AI-CROSS-CHECK     a second AI reviews evidence produced by another AI, without
+                     unnecessarily sharing the earlier interpretation.
+  AUTHOR             evidence produced by the author/developer.
+  AGENT-INTERNAL     evidence produced by Hermes during its own work.
+
+A1 keeps its exact meaning: **HUMAN-INDEPENDENT**. It is not redefined and not weakened.
+A NEW auxiliary criterion is created: **A1-AI = AI-INDEPENDENT**. A1-AI can supply
+legibility evidence for another intelligence, surface ambiguities, and unblock technical
+decisions. It **cannot satisfy A1**.
+
+Authority for the change: USER. The multi-intelligence track is a USER decision.
+Supporting statement: "Yo, Andrés, seré quien delegue manualmente los experimentos a otras
+inteligencias artificiales" and "Una IA no debe convertirse artificialmente en 'humano
+independiente'. Pero una IA independiente tampoco debe ser tratada como evidencia inútil."
+Alternatives considered: (a) replace A1 with a general legibility criterion — REJECTED by
+the user; (b) leave A1 as the only criterion and treat AI runs as informal — REJECTED, it
+would discard usable evidence; (c) keep A1 and add A1-AI alongside it — ADOPTED.
+Evidence: none is claimed for the classes themselves; they are a user commitment about how
+evidence is classified. The first AI-INDEPENDENT run already exists (EVIDENCIA-B).
+Consequences:
+  - EVIDENCIA-B stays classified AI-INDEPENDENT. It is NOT retroactive satisfaction of A1.
+  - The state of A1 in v0.1 is unchanged: NOT SATISFIED. No retrospective rewrite.
+  - A1-AI evidence may unblock technical decisions and discover defects during a version,
+    but the formal satisfaction of a version's A1 requires HUMAN-INDEPENDENT.
+  - No AI is made an automatic judge of another AI; AI-CROSS-CHECK finds discrepancies and
+    is not an authority.
+Scope guard: this record does NOT change A1's wording, does NOT declare A1 satisfied, does
+NOT close Q25, and does NOT authorize the delegation of any specific experiment (each is
+authorized separately by the owner, who delivers it personally).
+Reversibility: high. Removing A1-AI would restore the prior state without touching A1.
+Status: DECIDED (process — how the project validates, not what the product is).
+
+================================================================================
+UD-016 — v0.2 objective: O(changes) for content read and hashing ONLY
+Authority: USER (2026-09-12 v0.2 planning mandate, D1).
+Statement: the objective of v0.2 is to reduce to **O(changes) the reading/hashing of
+content during re-observation**, preserving the verdicts, the evidence, the ambiguity and
+the reconstruction capability of V0/v0.1. It is **not** permitted to claim O(changes) for
+the whole filesystem traversal.
+Supporting statement, verbatim: "Reducir a O(changes) la lectura/hash de contenido durante
+la re-observación, preservando los veredictos, la evidencia, la ambigüedad y la capacidad
+de reconstrucción de V0/v0.1." and "No afirmar O(changes) para el recorrido completo del
+filesystem."
+The distinction the record exists to preserve:
+  O(corpus)   = traversal / metadata inspection of every entry. v0.2 does NOT optimise it.
+  O(changes)  = reading and hashing of content. This is the only thing v0.2 promises.
+Alternatives considered: (a) claim full O(changes) for the process — REJECTED by the user as
+a formulation stronger than what is demonstrable; (b) optimise the traversal too — NOT
+v0.2 (it is a separate concern and would need its own evidence).
+Evidence: v0.1's own measurement (2000 files x 4 KiB): scan 23.9 ms, content read+hash
+102.5 ms, full observation 209.6 ms. The optimisable share is the read/hash part, and its
+proportion varies with the corpus: hashing dominates for large files, traversal for very
+many small ones. Both directions are to be stated in the version record.
+Consequences:
+  - Any claim of the form "cost proportional to change" must name the read/hash scope.
+  - A benchmark that is merely faster is not evidence of the objective; the objective needs
+    counters showing which work was avoided.
+  - Preserving verdicts, evidence, ambiguity and reconstruction is part of the objective,
+    not a side condition: an optimisation that changes a verdict fails v0.2.
+Scope guard: this record does NOT select an architecture, does NOT settle Q25, and does NOT
+authorize any implementation. Implementation is authorized separately.
+Reversibility: high. The objective is a target, not a commitment about the product's shape.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-017 — v0.2 observation basis: a skip is never content verification
+Authority: USER (2026-09-12 v0.2 planning mandate, D2 and D3).
+Statement: the contract grows so that the output distinguishes four outcomes, and `basis`
+is the field that expresses it:
+  - content read and verified in this run;
+  - result obtained through metadata evidence;
+  - content not verified;
+  - errors / UNKNOWN.
+`status` must be able to expose the difference and `show` must expose `basis` where it is
+relevant. `basis` must be traceable to the evidence that produced the result.
+**Mandatory rule:** if Umbral did not read the bytes, it may not present the result as
+content-verified.
+Supporting statement, verbatim: "Si Umbral no leyó los bytes, no puede presentar el
+resultado como content-verified."
+The epistemic chain this record fixes, which no later change may shorten:
+  bytes read            -> content-verified
+  metadata sufficient   -> metadata-stable / equivalent -> NOT content-verified
+  evidence insufficient -> UNKNOWN
+Alternatives considered: (a) express the basis inside the existing labels without a new
+field — REJECTED by the user: it would overload `observed`, which by UD-014's correction
+(F-V01-2) is reserved for what the filesystem itself states per entry; (b) leave the
+contract unchanged and optimise silently — REJECTED: it would narrow the contract silently,
+which this project forbids.
+Evidence: the basis is derived, not observed — it is produced by Umbral. Under the F-V01-2
+rule (observed = only what the filesystem states: canonical, kind, size, mtime), `basis`
+must be labelled `derived` and must remain traceable to the observed fields it rests on.
+Consequences:
+  - The growth of the output contract is declared NOW, before v0.2's acceptance criteria are
+    fixed — deliberately, to avoid the v0.1 pattern of finding a needed distinction after
+    the criteria were frozen (F-V01-1, F-V01-3).
+  - A contractual test is required that FAILS if an entry obtained by skip is counted again
+    as content-verified.
+  - The log must persist whatever the skip decision needs; any schema change is technical
+    and version-scoped (UD-014), and does not settle Q25.
+Scope guard: this record does NOT specify the mechanism, does NOT decide the skip condition
+(see UD-018), and does NOT authorize implementation.
+Reversibility: medium. The contract growth is reversible only by an explicit narrowing,
+which would itself have to be recorded.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-018 — ctime is an optimisation heuristic, never a guarantee of content
+Authority: USER (2026-09-12 v0.2 planning mandate, D3).
+Statement: ctime is approved **only** as a possible optimisation heuristic. It is not a
+guarantee of content equality. It may not be used to assert content-verified. If it is used
+to avoid hashing, the result must explicitly retain that the bytes were not verified.
+Supporting statement, verbatim: "No conviertas una heurística de metadata en una garantía de
+integridad."
+What the evidence supports and what it does not (recorded so the limits travel with the
+decision):
+  - ctime is the inode change time, stamped whenever the inode's metadata changes, and it is
+    NOT settable from userland (Linux kernel documentation). mtime is settable; ctime is not.
+    Therefore a writer that restores size and mtime exactly still moves ctime — which closes
+    the specific false negative v0.1 documents as its `stat` guard's blind spot.
+  - Measured locally (tmpfs and btrfs, kernel 7.1.13): ctime changed in every one of the
+    tested cases — same size with mtime restored, chmod only, hard link created, atomic
+    replacement — and in 600 consecutive writes there was not one collision.
+  - NOT established: that ctime always changes. The kernel's own documentation records that
+    coarse-grained timestamps can make a change invisible within a jiffy, and that
+    multigrain timestamps (which reduce this) are an opt-in per filesystem. ctime is
+    Unix-only and its granularity is filesystem-dependent. ext4 was not measured locally.
+  - Therefore: ctime narrows a known false negative. It does not create an integrity
+    guarantee, and it does not convert metadata into content evidence.
+Alternatives considered: (a) treat ctime as sufficient evidence of content stability —
+REJECTED by the user as a false guarantee of integrity; (b) omit ctime entirely — left open
+as the other legitimate option; (c) admit ctime into the skip condition while the result
+keeps stating that the bytes were not read — ADOPTED as permitted, not required.
+Consequences:
+  - The analysis of ctime's limits and portability must be preserved alongside the mechanism.
+  - Any test that relies on ctime must be classified: if it depends on filesystem behaviour,
+    it is demonstrated against hand-built observation sets, never required of the filesystem.
+  - Adding ctime to a skip condition can only make it stricter (more re-reads), never more
+    permissive. A metadata change that does not alter content (chmod, chown, hard link) will
+    force a re-read, and that cost is accepted.
+Scope guard: this record does NOT decide that ctime enters the skip condition. That question
+(D-PEND-2) remains OPEN. This record fixes only what ctime may and may not be used to claim.
+Reversibility: high.
+Status: DECIDED (process/epistemic constraint), with the mechanism still OPEN.
+
+================================================================================
+UD-019 — v0.2 basis: applicability must be determinable; the mechanism is NOT chosen
+Authority: USER (2026-09-13 project decision following EXP-AI-01, "QUÉ APRENDEMOS DE
+EXP-AI-01 PARA v0.2").
+Statement: `basis` must be traceable to the entry or object it applies to. The mechanism of
+that traceability remains a design question.
+What this record does NOT say — and the distinction is the point: it does not say that every
+`basis` must explicitly carry a subject. It says that the applicability of `basis` must be
+traceable and determinable. That is what the evidence permits.
+Relationship to UD-017: `UD-017` already establishes that `basis` must be traceable to the
+evidence that produced the result. This record refines HOW that traceability requirement must
+be satisfied, and deliberately does not select the representation. `UD-017` is not amended;
+records are immutable, so this is a new record referencing it.
+Evidence: EXP-AI-01 (`8a50eb2`), `experiments/exp-ai-01/COMPARISON-AI-01-AI-02.md` §8, §10.
+Two independent AI readers, under the same frozen material, could not resolve the
+applicability of a derived declaration from positional adjacency alone: the
+`path-encoding=escaped` line names no path and follows two `modified` lines (verified against
+`material.txt` line 64). Mere positional adjacency therefore does not provide sufficient
+traceability for external readers under this material.
+What follows for v0.2: v0.2 must guarantee that the relation between `basis` and that to which
+it applies is determinable under the contract.
+The mechanism stays open, and none of these is excluded in advance:
+  - an explicit field;
+  - a declared convention;
+  - another verifiable representation.
+Do NOT assume, in any later design: that it must be a string; that it must be an independent
+field; that it must be repeated on every line; or that any particular format is implied.
+The format is not designed here and is not designed by this record.
+Alternatives considered: (a) require an explicit `subject` on every derived line — NOT
+adopted: it fixes the mechanism before the design work, and the experiment supports
+determinability, not one particular representation; (b) leave UD-017 as it stands and treat the
+adjacency problem as a legibility debt like F-V01-8/F-V01-9 — REJECTED: `basis` is new output
+whose applicability is part of what makes its traceability claim meaningful, so the gap would
+be introduced by v0.2 rather than inherited by it.
+Consequences:
+  - `basis` must not introduce an undefined semantic vocabulary. `F-V01-9` records that the
+    output's vocabulary is defined nowhere in the output; v0.2 adds a term to that output and
+    must not deepen the debt. `F-V01-9` is NOT reopened or resolved by this record.
+  - Non-determinability must remain operational, not anthropomorphic: `unknown` means a
+    property is not determinable from the available evidence within the contract. The output
+    and the documentation describe evidence, observations, derivations and limits of
+    determination, and attribute no mental state to the software. The enforced
+    `BANNED_LEXICON` in `umbral/src/report.rs`, and the test that applies it to the rendered
+    output of every command, continue to apply unchanged.
+  - A contractual test is required that FAILS if a `basis` cannot be attributed to the entry or
+    object it describes under the chosen mechanism.
+Scope guard: this record does NOT authorize implementation, does NOT select a format, does NOT
+redesign `show`, and does NOT redesign the path encoding. The `show` question raised by the same
+experiment (CTF-2) remains DEFERRED, with one design condition: if v0.2 changes `show` to expose
+`basis`, the new representation must not reproduce the unresolved subject/applicability
+ambiguity observed in EXP-AI-01.
+Reversibility: medium. Weaker than a format choice, but narrowing it later would itself have to
+be recorded.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-020 — v0.2 `show`: an entry-scoped value must name its entry
+Authority: USER (2026-09-13 technical-design decision, "S1").
+Statement: where `show` exposes a `basis` associated with an entry, `show` must identify that
+entry unambiguously. The change is the minimum that makes `UD-019`'s applicability requirement
+satisfiable on `show`'s surface, and nothing more.
+Relationship to UD-017 and UD-019, which this record references and does not amend (records are
+immutable):
+  - `UD-017` requires that `show` expose `basis` where it is relevant.
+  - `UD-019` requires that the relation between a `basis` and what it applies to be determinable
+    under the contract, and left the mechanism open.
+  - `UD-019` also recorded CTF-2 (`show` names no path) as DEFERRED, with one design condition:
+    if v0.2 changes `show` to expose `basis`, the new representation must not reproduce the
+    unresolved applicability ambiguity.
+  - Verified in the technical design: `show`'s output names its entry **nowhere** — its
+    `observed kind=… size=… mtime=…` line carries neither a path nor a run. So `show` cannot
+    satisfy `UD-017` and `UD-019` together without naming the entry. This record resolves that
+    impasse in favour of naming it.
+Why this is a decision and not a design detail: it resolves a question `UD-019` left explicitly
+OPEN (S1 vs S2), and it authorizes a scope item that was deferred — pulling the minimum of CTF-2
+into v0.2. Neither can be done implicitly: `V0.2-SCOPE-PROPOSAL.md` and
+`V0.2-TECHNICAL-DESIGN.md` are candidates (DT4) and cannot hold a commitment.
+Alternatives considered: (a) S2 — `show` does not expose a per-entry `basis` in v0.2 —
+REJECTED by the user: it would leave `UD-017`'s obligation partially unmet. (b) Leave `show`
+unchanged and treat the impasse as a legibility debt — REJECTED: the same reasoning as `UD-019`
+alternative (b), the gap would be introduced by v0.2 rather than inherited by it.
+Scope guard — this record does NOT:
+  - redesign `show`; its existing lines, labels and fields are unchanged;
+  - resolve `F-V01-8` or `F-V01-9`, in general or in part;
+  - become a general legibility cleanup, or authorize one;
+  - authorize the path-encoding change (still `RESEARCH FOLLOW-UP`);
+  - authorize implementation.
+CTF-2 itself remains a deferred legibility debt: what this record takes into v0.2 is the minimum
+needed for `basis` applicability, not the debt's own resolution.
+Consequences:
+  - `show` gains, for each entry it reports, a field naming that entry (the mechanism is a
+    design question, exactly as `UD-019` left it for `basis`).
+  - A contractual test is required that FAILS if a `basis` in `show`'s output cannot be
+    attributed to an entry on the same line.
+Reversibility: medium. Reverting means `show` returns to exposing no per-entry `basis`, which
+would re-open the `UD-017`/`UD-019` impasse.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-021 — v0.2 verdict preservation is bounded by the evidence each observation holds
+Authority: USER (2026-09-13 technical-design closure mandate, "F-TD-4").
+Statement: the verdict-equivalence clause of `UD-016` is refined. v0.2 preserves the verdicts,
+the evidence, the ambiguity and the reconstruction capability **within the limits of the
+evidence each observation actually holds**. It does NOT guarantee that an observation which
+reused prior evidence reproduces the verdict a full re-read would have produced.
+What this record does NOT do: it does not reconsider v0.2's objective, and it does not remove or
+weaken the skip. The objective stands. What is corrected is one clause of its formulation.
+Relationship to UD-016, which this record refines and does not amend (records are immutable):
+`UD-016` states the objective and adds "an optimisation that changes a verdict fails v0.2".
+That sentence is **no longer accurate as written**, and the discrepancy is resolved here rather
+than by editing the record. See the partial supersession pointer below.
+The four things this record keeps distinct, because conflating them is how a limitation becomes a
+false guarantee:
+  - **verdict equivalence** — that v0.2's classification of a change equals what a full re-read
+    would produce. **NOT guaranteed.** It holds only where the two observations hold the same
+    evidence.
+  - **reuse of prior evidence** — that a skip may carry a previous run's content reading forward.
+    Permitted, and it must be attributable (see `hash_read_run` below).
+  - **content verification** — that the bytes were read in this run. Only a fresh read qualifies.
+  - **metadata-stable** — that the metadata the predicate rests on matched. It is not content
+    verification and may never be presented as one (`UD-017`).
+Accepted known limitation (`F-TD-4`, recorded in
+`docs/candidates/V0.2-TECHNICAL-DESIGN.md` §G.3):
+  - the skip may retain a previous content reading;
+  - a mutation that preserves the metadata the skip predicate uses may go undetected in that
+    observation;
+  - this is a known and **reachable** limitation of the mechanism, not a hypothetical;
+  - it must **not** be presented as a guarantee of v0.2, and it must not be hidden as a test
+    exception.
+Consequence for persistence: where v0.2 reuses a content result without re-reading bytes, the
+reconstruction must be able to distinguish that result from a new content verification. The
+evidence needed to distinguish at least these three states must be persisted:
+  - the content was actually read and verified;
+  - prior evidence was reused through metadata;
+  - the result is UNKNOWN / error.
+The concrete persistence schema is NOT decided here; the requirement is the distinguishability.
+Scope guard: this record does NOT authorize implementation, does NOT change the objective, does
+NOT remove the skip, does NOT select a persistence schema, and does NOT resolve `D-PEND-2`.
+Reversibility: low in practice. Accepting the limitation is what makes the skip admissible at
+all; withdrawing it would return the objective to an unachievable form.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-022 — v0.2 output grammar and contract versioning
+Authority: USER (2026-09-13 product-decision mandate "DECISIÓN DE PRODUCTO — GRAMÁTICA Y
+VERSIONADO", confirming the record after Hermes stopped to explain why no existing record
+could host the decisions).
+Statement: the v0.2 output contract adopts, as one related decision set:
+
+1. **G-1 + G-5 as the output grammar family.** G-1 is delimiter + escaping. It is adopted
+   together with the full G-5 canonical-form discipline:
+   - canonical rendering per value (one value, exactly one serialization);
+   - a formally defined escape;
+   - the escape character escaped to itself;
+   - **coverage of the whole valid value domain** — newline, carriage return, tab, other
+     control characters, consecutive whitespace, backslash, non-UTF-8 bytes, delimiter
+     bytes, and their combinations — explicitly NOT limited to the current fixtures;
+   - round-trip as the contractual property: for every valid value V,
+     `parse(serialize(V)) == V`, and for every valid result R, the parse preserves the
+     semantic associations;
+   - explicit rejection of invalid representations, and fail-closed behaviour under
+     ambiguity or malformed representation: if the input cannot be reconstructed
+     unambiguously, no association may be invented. Error semantics are part of the
+     contract: reject on malformed escape, truncated representation, invalid structure; no
+     silent resynchronization; no best-effort reinterpretation; unknown future fields are
+     preserved without interpreting (where the grammar allows); an unknown grammar version
+     is rejected with an explicit reason.
+   The semantic unit of the output is the **result**; the rendered line is only a textual
+   representation, and result boundaries are defined by the grammar, never by terminal
+   rendering.
+
+2. **V2 as the contract-versioning mechanism.** An explicit contract/grammar version in the
+   output header, so that a reader can determine which grammar an output follows from the
+   output/header alone; standalone outputs are interpretable without the external
+   environment. The version functions stay strictly separated — output contract/grammar
+   version ≠ durable schema version ≠ project version ≠ implementation version — and one
+   number must not serve all four.
+
+3. **G-3 is NOT adopted for v0.2** as the primary output. It remains a technically valid
+   alternative that this version does not select; the reason is the product decision to
+   keep the existing textual/human-facing surface.
+
+4. **G-4 (field-per-line) remains ELIMINATED**, on principle: it restores positional
+   association, the failure the EXP-AI-01 evidence recorded.
+
+Why one record: G-1+G-5 and V2 are related contract decisions about the same output
+surface — the grammar states how values are written, and the version mark states how a
+reader knows which grammar it is reading. They were authorized together, they are scoped
+together, and recording them apart would suggest either can vary independently of the
+other, which the design does not support.
+
+Explicitly still OPEN — this record closes none of them: the exact escape specification
+(the concrete escape function, its coverage table, canonical rendering rules); the exact
+header representation; the literal contract version value; M1 vs M2 (the field-set
+carrier); the basis field name; the evidence reference representation; the persistence
+schema; whether B1 is the final applicability mechanism; whether applicability and
+provenance share a representation; whether `ctime` enters the skip condition (D-PEND-2);
+and Q25.
+
+Relationship to existing records, none amended (records are immutable): `UD-017` requires
+that `basis` be traceable and that the output distinguish four outcomes — this record
+fixes how output values are written so such distinctions survive parsing; it does not
+select the basis mechanism. `UD-019` leaves applicability mechanisms open — untouched.
+`UD-020` is untouched. Evidence: the technical design's grammar analysis
+(`docs/candidates/V0.2-TECHNICAL-DESIGN.md` §E.25–E.32b), including the defects found
+there (a two-space delimiter appearing unescaped in values; a newline-bearing path
+destroying the line unit; no contract version anywhere in the output).
+Consequences:
+  - A contractual test suite must demonstrate the round-trip property over the whole
+    domain, with combination cases, and rejection of invalid representations.
+  - The exact escape specification is deliberately a separate technical specification; a
+    change to it does not reopen the family decision unless it violates the properties
+    recorded here.
+  - G-3's non-adoption is version-scoped: it does not prejudice any later version.
+Scope guard: this record does NOT authorize implementation, does NOT select a field name,
+a schema, an encoding beyond the family level, or the version value, and does NOT close
+any item in the OPEN list above.
+Reversibility: medium. The family choice is reversible only by a recorded narrowing, which
+would itself have to be recorded.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-023 — Historical guarantees and minimum-materiality rule
+Authority: USER (2026-09-13 mandate "Umbral v0.2 — Derivación del núcleo histórico mínimo",
+followed by explicit authorization to begin converting the approved conceptual decisions into
+versioned changes).
+Statement: v0.2 adopts the following historical-contract guarantees as one related decision set:
+
+1. **Historical emission and support.** Umbral preserves what it emitted and the historical
+   support available to it, with the material conditions and limitations known at the time. A
+   later interpretation never replaces the original emission. Historical code behaviour,
+   intended historical rules and later evaluation remain distinguishable when known; absence
+   of enough retained support may legitimately make a later question indeterminable.
+2. **Observational appearance and disappearance.** `Created` and `Deleted` are relative claims
+   over compared observations and their effective scope. They do not assert physical creation
+   or deletion. Materially different cases — confirmed absence, incomplete reference,
+   effective-scope change, unknown coverage and other known limitations — must not collapse.
+3. **Effective scope and contemporary explanation.** The effective historical scope, achieved
+   coverage and the material explanation recorded during the run are preserved. A partial
+   explanation remains marked partial, and a later explanation remains distinguishable from
+   one recorded contemporaneously. This is not a commitment to retain the complete policy
+   resolution chain.
+4. **Evidence acquisition.** Known, material facts about how evidence was or was not obtained
+   must survive: fresh acquisition, reuse, failed attempt, known non-attempt, historical
+   uncertainty about whether an attempt occurred, and known diagnostics. Metadata evidence is
+   not content evidence; a diagnostic is not automatically a root cause; equal values do not
+   imply equal acquisition histories.
+5. **Re-evaluation.** Re-evaluation is a derived, conditional act. Its evidence, evaluator,
+   applicable rules, material limitations and use of information acquired after the historical
+   run remain attributable. Insufficient evidence, evaluator incapability and an evaluation
+   attempt that failed remain distinguishable. A re-evaluation neither substitutes for the
+   historical emission nor establishes historical code behaviour, intended rules or physical
+   events by itself.
+
+Minimum-materiality rule: historical support is mandatory exactly where information known to
+Umbral during observation, acquisition, effective-scope determination or emission would, if
+lost, collapse two histories that the guarantees above require to remain distinguishable. This
+rule defines a minimum, not an instruction to retain every available or potentially useful fact.
+It never requires Umbral to invent a distinction it could not observe.
+
+Relationship to existing records: this record extends the historical contract without amending
+`UD-017`, `UD-019`, `UD-020`, `UD-021` or `UD-022`. In particular, `UD-021`'s distinction between
+a fresh content reading, reused prior evidence and UNKNOWN/error remains mandatory; its concrete
+persistence mechanism remains open.
+
+Alternatives rejected by the user: treating later reconstruction as the historical emission;
+treating `Created`/`Deleted` as physical claims; collapsing effective scope into achieved
+coverage; collapsing diagnostics into causes; treating reused evidence as a fresh reading; and
+defining historical support by future reconstructibility.
+
+Consequences:
+  - the association between an emission and its material historical support must remain
+    recoverable, but this record does not require co-location or any particular carrier;
+  - known material acquisition diagnostics must not be discarded before persistence merely
+    because the final result can honestly say `unknown`;
+  - the historical conditions on both sides of a comparative claim must remain interpretable;
+  - later evaluations are new, attributable acts and cannot silently rewrite prior emissions;
+  - implementation proceeds only through version-scoped, test-first increments whose behaviour
+    is already decided; an unresolved semantic choice remains a stop condition.
+
+Scope guard: this record does NOT select M1, M2 or M6; define a schema, table, struct, API,
+serialization, exact output vocabulary or identity model; adopt `ctime`; decide retention or
+TTL; guarantee reconstruction or replay; settle the names or full semantics of every mutation
+kind; authorize changes to the frozen V0 prototype; or declare v0.2 complete. The exact reduced
+set of irreducible conceptual distinctions remains analysis until separately accepted.
+
+Reversibility: low for the semantic boundaries; high for every mechanism left open.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-024 — Typed association and comparison-side identity (D6)
+Authority: USER (2026-09-13, explicit adoption "D6 = Sí" after the adversarial
+audit of the N3→N8 reduction).
+Statement: the historical association between an evaluative act and its support
+must be able to preserve, where material: the role the support played in the act,
+the identity of each comparison side it belongs to, and the known historical
+conditions of each side. This is a semantic requirement about what must remain
+distinguishable; it selects no representation, structure or names.
+Purpose: this record fixes the semantic condition under which the comparative
+anchoring distinction (N3) is absorbed into the typed association instead of
+remaining an independent core distinction. If a future representation binds only
+individual observations with roles and cannot identify to which comparison side
+an observation belonged, stories that differ only in their reference would
+collapse, violating the observational relativity required by the second
+historical guarantee (UD-023 §2). The canonical adversarial case: a `Created`
+claim relative to reference run R1 versus the same claim relative to reference
+run R2, with identical retained observations on both sides, must remain
+distinguishable.
+Relationship to existing records: a semantic precision of the association
+requirement already adopted in UD-023 (its first consequence: the association
+between an emission and its material historical support must remain recoverable,
+and the historical conditions on both sides of a comparative claim must remain
+interpretable). It amends no earlier record.
+Scope guard: this record does NOT define how a comparison side is identified
+concretely (run, capture, derived set), the closed vocabulary of roles, any
+carrier, schema or storage for the association, event names, or retention of the
+linked support.
+Reversibility: low for the semantic requirement; high for every mechanism left
+open.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-025 — Acquisition granularity and traversal facts (D7)
+Authority: USER (2026-09-13, explicit adoption "D7 = Sí" after the adversarial
+audit of the N5→derivable reduction).
+Statement: the acquisition history must be able to preserve, where material: the
+acquisition state distinguished per material component of the evidence (for
+example, metadata versus content), and known facts about the traversal process
+that explain which part of the scope came to be observed, or why it ceased to be
+observed. This defines what must remain distinguishable; achieved coverage
+remains a consequence derivable from these facts together with the effective
+scope — not an entity and not an additional guarantee.
+Purpose: this record fixes the semantic conditions under which achieved coverage
+remains derivable instead of an independent core distinction. Acquisition states
+must not collapse metadata and content when the difference is material (UD-023 §4
+already requires metadata ≠ content), because coverage of the metadata component
+does not imply coverage of the content component. Traversal facts are material
+even when no individual element exists to attach them to: when enumeration
+stopped at a known point, the un-enumerated remainder leaves coverage unknown,
+and D2/D3 require unknown coverage to stay distinguishable from verified-zero
+change.
+Relationship to existing records: a semantic precision of the acquisition
+requirement already adopted in UD-023 §4 (how evidence was or was not obtained,
+including failed attempt, known non-attempt and historical uncertainty). It
+specifies the minimum granularity that preserves the differences D4 already
+guarantees; it introduces no guarantee D4 did not carry. It amends no earlier
+record.
+Scope guard: this record does NOT define the closed vocabulary of acquisition
+states, the exact set of material components, how coverage is computed or
+presented (including the fate of the current `complete_scan` flag), the semantics
+of `unknown` (UD-019 unchanged), observation identity, or retention of acquisition
+records.
+Reversibility: low for the semantic requirement; high for every mechanism left
+open.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-026 — Contextual identity of comparison sides (D8)
+Authority: USER (2026-09-13, explicit adoption of the weakened formulation after the
+semantic investigation "Identidad de los lados de comparación", which rejected the
+stronger phrasing "anclado en la determinación histórica de observación" as
+presupposing an observation model not yet decided).
+Statement: the historical identity of a comparison side is contextual: it must allow
+distinguishing the stories the adopted guarantees require to remain separate, without
+constituting a claim of physical or ontological identity of the observed objects. A side
+is anchored in the historical fact of observation that constitutes it — what was
+observed, in which act, to the extent Umbral knew it — and in the material conditions
+known of that observation. Equality of content, hash, observed values, coverage or
+acquisition modality does not by itself imply identity of the side; the run participates
+in the individuation of the observation, but does not by itself define the side. This
+decision fixes semantic meaning, not an identification mechanism or a concrete
+representation. It does not presuppose how many observations exist, how they are
+individuated, or how they are identified.
+What this record fixes conceptually:
+  - a comparison side is not a physical object, a value, a hash, a run or a role;
+  - equality of content is not historical identity; equality of acquisition is not
+    historical identity;
+  - identity must be sufficient to preserve the differences D1–D7 require;
+  - there is no obligation to assert physical continuity between observations.
+Relationship to existing records: a semantic precision of the comparison-side identity
+requirement already adopted in UD-024 (D6). It amends no earlier record.
+Scope guard: this record does NOT decide which identifier to use, whether to use a UUID
+or a hash, `(run_id, observation_id)`, how observations are identified, the structure of
+a run, whether a side is stored or derived, schemas, tables, structs, serialization, API,
+architecture, role vocabulary, acquisition-state vocabulary, `unknown` (UD-019
+unchanged), the identity of rules/evaluators, or retention/TTL. It does not close the
+`Observation` model and adds no ontological property to it. It does not turn achieved
+coverage into an independent guarantee.
+Reversibility: low for the semantic requirement; high for every mechanism left open.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-027 — Historical attribution of the evaluative act (D9)
+Authority: USER (2026-09-13, explicit adoption "D9 = Sí" with one minimal modification:
+the record must state its compatibility with the three strata D1 already distinguishes).
+Statement: D1–D8 do not require a stable or absolute identity of rules or of the
+evaluator. They require that the evaluative act be historically attributable with
+sufficient context to distinguish the original emission from later interpretations or
+re-evaluations, including the rules Umbral knew and recorded as applied in that act, their
+partiality where it applies, and the temporal provenance of that information.
+Declared rules, rules recorded as applied, and rules inferred afterwards are distinct
+categories and must not be presented as equivalent. Absence of knowledge about the
+historical rules may remain explicitly indeterminate.
+The strata D1 distinguishes — historical code behaviour, intended rules at the time, and
+later evaluation — remain distinguishable when known; "declared" designates what was
+declared at the moment of the act, not a later reconstruction.
+This decision defines no evaluator identity and no mechanism for identifying rules, and
+does not guarantee that the historical record describes the executable's internal
+behaviour with independent truth.
+Why the strata clause is part of the record: D1 (UD-023 §1) already requires those three
+strata to remain distinguishable when known. Read without it, "declared rules" and "rules
+inferred afterwards" leave the intended-rules stratum unhosted, and intended rules would
+collapse into a present-day inference — which would weaken an obligation UD-023 already
+carries. The clause preserves an adopted distinction; it creates no new reconstruction
+capability.
+Relationship to existing records: a semantic precision of the stratum attribution already
+required by UD-023 §1, and consistent with UD-024 (D6), UD-025 (D7) and UD-026 (D8). It
+amends no earlier record.
+Scope guard: this record does NOT decide evaluator identity, absolute rule identity, a
+rule hash, a commit SHA, an implementation version, an executable fingerprint, a
+configuration format, representation, schema, serialization, replay, reproducibility,
+equivalence between implementations, or any identification mechanism. It is not a
+guarantee that the recorded rules equal the executable's actual behaviour, and it does not
+make a later re-evaluation correct or complete.
+Reversibility: low for the semantic requirement; high for every mechanism left open.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+INTERPRETIVE STATUS RECORD — P5: multiplicity of identical emissions under D1
+Authority: USER (2026-09-15 mandate "Registrar decisión owner sobre D1/P5 y cerrar el
+checkpoint"; the decision was stated explicitly by the owner).
+This record is NOT a UD. It creates no identifier, adds no guarantee and amends no earlier
+record, so the decision-record count remains UD-001–UD-027 and the identifier registry needs
+no change. Records above are immutable and are not edited; this entry is appended.
+Statement: the owner decides that **P5 remains INDETERMINATE in v0.2**. P5 is the question of
+whether the pure multiplicity of identical emissions must be preserved under D1 — history H1,
+in which an act emits `X` once, against history H2, in which the same act emits `X` twice,
+everything else remaining identical and the multiplicity being historically known. It is
+decided that:
+  - no normative guarantee of multiplicity preservation is adopted;
+  - no normative exclusion of multiplicity is adopted either;
+  - neither reading may be treated as an implicit norm;
+  - the treatment of multiplicity stays outside the v0.2 normative contract until a later
+    decision;
+  - the indeterminacy does NOT authorize implementation, documentation or tests to assume
+    unilaterally either that multiplicity is guaranteed or that its loss is permitted;
+  - a future guarantee about multiplicity must be justified by a demonstrated semantic need.
+The normative premise left pending by the adversarial research is recorded here as the
+question this entry declines to answer: whether the known difference between one and two
+emissions of the same content constitutes, by itself, a distinction that D1 obliges Umbral to
+preserve. That research is evidence, not authority; the authority for this entry is the owner.
+Relationship to existing records: this record relates to D1 (`UD-023` §1, "Umbral preserves
+what it emitted and the historical support available to it") and to the adversarial research
+chain that produced P5, which is evidence only. It **does not modify D1–D9 as adopted
+guarantees**; it fixes the normative state of an interpretive question that the research could
+not resolve. It does not extend the minimum-materiality rule of `UD-023`, and it does not make
+materiality the ground of the one-versus-two distinction. No new UD identifier is created and
+no existing identifier is reused or renumbered.
+Alternatives not adopted by the user in v0.2 (recorded as not adopted, not as incorrect):
+  - a cardinal reading of "what it emitted" that turns multiplicity into a D1 guarantee;
+  - a non-cardinal reading that normatively declares multiplicity may be discarded;
+  - a new independent guarantee created solely to close P5.
+Consequences:
+  - P5 falls outside the set of determined v0.2 guarantees;
+  - implementation may not unilaterally assume a multiplicity semantics in either direction;
+  - any future guarantee that needs to distinguish repetitions must first demonstrate the need;
+  - nothing here requires introducing stable identity, individuation, exact cardinality or a
+    collection structure now;
+  - later decisions may resolve the question, and this entry does not prejudge them.
+Scope guard: this record applies to **v0.2** and is not extrapolated automatically to later
+versions. The indeterminacy is neither a positive nor a negative guarantee. It is not a general
+obligation to retain known information, and it is not a general permission to discard it. It
+introduces no architecture, schema, data model, identifier, cardinality, sequence, multiset or
+persistence mechanism, and it authorizes no implementation.
+Reversibility: high — the question remains open and can be resolved at any time by a new
+normative decision of the owner supported by a demonstrated semantic need. Nothing in this
+entry pre-commits the content of that later decision.
+Status: DECIDED (scoped to v0.2) — what is decided is that P5 remains INDETERMINATE for v0.2.
+
+================================================================================
+UD-028 — Licence: GNU GPL v3 or later
+Authority: USER (owner instruction, private, 2026-10-02). The owner's reasoning is held in the
+owner's private record and is not reproduced here.
+Statement: the contents of this repository — code and documentation — are licensed under the
+GNU General Public License, version 3 or (at the recipient's option) any later version
+(SPDX: `GPL-3.0-or-later`). The intent recorded with the choice: a work based on Umbral that is
+distributed must remain open source under the same terms.
+What the licence does and does not do, stated so the intent is not overstated: the GPL's
+obligations attach to conveying the work. It does not require a modified copy that is only used
+privately to be published, and it does not treat offering the software as a network service as
+conveying it.
+Alternatives considered: AGPL-3.0-or-later and MPL-2.0 — not chosen.
+Relationship to the previous state: the repository was published under the Apache License 2.0,
+applied at publication without a decision record (audit 2026-10-02, F11). This record replaces
+it for the repository from this point on; copies already obtained under Apache-2.0 keep that
+licence for those copies. Third-party dependencies keep their own licences; the current ones
+(blake3, rusqlite, libsqlite3-sys, walkdir, proptest, tempfile) are under CC0-1.0/Apache-2.0,
+MIT or Unlicense terms, all compatible with GPL-3.0.
+Consequences: contributions are accepted under the same licence; UD-001's consequence "licence
+choice still open" is superseded in part (pointer below); "licence" leaves the NOT DECIDED list.
+Scope guard: this record does NOT decide a governance model, a contributor agreement, a hosted
+offering or any trademark question.
+Reversibility: low once others hold copies under it; treat as durable.
+Status: DECIDED.
+
+================================================================================
+UD-029 — v0.1 defect corrections on the v0.2 branch, by explicit evidence only
+Authority: USER (owner instruction, private, 2026-10-02: "arreglar todo, mínimo").
+Statement: the implementation defects in `umbral/` found by the 2026-10-02 audit
+(`research/history/AUDIT-2026-10-02.md`; registered as `D-V01-6` … `D-V01-12` in
+`docs/versions/v0.1.md`) are corrected on branch `v0.2`, test-first, BEFORE the v0.2 acceptance
+criteria are accepted. They are corrections of v0.1 behaviour, not v0.2 scope work.
+The semantics of the corrections, fixed here so that no implementation step has to choose them:
+  - no new verdict kind is introduced; where a distinction was being lost, it is carried as
+    explicit evidence on the existing verdicts;
+  - a `created` verdict states whether the reference observation was complete
+    (`reference-complete=true|false`), because appearing relative to an incomplete reference is
+    materially different from appearing relative to a complete one (`UD-023` §2);
+  - when several candidates share one physical identity, every path involved is reported
+    `ambiguous` with reason `ConflictingCandidates`, previous-side paths included — none is
+    silently dropped;
+  - a same-path pair without shared identity is classified only when its current entry was not
+    already matched by physical identity elsewhere — the rule of the frozen V0 experiment;
+  - a content-acquisition error (not found, permission denied, read error) is persisted with the
+    observation; existing logs are migrated automatically and additively, and a log written
+    before the migration reads that field as not recorded;
+  - `check` verifies only what can fail, and verifies stored values rather than normalising them;
+  - `workspaces` labels what it reads from the stored workspace record `derived`.
+Relationship to existing records: `UD-023` lets implementation proceed only where behaviour is
+already decided; this record is where the behaviour above is decided. The schema change is
+version-scoped technical work under `UD-014` (no new dependency). `UD-016`–`UD-027` are untouched.
+Explicitly NOT decided, and left as an open question: when an object is renamed over an existing
+path, the conditions that separate `renamed-or-moved`, `recreated` and `deleted`. That case keeps
+the V0 behaviour (`OPEN-QUESTIONS.md`).
+Scope guard: this record does NOT accept or amend the A2 criteria, does NOT authorize v0.2
+production work (incremental content observation), does NOT select the v0.2 persistence schema,
+does NOT close Q25, does NOT declare v0.1 complete (A1 remains NOT SATISFIED).
+Reversibility: high — each correction is a separate commit with its own test.
+Status: DECIDED (scoped to `umbral/` v0.1 defects).
+
+================================================================================
+UD-030 — v0.2 acceptance criteria and slice 1 (output contract `umbral-output/1`)
+Authority: USER (owner instruction, private, 2026-10-02 — accepted after reading the drafts).
+Statement: the owner accepts, as written on 2026-10-02:
+  - the version criteria `A2-V1`–`A2-V14` in `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.2;
+  - slice 1, "output grammar and contract version": criteria `A2-T1-1`–`A2-T1-11` (§9.3) and
+    the specification `umbral/CONTRACT.md`, edition `umbral-output/1` — including its escape
+    table, its space rule, its deceptive-character set, its header, its encoding annotation on
+    the line of the value it describes, and its strict reader (non-canonical escapes rejected).
+The 2026-09-12 criteria `A2-1`–`A2-9` are superseded by them (§9.4 keeps them as written).
+Relationship to existing records: this is the exact escape specification, header representation
+and version value that `UD-022` left open; `UD-022`'s family, error semantics and versioning
+mechanism are unchanged. It is the owner acceptance that `docs/versions/v0.2.md` requires before
+production code.
+Consequences: slice 1 may be implemented, test-first. Each later slice needs its own criteria and
+its own acceptance. v0.2 may be declared evidence complete with `A2-V13` (human legibility)
+recorded NOT SATISFIED.
+Scope guard: this record does NOT select M1 or M2, the reference representation, the `basis`
+field name, the persistence schema or B1; does NOT decide D-PEND-2 (`ctime`), Q25 or Q26; does
+NOT authorize any slice other than slice 1; does NOT declare v0.2 complete.
+Reversibility: medium — a later edition (`umbral-output/2`) can change the contract, but only as
+a recorded breaking change.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-031 — v0.2 vocabularies: `unknown`, acquisition states, roles and sides
+Authority: USER (owner instruction, private, 2026-10-02 — chosen among proposed alternatives).
+Statement: the owner adopts, for v0.2, the following closed vocabularies and definitions. Each
+is a concept; the exact words that appear in the output are fixed by the criteria of the slice
+that first emits them, and must keep these meanings.
+
+1. **`unknown` and `ambiguous`.**
+   - `unknown` — the **value** of a property is not determinable from the evidence available
+     within the contract. No candidate value is offered.
+   - `ambiguous` — a **classification** is compatible, on the evidence, with more than one
+     outcome. The reason is named; no outcome is chosen.
+   - An **error** is not a state: it is a reason given for an `unknown`. Where `UD-021` writes
+     "UNKNOWN / error", the state is `unknown` and the error is its reason.
+2. **Acquisition state**, per material component of the evidence (`UD-025`). In v0.2 the
+   components are metadata and content.
+   | State | Meaning |
+   |---|---|
+   | `fresh` | acquired in this act; a value exists |
+   | `reused` | a value carried from an earlier observation, which must stay identifiable; it is never content-verified (`UD-017`) |
+   | `failed` | attempted; no value was obtained — including a content reading that kept changing |
+   | `not-attempted` | it is recorded that no attempt was made, with its reason |
+   | `not-recorded` | it is not recorded whether an attempt was made |
+   - A **diagnostic** (the operating system's message, the guard's deltas, the reason for not
+     attempting) is kept apart from the state, never folded into it (`UD-023` §4).
+   - An entry that is not a regular file has **no content component**. That is not an
+     acquisition state, and such an entry does not count toward content coverage.
+3. **Role** of a piece of support in an evaluative act (`UD-024`): its relation to the claim.
+   | Role | Meaning |
+   |---|---|
+   | `subject` | an observation of the entry the claim is about |
+   | `counterpart` | an observation of another entry on which the claim rests |
+   | `condition` | a fact of a run (completeness, scope, traversal) that conditions the claim without belonging to any entry |
+   Which fields each piece of support supplied is not a role; it is left to the `basis`
+   mechanism (M1/M2), which this record does not select.
+4. **Side** of a comparative act (`UD-024`, `UD-026`): `reference` and `compared`.
+5. All four vocabularies are **closed**: a new value needs an owner decision and a public
+   definition.
+
+Consequences, in the output of edition `umbral-output/1`, before v0.2 is closed:
+  - `show`'s line for an unstable content reading moves from `ambiguous` to `unknown`;
+  - every reason token is kebab-case: `UnstableObservation`, `MissingPhysicalEvidence`,
+    `IdentityChangedAtSamePath`, `ConflictingCandidates`, `DuplicateContentNotIdentity` and
+    `NoContentEvidence` become `unstable-observation`, `missing-physical-evidence`,
+    `identity-changed-at-same-path`, `conflicting-candidates`, `duplicate-content-not-identity`
+    and `no-content-evidence`.
+  No version closed with the earlier tokens under `umbral-output/1`, so the edition is kept.
+Relationship to existing records: this fills the vocabularies `UD-024`, `UD-025` and `UD-026`
+left open, and the definition of `unknown` `UD-019` kept operational; none of them is amended.
+Scope guard: this record does NOT select M1, M2 or M6, the reference representation, the
+`basis` field name, a persistence schema, the identifier of a side, or the output tokens of
+slices 2–4; does NOT decide D-PEND-2, Q25 or Q26; does NOT define traversal facts (`UD-025`)
+beyond the role that carries them.
+Reversibility: medium — a later edition can change the vocabularies, as a recorded change.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-032 — further v0.1 defect corrections on the v0.2 branch
+Authority: USER (owner instruction, private, 2026-10-02 — chosen among proposed alternatives).
+Statement: four v0.1 defects found after the audit, registered as `D-V01-13` … `D-V01-16` in
+`docs/versions/v0.1.md`, are corrected on branch `v0.2`, test-first, under the same terms as
+`UD-029`. The semantics of the corrections, fixed here:
+  - a log is never written to before its schema version is read; a log of an unknown version,
+    or a database with tables and no version, is refused unmodified;
+  - one workspace record that cannot be read or interpreted is reported as `unknown` with its
+    reason, and does not prevent the others from being listed;
+  - a time before 1970 is recorded as the time it is; a time the log cannot represent is refused
+    for a run and left absent for a workspace's creation, never replaced by a stand-in;
+  - a path whose metadata could not be obtained is not shown or counted as an observed kind; its
+    stored placeholder kind is not rewritten.
+Relationship to existing records: an extension of `UD-029` to defects it did not list; no
+earlier record is amended.
+Scope guard: this record does NOT authorize v0.2 slice work, does NOT change the schema, and does
+NOT declare v0.1 complete.
+Reversibility: high — each correction is covered by its own test.
+Status: DECIDED (scoped to `umbral/` v0.1 defects).
+
+================================================================================
+UD-033 — v0.2 slice 2: split, field-set carrier, observation reference; slice 2a accepted
+Authority: USER (owner instruction, private, 2026-10-02 — chosen among proposed alternatives, then
+the drafted criteria accepted).
+Statement: the owner decides, for v0.2:
+  - slice 2 is split: **2a**, the per-observation `basis` on `show`, `status` and `observe`, with
+    `show` naming its entry; **2b**, the `basis` of a `changes` verdict;
+  - the field set a verdict rests on is carried by an **explicit field list** on the line (M2,
+    `V0.2-TECHNICAL-DESIGN.md` §E.14); M1 is not selected;
+  - a reference to an observation is **one composite value** `<run>:<path>` (R-A denoted as one
+    token), written by the contract's escaping and read by splitting at the first `:`;
+  - `show` names its observation on **every** line, `observed` lines included, through an
+    identification field that states nothing about the filesystem;
+  - the per-observation `basis` is the acquisition state of `UD-031`, shown per component
+    (`metadata=`, `content=`), always — including when it is `fresh`;
+  - `status` and `observe` count by state, on lines that name their run, and the earlier counts
+    `content-verified`, `content-not-verified` and `content-verification-not-applicable` are
+    removed;
+and accepts the criteria `A2-T2a-1`–`A2-T2a-10` in `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.5
+as written on 2026-10-02.
+Relationship to existing records: this selects the M1/M2 carrier, the reference representation,
+the `basis` field names and B1-style applicability on `show` that `UD-022` listed as open, within
+`UD-017`, `UD-019`, `UD-020` and `UD-031`; none of them is amended.
+Consequences: slice 2a may be implemented, test-first. Slice 2b needs its own criteria and
+acceptance.
+Scope guard: this record does NOT authorize slice 2b or 3, does NOT select a persistence schema
+or the field name of a reused reading's source, does NOT decide D-PEND-2, Q25 or Q26, and does NOT
+change traversal facts or `unobservable-paths` (slice 4).
+Reversibility: medium — a later edition can change these, as a recorded change.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-034 — v0.2 slice 2b: how a `changes` verdict states its basis; slice 2b accepted
+Authority: USER (owner instruction, private, 2026-10-02 — chosen among proposed alternatives, then
+the drafted criteria accepted).
+Statement: the owner decides, for v0.2:
+  - evidence that a path had no observation in a run is written as a per-side absence field
+    naming that run, and only when it is true;
+  - several entries a verdict rests on are named by repeating the field, one reference each;
+  - every verdict line states the completeness of both sides it compares;
+  - `old-path=` is removed and `from-run`/`to-run` become `reference-run`/`compared-run`;
+and accepts the criteria `A2-T2b-1`–`A2-T2b-9` in `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.6
+as written on 2026-10-02.
+Relationship to existing records: applies `UD-033`'s field-set carrier and references to
+`changes`, and `UD-031`'s roles and sides; satisfies on the verdict line the part of A2-V7
+(`UD-023` §2–§3, `UD-024`) about both sides' completeness. None is amended.
+Consequences: slice 2b may be implemented, test-first. No verdict may change.
+Scope guard: this record does NOT decide Q26 — the renamed-over-an-existing-path case keeps its
+current verdicts and is only reported truthfully; does NOT define traversal facts (slice 4);
+does NOT authorize slice 3.
+Reversibility: medium — a later edition can change these, as a recorded change.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-035 — `ctime` enters the v0.2 skip condition (D-PEND-2); phase 1 consults valid hashes
+Authority: USER (owner instruction, private, 2026-10-03 — chosen among proposed alternatives on
+the evidence of E-TD-2 and E-TD-3).
+Evidence: `experiments/e-td-2-3/README.md` §5 (tmpfs, btrfs, ext4). On ext4, a file deleted and
+recreated with different bytes, equal length and the original mtime kept its `dev`+`ino` in 1000
+of 1000 attempts, and a metadata-only condition skipped every one (L1 demonstrated). `ctime`
+differed in all 1350 cases where the bytes changed. In all of them the v0.1 verdict was
+`unchanged`, although both readings were valid and their hashes differed.
+Statement:
+  1. **D-PEND-2 is decided: `ctime` enters the skip condition** (`V0.2-TECHNICAL-DESIGN.md` §C.1,
+     condition 6), as an equality that must hold; a missing `ctime` on either side means the
+     entry is read. `UD-018` is unchanged: `ctime` remains a heuristic, never a guarantee, and a
+     reused reading is never presented as content-verified.
+  2. **v0.1 defect `D-V01-17` is corrected under the terms of `UD-029`:** when two observations
+     share identity and both hold a valid reading of a regular file, reconciliation consults the
+     hashes before answering `unchanged`; differing hashes give `modified` with
+     `content-changed=true`, whatever the metadata says.
+Relationship to existing records: closes the question `UD-018` left open (D-PEND-2); extends
+`UD-029` to one more defect. None is amended.
+Consequences: the cost `UD-018` accepted applies — a metadata change that does not alter content
+(`chmod`, `chown`, a new hard link) forces a re-read. The skip's residual false negatives are
+those of `ctime` itself (§D.4) and are declared in the version record.
+Scope guard: this record does NOT accept slice 3's criteria, does NOT select anything left open
+by `UD-021` beyond what slice 3 will specify, and does NOT decide Q26.
+Reversibility: high for `ctime` (removing a term only enlarges the skipped set, which needs its
+own record); the correction is covered by a test.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-036 — v0.2 slice 3: how the skip is persisted and shown; slice 3 accepted
+Authority: USER (owner instruction, private, 2026-10-02/03 — chosen among proposed alternatives,
+then the drafted criteria accepted).
+Statement: the owner decides, for v0.2:
+  - the run in which a reading's bytes were actually read is persisted with the observation
+    (`hash_read_run`); a skip carries it unchanged, a read sets it to the current run;
+  - the skip compares an entry only with the previous run's observation of the **same path**:
+    a renamed file is read;
+  - a reused reading names its source on `show`: `content-source=<run>:<path>`;
+  - `ctime` is recorded with every observation and shown as an `observed` field;
+  - rows written before this slice receive `hash_read_run = run_id`, a value derived from their
+    schema version (those builds read every file in its own run); their `ctime` is reported as
+    not recorded;
+and accepts the criteria `A2-T3-1`–`A2-T3-12` in `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.7 as
+written on 2026-10-03.
+Relationship to existing records: fixes the persistence `UD-021` required to distinguish, and the
+schema `UD-022` listed as open, within `UD-016`, `UD-017`, `UD-018` and `UD-035`; none is amended.
+Consequences: slice 3 may be implemented, test-first. The log schema becomes `umbral-v0.2`.
+Scope guard: this record does NOT define traversal facts or acquisition history beyond the
+content component (slice 4), does NOT settle Q25 or Q26, and does NOT declare v0.2 complete.
+Reversibility: medium — the schema change is additive; reverting the skip leaves the column
+truthful (every row would again be read in its own run).
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-037 — v0.2 slice 4: traversal facts and the rules of each run; slice 4 accepted
+Authority: USER (owner instruction, private, 2026-10-03 — chosen among proposed alternatives, then
+the drafted criteria accepted).
+Statement: the owner decides, for v0.2:
+  - each traversal failure is recorded with its class — `not-descended` (a directory whose
+    contents could not be listed) or `metadata-failed` (an entry that could not be `lstat`ed) —
+    decided when it happens; a failure of the root itself is a fact of the run;
+  - verdicts keep the run-wide completeness rule: coverage per subtree is not adopted in v0.2;
+  - every run records the tool version and the scope rules it applied;
+  - `unobservable-paths` is replaced by counts per class;
+  - earlier rows and runs, which did not record these, report them as not recorded;
+  - A2-V8 and A2-V9 are verified within this slice;
+and accepts the criteria `A2-T4-1`–`A2-T4-9` in `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.8 as
+written on 2026-10-03.
+Relationship to existing records: the traversal facts `UD-025` requires and the contemporaneous
+scope `UD-023` §3 and `UD-027` require, within `UD-031`'s vocabularies. A2-V8 is verified with the
+exception the owner chose in `UD-036` (`hash_read_run = run_id` for earlier rows). None is
+amended.
+Scope guard: this record does NOT change any verdict, does NOT adopt coverage per subtree, and
+does NOT declare v0.2 complete.
+Reversibility: medium — the schema change is additive.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
+UD-038 — v0.2 declared evidence complete
+Authority: USER (owner instruction, private, 2026-10-03).
+Statement: the owner declares v0.2 **evidence complete**, on the evidence recorded in
+`docs/versions/v0.2.md` ("EVIDENCE BY VERSION CRITERION"): `A2-V1`–`A2-V12` and `A2-V14` met,
+`A2-V8` with the exception the owner chose in `UD-036`; **`A2-V13` NOT SATISFIED** — no
+HUMAN-INDEPENDENT reading exists; an AI-INDEPENDENT reading (`experiments/e-td-6-11/`) answered the
+criterion's question correctly and cannot satisfy it (`UD-015`). The legibility difficulties that
+reading found (L-1…L-8) are carried to the next phase's work on the user's experience, not fixed
+in v0.2.
+Consequences: the crate's version becomes `0.2.0`; branch `v0.2` is proposed for integration into
+`main` by pull request, merged by the owner.
+Scope guard: this record does NOT declare v0.1 complete (A1 remains NOT SATISFIED), does NOT
+start v0.3 or V1, does NOT select an architecture, and does NOT settle Q25 or Q26. The
+version-scoped decisions of v0.2 expire with it unless a later record extends them.
+Reversibility: a declaration of evidence completeness can be withdrawn only by a recorded
+decision naming the evidence that failed.
+Status: DECIDED.
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -228,6 +1175,13 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
                          (UD-013 for the V0 experiment, UD-014 for v0.1).
   DECIDED (intent)     — the intent is committed; the mechanism is still research.
   DECIDED (process)    — a commitment about how the project works, not about the product.
+  DECIDED (scoped to v0.2)
+                       — committed for the named version; explicitly not project-wide.
+                         (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023, UD-024,
+                         UD-025, UD-026, UD-027, UD-030, UD-031, UD-033, UD-034, UD-035, UD-036, UD-037.) A scoped commitment expires with its version
+                         unless a later record extends it.
+  DECIDED (scoped to `umbral/` v0.1 defects)
+                       — committed for the named corrections only (UD-029, UD-032).
   SUPERSEDED           — replaced by a later record; the record itself is never edited,
                          a pointer is added here instead.
 
@@ -244,10 +1198,41 @@ SUPERSESSION POINTERS (records are immutable; this is where replacement is recor
       status unchanged (DECIDED, process), still carrying its original flag: it was
       inferred from observed behaviour rather than stated, and was awaiting one
       confirmation (recorded as D8). Still awaiting it.
+  UD-016 ("v0.2 objective: O(changes) for content read and hashing ONLY")
+      superseded **in part** by UD-021 (2026-09-13). UD-016's objective stands unchanged: the
+      reading/hashing of content is what v0.2 reduces, and O(changes) is not claimed for the
+      traversal. What is superseded is one clause of its formulation — "an optimisation that
+      changes a verdict fails v0.2" — which the accepted limitation F-TD-4 shows to be
+      inaccurate as written. Verdict preservation is now bounded by the evidence each
+      observation holds (UD-021). UD-016's text is preserved as written and is not edited.
+  UD-001 ("the product is open source")
+      superseded **in part** by UD-028 (2026-10-02). The decision stands; only its consequence
+      "licence choice still open" no longer describes the project: the licence is
+      GPL-3.0-or-later.
+
+================================================================================
+CITATION NOTES (records are immutable; corrections to how a record cites are recorded here)
+================================================================================
+  UD-017, alternative (a), "which by UD-014's correction (F-V01-2) is reserved for what the
+      filesystem itself states per entry": UD-014 is the v0.1 stack adoption and contains no
+      such correction. The correction is v0.1's own disposition of finding F-V01-2
+      (`experiments/v0.1-reader-protocol/README.md` §7, 2026-09-12). The rule the
+      sentence relies on is unchanged; only its citation was wrong. (Audit 2026-10-02, F14.)
+  UD-023 – UD-027 and the P5 interpretive record cite identifiers whose definitions lived only
+      in working reports outside this repository: `M6` (UD-023), `N3`, `N5`, `N8` (UD-024,
+      UD-025), and the labels `D1`–`D9` used for the historical guarantees. Their definitions
+      are extracted to `research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md` and the namespaces are
+      registered in `docs/IDENTIFIERS.md`. `P5`, `H1` and `H2` are defined inside the P5 record
+      itself; they collide with other namespaces and are registered as such. The P5 record's
+      sentence "the identifier registry needs no change" is superseded by that registration.
+      (Audit 2026-10-02, F3.)
+  UD-029, "reason `ConflictingCandidates`": the output token is `conflicting-candidates` since
+      UD-031 made every reason token kebab-case; the decision is unchanged.
 
 ================================================================================
 NOT DECIDED (explicitly, by the user's own record — MC §52): final name, final
 architecture, database, indexing technology, AI protocol, versioning model, permission
 mechanism, UI architecture, semantic model. The v0.1 crate uses SQLite; that is a scoped
 implementation choice under UD-014, and it settles none of these. Also undecided: surface sequence (0.7), MVP
-boundary (0.8), licence, governance, first target user sequence.
+boundary (0.8), governance, first target user sequence. (The licence was listed here until
+2026-10-02; it is decided by UD-028.)

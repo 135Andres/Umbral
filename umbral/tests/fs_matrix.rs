@@ -146,7 +146,7 @@ fn an_unreadable_file_is_recorded_as_not_verified() {
     assert_eq!(out.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(
-        stdout.contains("content-not-verified=1"),
+        stdout.contains("content-failed=1") && stdout.contains("permission-denied=1"),
         "an unreadable file must be reported as not verified:\n{stdout}"
     );
 
@@ -250,7 +250,7 @@ fn a_non_utf8_root_works_end_to_end() {
         "the root must be rendered with a defined escape, not dropped:\n{init}"
     );
     assert!(
-        init.contains("path-is-not-valid-utf8"),
+        init.contains("canonical-encoding=escaped:not-valid-utf8"),
         "the reader must be told the rendering is not the literal path:\n{init}"
     );
 
@@ -376,7 +376,9 @@ fn inode_reuse_is_recorded_not_asserted() {
     let as_deleted = changes
         .lines()
         .any(|l| l.contains("deleted") && l.contains("path=bye.txt"));
-    let as_renamed_from = changes.lines().any(|l| l.contains("old-path=bye.txt"));
+    let as_renamed_from = changes
+        .lines()
+        .any(|l| l.contains("renamed-or-moved") && l.contains("reference=1:bye.txt"));
     assert!(
         as_deleted ^ as_renamed_from,
         "bye.txt must be accounted for exactly once, as deleted XOR as a rename origin\n\

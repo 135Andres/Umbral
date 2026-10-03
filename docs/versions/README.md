@@ -9,6 +9,7 @@ cross-cutting document that would decay.
 | Version | Goal | Status | Record |
 |---|---|---|---|
 | v0.1 | A person can point the tool at a directory they own, record what is there, and read back what is known, when it was known, and what changed. | Reader protocol executed; **A1 not satisfied**; one finding corrected, one fixed by amending the protocol; a second run is pending. **Not declared complete** | [`v0.1.md`](v0.1.md) |
+| v0.2 | Reduce content reading and hashing during re-observation to O(changes), within the evidence and historical-contract bounds of `UD-021` and `UD-023`. | **Active — contract integration.** Acceptance criteria remain proposed; production code has not started | [`v0.2.md`](v0.2.md) |
 
 ## What "status" means here
 

@@ -1,4 +1,4 @@
-# CI for the v0.1 development crate (umbral/).
+# CI for the versioned development crate (umbral/).
 #
 # Scope is deliberately minimal, matching the V0 workflow: fmt, clippy, tests. No release
 # automation, packaging, coverage, dependency bots, containers, benchmarks or artifacts.
@@ -8,16 +8,23 @@
 # experiment's only deterministic CI failure came from a test that had encoded an assumption
 # about filesystem behaviour, and running somewhere other than the development machine is how
 # that class of defect is found. Assertions must hold on all three.
+#
+# Branches: `main` holds integrated state, and a version is developed on its own branch
+# (`v0.2`). Both are listed so a version's development is actually verified while it happens
+# rather than only once it is merged — a branch with no CI would make the ext4 signal
+# unavailable for exactly the commits that need it. Add each new version branch explicitly;
+# there is no glob here on purpose.
 
 name: umbral
 
 on:
   push:
-    branches: [main]
+    branches: [main, v0.2]
   pull_request:
     paths:
       - 'umbral/**'
       - 'Cargo.toml'
+      - 'Cargo.lock'
       - '.github/workflows/umbral.yml'
 
 jobs:
@@ -42,7 +49,8 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-umbral-${{ hashFiles('umbral/Cargo.lock') }}
+          # The lockfile is the workspace's, at the repository root: `umbral/` has none of its own.
+          key: ${{ runner.os }}-umbral-${{ hashFiles('Cargo.lock') }}
 
       - name: cargo fmt --check
         run: cargo fmt --check

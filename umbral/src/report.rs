@@ -6,8 +6,11 @@
 //!
 //! - `observed` — a fact read from the filesystem during a named run.
 //! - `derived` — a result computed from observations.
-//! - `ambiguous` — insufficient or conflicting evidence, with a named reason.
-//! - `unknown` — not observed, not observable, or not comparable.
+//! - `ambiguous` — a classification the evidence leaves open between more than one outcome,
+//!   with a named reason. None of the outcomes is chosen.
+//! - `unknown` — a value that is not determinable from the available evidence: not
+//!   observed, not obtainable, or not comparable. An error is a reason for `unknown`, not a
+//!   label of its own (`UD-031`).
 //!
 //! A line with no label is an implementation defect, and [`unlabelled_lines`] exists so that
 //! a test can say so.
@@ -26,9 +29,15 @@
 
 use std::path::Path;
 
+use crate::acquisition::{
+    content_diagnostic, content_source, content_state, metadata_state, AcquisitionState,
+    FAILED_DIAGNOSTICS,
+};
 use crate::content::{hex_short, Stability};
-use crate::log::{Observation, ObservationLog, RunMeta};
-use crate::reconcile::{reconcile, Mutation, MutationKind, ObservationSet, ObservedPath};
+use crate::log::{Observation, ObservationLog, RunId, RunMeta};
+use crate::reconcile::{
+    reconcile, Mutation, MutationKind, ObservationSet, ObservedPath, Side, SideBasis,
+};
 use crate::scan::EntryKind;
 use crate::workspace::Workspace;
 
@@ -166,8 +175,11 @@ pub fn contract_violations(lines: &[Line]) -> Vec<String> {
     out
 }
 
+/// Render a complete output: the `umbral-output/1` header, then one line per result, each
+/// ending with a line feed (`CONTRACT.md` §2).
 pub fn render(lines: &[Line]) -> String {
-    let mut s = String::new();
+    let mut s = crate::contract::header_line();
+    s.push('\n');
     for l in lines {
         s.push_str(&l.render());
         s.push('\n');
@@ -231,8 +243,19 @@ pub const DERIVED_ONLY_FIELDS: &[&str] = &[
     // Assigned identifiers
     "run=",
     "last-run=",
-    "from-run=",
-    "to-run=",
+    "reference-run=",
+    "compared-run=",
+    // What a verdict rests on (`UD-034`)
+    "reference=",
+    "compared=",
+    "counterpart=",
+    "reference-fields=",
+    "compared-fields=",
+    "counterpart-fields=",
+    "reference-absent=",
+    "compared-absent=",
+    "reference-complete=",
+    "compared-complete=",
     // The tool's own clock readings
     "started=",
     "finished=",
@@ -243,15 +266,38 @@ pub const DERIVED_ONLY_FIELDS: &[&str] = &[
     "dirs=",
     "symlinks=",
     "other=",
-    "content-verified=",
-    "content-not-verified=",
-    "content-verification-not-applicable=",
-    "unobservable-paths=",
+    "kind-unknown=",
+    "metadata-fresh=",
+    "metadata-failed=",
+    "content-fresh=",
+    "content-reused=",
+    "content-failed=",
+    "content-not-attempted=",
+    "content-not-recorded=",
+    "unstable-observation=",
+    "not-found=",
+    "permission-denied=",
+    "not-a-regular-file=",
+    "read-error=",
+    "traversal-complete=",
+    "traversal-not-descended=",
+    "traversal-metadata-failed=",
+    "traversal-not-recorded=",
+    "root-not-descended=",
+    "scope=",
+    "traversal=",
     "log-runs=",
     "log-observations=",
     // Values computed from the bytes read
     "hash=",
     "stability=",
+    // The tool's account of how each component was obtained (`UD-031`)
+    "metadata=",
+    "content=",
+    "content-source=",
+    // The content work of one run (A2-V1)
+    "content-read-entries=",
+    "content-read-bytes=",
     // Configuration echoed back
     "root=",
     "tool-version=",
@@ -262,32 +308,27 @@ pub const DERIVED_ONLY_FIELDS: &[&str] = &[
 ///
 /// Deliberately exhaustive rather than a denylist: adding an `observed` field is then a
 /// deliberate act that requires changing this list, instead of something that slips in.
-pub const OBSERVED_FIELDS: &[&str] = &["canonical=", "kind=", "size=", "mtime="];
+pub const OBSERVED_FIELDS: &[&str] = &["canonical=", "kind=", "size=", "mtime=", "ctime="];
 
-/// Every `name=` field present in a line of output.
+/// Every `name=` field present in a line of output: the key of each item that has one. Items
+/// are separated by two spaces (`CONTRACT.md` §2), so a `=` inside a value is never mistaken
+/// for a field.
 pub fn fields_in(text: &str) -> Vec<String> {
-    let bytes = text.as_bytes();
-    let mut out = Vec::new();
-    for i in 0..bytes.len() {
-        if bytes[i] != b'=' {
-            continue;
-        }
-        // Walk back over the field name.
-        let mut j = i;
-        while j > 0 {
-            let c = bytes[j - 1] as char;
-            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
-                j -= 1;
-            } else {
-                break;
-            }
-        }
-        if j < i {
-            out.push(text[j..=i].to_string());
-        }
-    }
-    out
+    text.split("  ")
+        .filter_map(|item| item.split_once('='))
+        .map(|(key, _)| format!("{}=", key.trim()))
+        .collect()
 }
+
+/// Whether a key is an encoding annotation: grammar, not a claim (`CONTRACT.md` §5), so it may
+/// stand on a line of any label.
+fn is_encoding_annotation(field: &str) -> bool {
+    field.ends_with("-encoding=")
+}
+
+/// Fields that say which observation a line is about and state nothing about the filesystem,
+/// so they may stand on a line of any label (`UD-033`, `CONTRACT.md` §6a).
+pub const IDENTIFICATION_FIELDS: &[&str] = &["observation="];
 
 /// Contract violations of the observed/derived distinction. Two halves, both checked:
 ///
@@ -303,6 +344,9 @@ pub fn label_contract_violations(lines: &[Line]) -> Vec<String> {
             continue;
         }
         for field in fields_in(&line.text) {
+            if is_encoding_annotation(&field) || IDENTIFICATION_FIELDS.contains(&field.as_str()) {
+                continue;
+            }
             if DERIVED_ONLY_FIELDS.contains(&field.as_str()) {
                 out.push(format!(
                     "line {}: labelled `observed` but carries the computed field `{field}`: {}",
@@ -356,6 +400,15 @@ fn civil_from_days(z: i64) -> (i64, u32, u32) {
 }
 
 /// `1970-01-01T00:00:00.000Z`-style rendering of nanoseconds since the Unix epoch.
+/// Nanoseconds since the Unix epoch, negative before it (D-V01-15). `None` when the time does
+/// not fit the log's signed 64-bit field — it is then refused, never replaced by a stand-in.
+pub fn unix_ns(t: std::time::SystemTime) -> Option<i64> {
+    match t.duration_since(std::time::UNIX_EPOCH) {
+        Ok(d) => i64::try_from(d.as_nanos()).ok(),
+        Err(e) => i64::try_from(e.duration().as_nanos()).ok().map(|n| -n),
+    }
+}
+
 pub fn format_unix_ns(ns: i64) -> String {
     let secs = ns.div_euclid(1_000_000_000);
     let nanos = ns.rem_euclid(1_000_000_000);
@@ -391,92 +444,47 @@ fn observed_path(o: &Observation) -> ObservedPath {
 // ---------------------------------------------------------------------------------------
 // Rendering a path as text.
 //
-// A path is a byte string, not text, and on Linux it need not be valid UTF-8. The output is
-// text, so such a path cannot be shown literally. It is rendered with a defined, reversible
-// escape rather than being refused or mangled:
-//
-//   - a byte that is not part of a valid UTF-8 sequence becomes `\xNN` (uppercase hex);
-//   - a literal backslash becomes `\\`, so an escape can never be mistaken for a name that
-//     happens to contain the same characters.
-//
-// When either escape fires, `escaped` is true and the caller emits `path_notes`, so a reader
-// is never left believing the rendered form is what is on disk. For a path that is valid
-// UTF-8 and contains no backslash the rendering is the path itself and the output is
-// unchanged.
+// A path is a byte string, not text, and on Linux it need not be valid UTF-8. Every value is
+// written by `contract::write_value` under `umbral-output/1` (`CONTRACT.md` §4): what cannot
+// stand in a line — a backslash, bytes that are not UTF-8, control characters, ambiguous
+// spaces, deceptive characters — is escaped reversibly, and the field is followed on the same
+// line by `<field>-encoding=escaped:<reasons>`, so a reader is never left believing the
+// rendered form is what is on disk and never has to guess which value the note is about.
 // ---------------------------------------------------------------------------------------
 
-/// A path rendered for text output, with whether the rendering is the path itself.
+/// A path rendered for text output: its written form under `umbral-output/1`, and the classes
+/// of escape that occurred.
 #[derive(Debug, Clone)]
 pub struct RenderedPath {
     pub text: String,
     pub escaped: bool,
+    pub classes: Vec<crate::contract::EscapeClass>,
+    written: crate::contract::Written,
 }
 
-/// Render a path as text. Never fails: a path that is not valid UTF-8 is escaped, not refused.
+impl RenderedPath {
+    /// `key=value`, followed on the same line by `key-encoding=escaped:…` when anything was
+    /// escaped (`CONTRACT.md` §5).
+    pub fn field(&self, key: &str) -> String {
+        self.written.field(key)
+    }
+}
+
+/// Render a path as text. Never fails: whatever cannot stand in text is escaped, not refused.
 pub fn render_path(p: &Path) -> RenderedPath {
-    let bytes = path_key(p);
-    match std::str::from_utf8(&bytes) {
-        Ok(s) if !s.contains('\\') => RenderedPath {
-            text: s.to_string(),
-            escaped: false,
-        },
-        _ => RenderedPath {
-            text: escape_path_bytes(&bytes),
-            escaped: true,
-        },
+    let written = crate::contract::write_value(&path_key(p));
+    RenderedPath {
+        text: written.text.clone(),
+        escaped: !written.classes.is_empty(),
+        classes: written.classes.clone(),
+        written,
     }
 }
 
-/// The note that records an escaped rendering. `None` when the path rendered literally.
-pub fn path_notes(pairs: &[(&str, &RenderedPath)]) -> Vec<Line> {
-    pairs
-        .iter()
-        .filter(|(_, r)| r.escaped)
-        .map(|(field, _)| {
-            Line::derived(format!(
-                "{field}-encoding=escaped  reason=path-is-not-valid-utf8"
-            ))
-        })
-        .collect()
-}
-
-/// Escape every byte that cannot stand in text, decoding the sequences that can.
-fn escape_path_bytes(bytes: &[u8]) -> String {
-    let mut out = String::with_capacity(bytes.len());
-    let mut i = 0;
-    while i < bytes.len() {
-        let b = bytes[i];
-        if b == b'\\' {
-            out.push_str("\\\\");
-            i += 1;
-            continue;
-        }
-        if b < 0x80 {
-            out.push(b as char);
-            i += 1;
-            continue;
-        }
-        // Decode exactly one valid multi-byte sequence, or escape the single byte. `from_utf8`
-        // on the slice is the only decoder used, so this cannot disagree with the standard.
-        let need = match b {
-            0xF0..=0xF7 => 4,
-            0xE0..=0xEF => 3,
-            0xC0..=0xDF => 2,
-            _ => 0,
-        };
-        if need > 1 && i + need <= bytes.len() {
-            if let Ok(s) = std::str::from_utf8(&bytes[i..i + need]) {
-                if s.chars().count() == 1 {
-                    out.push_str(s);
-                    i += need;
-                    continue;
-                }
-            }
-        }
-        out.push_str(&format!("\\x{b:02X}"));
-        i += 1;
-    }
-    out
+/// A text value that is not a path — an operating-system message, for instance — written
+/// under the same rules, as `key=value` with its annotation when needed.
+pub fn text_field(key: &str, value: &str) -> String {
+    crate::contract::write_value(value.as_bytes()).field(key)
 }
 
 fn observation_set(
@@ -508,6 +516,13 @@ fn opt_hash(o: &Observation) -> String {
     }
 }
 
+fn opt_time(t: Option<(i64, u32)>) -> String {
+    match t {
+        Some((s, n)) => format_unix_ns(s * 1_000_000_000 + n as i64),
+        None => "none".to_string(),
+    }
+}
+
 fn opt_stability(o: &Observation) -> String {
     match o.stability {
         Some(s) => s.as_str().to_string(),
@@ -522,8 +537,8 @@ fn opt_stability(o: &Observation) -> String {
 pub fn observe_summary(
     ws: &Workspace,
     run: &RunMeta,
-    verified: u64,
-    not_verified: u64,
+    obs: &[Observation],
+    counters: &crate::observe::Counters,
 ) -> Vec<Line> {
     // Everything here describes the run the tool just performed, so all of it is the tool's
     // own output. The one exception is the canonical root: that is the filesystem's answer
@@ -531,14 +546,19 @@ pub fn observe_summary(
     let canonical = render_path(&ws.canonical);
     let root = render_path(&ws.root);
     let mut out = vec![
-        Line::observed(format!("canonical={}", canonical.text)),
-        Line::derived(format!("run={}  root={}", run.id, root.text)),
-        Line::derived(format!("run={}  entries={}", run.id, run.entries)),
-        Line::derived(format!("run={}  content-verified={}", run.id, verified)),
-        Line::derived(format!(
-            "run={}  content-not-verified={}  reason=unstable-or-unreadable",
-            run.id, not_verified
-        )),
+        Line::observed(canonical.field("canonical")),
+        Line::derived(format!("run={}  {}", run.id, root.field("root"))),
+    ];
+    // Counted from what the log stored for this run, by the same function as `status`, so the
+    // two cannot disagree (A2-T2a-5).
+    out.extend(state_counts(run.id, obs));
+    out.extend(run_facts(run, obs));
+    // What this run actually read: the measure of O(changes), counted, never timed (A2-V1).
+    out.push(Line::derived(format!(
+        "run={}  content-read-entries={}  content-read-bytes={}",
+        run.id, counters.read_entries, counters.read_bytes
+    )));
+    out.extend([
         Line::derived(format!(
             "run={}  started={}  finished={}",
             run.id,
@@ -546,9 +566,107 @@ pub fn observe_summary(
             format_unix_ns(run.finished_at_ns)
         )),
         Line::derived(format!("run={}  complete={}", run.id, run.complete())),
-    ];
-    out.extend(path_notes(&[("canonical", &canonical), ("root", &root)]));
+    ]);
     out
+}
+
+/// The traversal facts of one run and the rules it applied (`UD-025`, `UD-027`, `UD-037`): which
+/// part of the scope was not observed, by class, and the build and scope that produced it.
+pub fn run_facts(run: &RunMeta, obs: &[Observation]) -> Vec<Line> {
+    let count = |class: &str| {
+        obs.iter()
+            .filter(|o| o.traversal.as_deref() == Some(class))
+            .count()
+    };
+    let mut out = vec![Line::derived(format!(
+        "run={}  traversal-complete={}  traversal-not-descended={}  traversal-metadata-failed={}  traversal-not-recorded={}  root-not-descended={}",
+        run.id,
+        run.complete(),
+        count("not-descended"),
+        count("metadata-failed"),
+        count("not-recorded"),
+        run.root_error.is_some()
+    ))];
+    if let Some(e) = &run.root_error {
+        out.push(Line::unknown(format!(
+            "run={}  {}",
+            run.id,
+            text_field("root-error", e)
+        )));
+    }
+    match (&run.tool_version, &run.scope) {
+        (Some(v), Some(s)) => out.push(Line::derived(format!(
+            "run={}  {}  scope={s}",
+            run.id,
+            text_field("tool-version", v)
+        ))),
+        _ => out.push(Line::unknown(format!(
+            "run={}  fields=tool-version,scope  reason=not-recorded",
+            run.id
+        ))),
+    }
+    out
+}
+
+/// The counts of one run by kind and by acquisition state, each on a line naming the run
+/// (`UD-033`). Every count is printed, zeros included: an absent count would make "none"
+/// readable only from the absence of a line.
+pub fn state_counts(run: crate::log::RunId, obs: &[Observation]) -> Vec<Line> {
+    let (mut files, mut dirs, mut symlinks, mut other, mut kind_unknown) = (0, 0, 0, 0, 0);
+    let mut metadata = [0u64; 5];
+    let mut content = [0u64; 5];
+    let mut diagnostics = [0u64; FAILED_DIAGNOSTICS.len()];
+    let index = |s: AcquisitionState| AcquisitionState::ALL.iter().position(|x| *x == s).unwrap();
+
+    for o in obs {
+        match o.kind {
+            // Stored as `other`, but no kind was observed (D-V01-16).
+            _ if o.metadata_failed() => kind_unknown += 1,
+            EntryKind::File => files += 1,
+            EntryKind::Dir => dirs += 1,
+            EntryKind::Symlink => symlinks += 1,
+            EntryKind::Other => other += 1,
+        }
+        metadata[index(metadata_state(o))] += 1;
+        if let Some(c) = content_state(o) {
+            content[index(c)] += 1;
+        }
+        if let Some(d) = content_diagnostic(o) {
+            diagnostics[FAILED_DIAGNOSTICS.iter().position(|x| *x == d).unwrap()] += 1;
+        }
+    }
+
+    let by_state = |component: &str, counts: &[u64; 5], states: &[AcquisitionState]| {
+        let mut text = format!("run={run}");
+        for s in states {
+            text.push_str(&format!(
+                "  {component}-{}={}",
+                s.as_str(),
+                counts[index(*s)]
+            ));
+        }
+        Line::derived(text)
+    };
+    // The failed content readings by diagnostic; they sum to `content-failed`, which is stated
+    // once, on the line above.
+    let mut failed = format!("run={run}  content-failed-diagnostics");
+    for (d, n) in FAILED_DIAGNOSTICS.iter().zip(diagnostics) {
+        failed.push_str(&format!("  {d}={n}"));
+    }
+    vec![
+        Line::derived(format!(
+            "run={run}  entries={}  files={files}  dirs={dirs}  symlinks={symlinks}  other={other}  kind-unknown={kind_unknown}",
+            obs.len()
+        )),
+        // Metadata is obtained fresh or not at all in v0.2: the scan reads it for every entry.
+        by_state(
+            "metadata",
+            &metadata,
+            &[AcquisitionState::Fresh, AcquisitionState::Failed],
+        ),
+        by_state("content", &content, &AcquisitionState::ALL),
+        Line::derived(failed),
+    ]
 }
 
 // ---------------------------------------------------------------------------------------
@@ -562,10 +680,9 @@ pub fn status(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, cra
     // home plus that identifier. Only the first is observed.
     let canonical = render_path(&ws.canonical);
     let root = render_path(&ws.root);
-    out.push(Line::observed(format!("canonical={}", canonical.text)));
-    out.push(Line::derived(format!("root={}", root.text)));
+    out.push(Line::observed(canonical.field("canonical")));
+    out.push(Line::derived(root.field("root")));
     out.push(Line::derived(format!("workspace-id={}", ws.id)));
-    out.extend(path_notes(&[("canonical", &canonical), ("root", &root)]));
 
     let Some(run) = log.latest_run()? else {
         out.push(Line::unknown("observations=none  reason=no-run-recorded"));
@@ -573,10 +690,9 @@ pub fn status(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, cra
     };
 
     out.push(Line::derived(format!(
-        "last-run={}  started={}  entries={}",
+        "last-run={}  started={}",
         run.id,
-        format_unix_ns(run.started_at_ns),
-        run.entries
+        format_unix_ns(run.started_at_ns)
     )));
     out.push(Line::derived(format!(
         "last-run={}  complete={}",
@@ -585,49 +701,9 @@ pub fn status(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, cra
     )));
 
     let obs = log.observations_for_run(run.id)?;
-    let (mut files, mut dirs, mut symlinks, mut other) = (0u64, 0u64, 0u64, 0u64);
-    let (mut verified, mut not_verified, mut errored) = (0u64, 0u64, 0u64);
+    out.extend(state_counts(run.id, &obs));
 
-    for o in &obs {
-        match o.kind {
-            EntryKind::File => files += 1,
-            EntryKind::Dir => dirs += 1,
-            EntryKind::Symlink => symlinks += 1,
-            EntryKind::Other => other += 1,
-        }
-        if o.error.is_some() {
-            errored += 1;
-        }
-        if o.is_content_verified() {
-            verified += 1;
-        } else if o.kind == EntryKind::File {
-            not_verified += 1;
-        }
-    }
-
-    // Every value below is an aggregate computed from the stored observations. The count of
-    // paths that could not be observed is a computed count too, even though what it counts
-    // are things the tool does not know: the number is the tool's arithmetic, and the
-    // unknowns themselves are reported per path by `show`.
-    out.push(Line::derived(format!(
-        "entries={}  files={}  dirs={}  symlinks={}  other={}",
-        obs.len(),
-        files,
-        dirs,
-        symlinks,
-        other
-    )));
-    out.push(Line::derived(format!("content-verified={verified}")));
-    out.push(Line::derived(format!(
-        "content-not-verified={not_verified}  reason=unstable-or-unreadable"
-    )));
-    out.push(Line::derived(format!(
-        "content-verification-not-applicable={}  reason=not-a-regular-file",
-        dirs + symlinks + other
-    )));
-    out.push(Line::derived(format!(
-        "unobservable-paths={errored}  reason=not-observed-at-observation-time"
-    )));
+    out.extend(run_facts(&run, &obs));
 
     let (runs, observations) = log.counts()?;
     out.push(Line::derived(format!(
@@ -665,8 +741,11 @@ pub fn changes(
     let r = reconcile(&ps, &cs);
 
     let mut out = vec![Line::derived(format!(
-        "compared  from-run={}  to-run={}  complete={}",
-        prev.id, cur.id, r.complete
+        "compared  reference-run={}  compared-run={}  reference-complete={}  compared-complete={}",
+        prev.id,
+        cur.id,
+        prev.complete(),
+        cur.complete()
     ))];
 
     // Every count is printed, including zeros. A count that is merely absent would make
@@ -694,18 +773,44 @@ pub fn changes(
         .iter()
         .filter(|m| m.kind != MutationKind::Unchanged)
     {
-        out.extend(mutation_line(m));
+        out.extend(mutation_line(m, prev.id, cur.id));
     }
 
     Ok(out)
 }
 
-fn mutation_line(m: &Mutation) -> Vec<Line> {
+/// One verdict, with what it rests on (`UD-033`, `UD-034`): the subject (`path=`), the
+/// observation it relates on each side — or that side's absence — with the fields the rules
+/// consulted, every other entry it rests on, and both sides' completeness.
+fn mutation_line(m: &Mutation, reference_run: RunId, compared_run: RunId) -> Vec<Line> {
     let path = render_path(&m.path);
-    let old = m.old_path.as_ref().map(|p| render_path(p));
-    let mut parts = vec![format!("path={}", path.text)];
-    if let Some(o) = &old {
-        parts.push(format!("old-path={}", o.text));
+    let basis = &m.evidence.basis;
+    let mut parts = vec![path.field("path")];
+    for (key, side, run) in [
+        ("reference", &basis.reference, reference_run),
+        ("compared", &basis.compared, compared_run),
+    ] {
+        match side {
+            SideBasis::Related { path, fields } => {
+                parts.push(reference_field(key, run, path));
+                parts.push(format!("{key}-fields={}", field_list(fields)));
+            }
+            SideBasis::Absent => parts.push(format!("{key}-absent={run}")),
+            SideBasis::NotRelated => {}
+        }
+    }
+    for (side, p) in &basis.counterparts {
+        let run = match side {
+            Side::Reference => reference_run,
+            Side::Compared => compared_run,
+        };
+        parts.push(reference_field("counterpart", run, p));
+    }
+    if !basis.counterparts.is_empty() {
+        parts.push(format!(
+            "counterpart-fields={}",
+            field_list(&basis.counterpart_fields)
+        ));
     }
     if let Some(b) = m.evidence.content_changed {
         parts.push(format!("content-changed={b}"));
@@ -716,19 +821,31 @@ fn mutation_line(m: &Mutation) -> Vec<Line> {
     if let Some(r) = m.evidence.reason {
         parts.push(format!("reason={}", r.as_str()));
     }
-    parts.push(format!("scan-complete={}", m.evidence.complete_scan));
+    // A verdict is relative to both runs it compares, and to how complete each was (A2-V7).
+    parts.push(format!(
+        "reference-complete={}  compared-complete={}",
+        m.evidence.reference_complete, m.evidence.complete_scan
+    ));
     let text = parts.join("  ");
     let line = match m.kind {
         MutationKind::Ambiguous => Line::ambiguous(format!("{}  {text}", m.kind.as_str())),
         _ => Line::derived(format!("{}  {text}", m.kind.as_str())),
     };
-    let mut notes = path_notes(&[("path", &path)]);
-    if let Some(o) = &old {
-        notes.extend(path_notes(&[("old-path", o)]));
+    vec![line]
+}
+
+/// `<key>=<run>:<path>`, written by the contract (`CONTRACT.md` §6a).
+fn reference_field(key: &str, run: RunId, path: &Path) -> String {
+    crate::contract::write_reference(run as u64, &path_key(path)).field(key)
+}
+
+/// A list of consulted field names; `none` when the rules consulted none.
+fn field_list(fields: &[&str]) -> String {
+    if fields.is_empty() {
+        "none".to_string()
+    } else {
+        fields.join(",")
     }
-    let mut out = vec![line];
-    out.extend(notes);
-    out
 }
 
 // ---------------------------------------------------------------------------------------
@@ -744,12 +861,10 @@ pub fn show(
     let obs = log.observations_for_path(rel)?;
     let rel_rendered = render_path(rel);
     if obs.is_empty() {
-        let mut out = vec![Line::unknown(format!(
-            "path={}  reason=not-observed-in-any-run",
-            rel_rendered.text
-        ))];
-        out.extend(path_notes(&[("path", &rel_rendered)]));
-        return Ok(out);
+        return Ok(vec![Line::unknown(format!(
+            "{}  reason=not-observed-in-any-run",
+            rel_rendered.field("path")
+        ))]);
     }
 
     let runs = log.runs()?;
@@ -757,28 +872,42 @@ pub fn show(
 
     for o in &obs {
         // Split by what produced each value: kind, size and mtime are the filesystem's own
-        // statements about the entry; the run identifier is assigned by the tool, the hash
-        // is a function of bytes the tool read, and the stability verdict is the outcome of
-        // comparing two readings. All are stored observations, but only the first group is
-        // `observed`. Ordering pairs them: the derived line introduces the run whose observed
-        // facts follow it.
+        // statements about the entry; the hash is a function of bytes the tool read, the
+        // stability verdict the outcome of comparing two readings, and the acquisition states
+        // the tool's account of how each component was obtained. All are stored observations,
+        // but only the first group is `observed`. Every line names the observation it reports,
+        // so no line depends on its neighbour for its subject (`UD-019`, `UD-020`, `UD-033`).
+        let subject = observation_field(o);
+        let mut basis = format!("metadata={}", metadata_state(o).as_str());
+        if let Some(c) = content_state(o) {
+            basis.push_str(&format!("  content={}", c.as_str()));
+        }
+        // A reused reading names the observation that actually read its bytes (`UD-036`).
+        if let Some(source) = content_source(o) {
+            basis.push_str("  ");
+            basis.push_str(&reference_field("content-source", source, &o.path));
+        }
         out.push(Line::derived(format!(
-            "run={}  hash={}  stability={}",
-            o.run_id,
+            "{subject}  hash={}  stability={}  {basis}",
             opt_hash(o),
             opt_stability(o)
         )));
-        out.push(Line::observed(format!(
-            "kind={}  size={}  mtime={}",
-            kind_field(o),
-            opt_u64(o.size),
-            match o.mtime {
-                Some((s, n)) => format_unix_ns(s * 1_000_000_000 + n as i64),
-                None => "none".to_string(),
-            }
-        )));
+        // A path whose metadata could not be obtained has nothing observed to show; its stored
+        // kind is a placeholder, so it is listed as absent instead (D-V01-16).
+        if !o.metadata_failed() {
+            out.push(Line::observed(format!(
+                "{subject}  kind={}  size={}  mtime={}  ctime={}",
+                kind_field(o),
+                opt_u64(o.size),
+                opt_time(o.mtime),
+                opt_time(o.ctime)
+            )));
+        }
 
         let mut absent = Vec::new();
+        if o.metadata_failed() {
+            absent.push("kind");
+        }
         if o.size.is_none() {
             absent.push("size");
         }
@@ -788,23 +917,42 @@ pub fn show(
         if o.dev.is_none() || o.ino.is_none() {
             absent.push("physical-identity");
         }
+        // `ctime` absent from a run that recorded it was not obtainable; from an earlier run,
+        // it was never recorded — a different statement (`UD-036`, A2-V8).
+        if o.ctime.is_none() && o.ctime_recorded {
+            absent.push("ctime");
+        }
         if !absent.is_empty() {
             out.push(Line::unknown(format!(
-                "run={}  fields={}  reason=not-obtainable-at-observation-time",
-                o.run_id,
+                "{subject}  fields={}  reason=not-obtainable-at-observation-time",
                 absent.join(",")
             )));
         }
-        if let Some(e) = &o.error {
+        if o.ctime.is_none() && !o.ctime_recorded {
             out.push(Line::unknown(format!(
-                "run={}  observation-error={e}",
-                o.run_id
+                "{subject}  fields=ctime  reason=not-recorded"
+            )));
+        }
+        if let Some(e) = &o.error {
+            // The class says which part of the scope the failure left unobserved (`UD-037`).
+            let class = o.traversal.as_deref().unwrap_or("not-recorded");
+            out.push(Line::unknown(format!(
+                "{subject}  traversal={class}  {}",
+                text_field("observation-error", e)
+            )));
+        }
+        // Why the content was not obtained, as recorded when it was not (D-V01-10).
+        if let Some(e) = &o.content_error {
+            out.push(Line::unknown(format!(
+                "{subject}  {}",
+                text_field("content-error", e)
             )));
         }
         if o.stability == Some(Stability::Unstable) && !o.deltas.is_empty() {
-            out.push(Line::ambiguous(format!(
-                "run={}  reason=UnstableObservation  deltas={}",
-                o.run_id,
+            // No value was obtained, so this is `unknown`; `ambiguous` is for a classification
+            // the evidence leaves open between several outcomes (`UD-031`).
+            out.push(Line::unknown(format!(
+                "{subject}  reason=unstable-observation  deltas={}",
                 o.deltas
                     .iter()
                     .map(|d| d.as_str())
@@ -823,16 +971,18 @@ pub fn show(
             .find(|r| r.id == b.run_id)
             .map(RunMeta::complete)
             .unwrap_or(false);
-        let set_a = ObservationSet::new(vec![observed_path(a)], true);
+        // The previous side's completeness is its own run's, not assumed (D-V01-9).
+        let complete_a = runs
+            .iter()
+            .find(|r| r.id == a.run_id)
+            .map(RunMeta::complete)
+            .unwrap_or(false);
+        let set_a = ObservationSet::new(vec![observed_path(a)], complete_a);
         let set_b = ObservationSet::new(vec![observed_path(b)], complete);
         let rec = reconcile(&set_a, &set_b);
+        // The same verdict line as `changes`: its references name both runs.
         for m in &rec.mutations {
-            for line in mutation_line(m) {
-                out.push(Line {
-                    label: line.label,
-                    text: format!("run={} -> {}  {}", a.run_id, b.run_id, line.text),
-                });
-            }
+            out.extend(mutation_line(m, a.run_id, b.run_id));
         }
     }
 
@@ -843,18 +993,20 @@ pub fn show(
 // check
 // ---------------------------------------------------------------------------------------
 
-/// Demonstrate the claim the persistence model rests on: the log is the truth, and the
-/// derived state is recomputed from it rather than stored.
+/// Verify the log, and print only verifications that can fail.
 ///
-/// This does not add product capability. It answers exactly one question — can the
-/// observable state be reconstructed from the persisted record — and reports it.
+/// What is checked: every observation belongs to a run that exists; every stored value is one
+/// this build can interpret, read raw rather than through the normalising readers; and the
+/// stored tables are the log and nothing else, so no derived state is persisted. Each of
+/// these is shown failing by a test that corrupts a log on purpose. Three earlier lines were
+/// removed because they could not fail (D-V01-11): a per-run count compared with itself, the
+/// same table read twice through the same parser, and duplicates the primary key forbids.
 pub fn check(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, crate::log::LogError> {
     let mut out = Vec::new();
     // The state path is composed from the data home and the workspace identifier, and the
     // counts are aggregates over the log. Both are the tool's own output.
     let state = render_path(&ws.log_path());
-    out.push(Line::derived(format!("state={}", state.text)));
-    out.extend(path_notes(&[("state", &state)]));
+    out.push(Line::derived(state.field("state")));
 
     let (runs_n, obs_n) = log.counts()?;
     out.push(Line::derived(format!(
@@ -868,41 +1020,10 @@ pub fn check(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, crat
     let known: std::collections::BTreeSet<i64> = runs.iter().map(|r| r.id).collect();
     let orphans = all.iter().filter(|o| !known.contains(&o.run_id)).count();
 
-    // 2. Counts agree: the per-run entry count equals the rows actually stored.
-    let mut count_mismatch = 0u64;
-    for r in &runs {
-        let rows = all.iter().filter(|o| o.run_id == r.id).count() as u64;
-        if rows != r.entries {
-            count_mismatch += 1;
-        }
-    }
+    // 2. Every stored value is interpretable, read raw.
+    let invalid = log.invalid_values()?;
 
-    // 3. No duplicate (run, path) pairs.
-    let mut seen: std::collections::BTreeSet<(i64, Vec<u8>)> = std::collections::BTreeSet::new();
-    let mut duplicates = 0u64;
-    for o in &all {
-        let key = (o.run_id, path_key(&o.path));
-        if !seen.insert(key) {
-            duplicates += 1;
-        }
-    }
-
-    // 4. Independent recomputation: derive the latest run's state twice, once through the
-    //    per-run query and once by filtering the full log, and compare.
-    let recomputed_agrees = match runs.last() {
-        None => true,
-        Some(last) => {
-            let via_run = log.observations_for_run(last.id)?;
-            let via_all: Vec<Observation> = all
-                .iter()
-                .filter(|o| o.run_id == last.id)
-                .cloned()
-                .collect();
-            via_run == via_all
-        }
-    };
-
-    // 5. No derived state is persisted: the stored tables are the log, and nothing else.
+    // 3. No derived state is persisted: the stored tables are the log, and nothing else.
     let mut tables = log.tables()?;
     tables.sort();
     let only_log = tables
@@ -917,24 +1038,78 @@ pub fn check(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, crat
         orphans == 0
     )));
     out.push(Line::derived(format!(
-        "run-counts-agree={}  mismatched-runs={count_mismatch}",
-        count_mismatch == 0
+        "row-values-valid={}  invalid-values={}",
+        invalid.is_empty(),
+        invalid.len()
     )));
-    out.push(Line::derived(format!("duplicate-entries={duplicates}")));
-    out.push(Line::derived(format!(
-        "derived-state-recomputed={}  agrees-with-stored={}",
-        true, recomputed_agrees
-    )));
+    for v in &invalid {
+        let mut text = format!("invalid-value  run={}", v.run_id);
+        let rendered = v.path.as_ref().map(|p| render_path(p));
+        if let Some(p) = &rendered {
+            text.push_str(&format!("  {}", p.field("path")));
+        }
+        text.push_str(&format!("  field={}  reason={}", v.field, v.reason));
+        out.push(Line::derived(text));
+    }
     out.push(Line::derived(format!(
         "stored-tables={}  derived-state-persisted={}",
         tables.join(","),
         !only_log
     )));
 
-    let ok =
-        orphans == 0 && count_mismatch == 0 && duplicates == 0 && recomputed_agrees && only_log;
+    // 4. Every reading is attributed to the run that read it (`UD-036`): never a later run, and
+    //    a carried reading equals the fresh reading of the observation it names.
+    let broken = broken_readings(&all);
+    out.push(Line::derived(format!(
+        "readings-consistent={}  invalid-readings={}",
+        broken.is_empty(),
+        broken.len()
+    )));
+    for (o, reason) in &broken {
+        out.push(Line::derived(format!(
+            "invalid-reading  run={}  {}  reason={reason}",
+            o.run_id,
+            render_path(&o.path).field("path")
+        )));
+    }
+
+    let ok = orphans == 0 && invalid.is_empty() && only_log && broken.is_empty();
     out.push(Line::derived(format!("consistent={ok}")));
     Ok(out)
+}
+
+/// Observations whose reading is not attributed as `UD-036` requires, with the reason.
+fn broken_readings(all: &[Observation]) -> Vec<(&Observation, &'static str)> {
+    let by_key: std::collections::BTreeMap<(RunId, &Path), &Observation> = all
+        .iter()
+        .map(|o| ((o.run_id, o.path.as_path()), o))
+        .collect();
+    let mut out = Vec::new();
+    for o in all {
+        let Some(hash) = o.hash else { continue };
+        let reason = match o.hash_read_run {
+            None => Some("reading-without-read-run"),
+            Some(r) if r > o.run_id => Some("read-run-after-own-run"),
+            Some(r) if r == o.run_id => None,
+            Some(r) => match by_key.get(&(r, o.path.as_path())) {
+                None => Some("source-missing"),
+                Some(src) if src.hash_read_run != Some(r) => Some("source-not-fresh"),
+                Some(src) if src.hash != Some(hash) || src.stability != o.stability => {
+                    Some("differs-from-source")
+                }
+                Some(_) => None,
+            },
+        };
+        if let Some(reason) = reason {
+            out.push((o, reason));
+        }
+    }
+    out
+}
+
+/// The identification field naming one observation: `observation=<run>:<path>` (`UD-033`).
+fn observation_field(o: &Observation) -> String {
+    crate::contract::write_reference(o.run_id as u64, &path_key(&o.path)).field("observation")
 }
 
 fn path_key(p: &Path) -> Vec<u8> {

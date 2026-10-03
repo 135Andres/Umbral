@@ -11,8 +11,8 @@ use std::fs;
 use common::{assert_all_labelled, labels_used, lines, Sandbox};
 use umbral::report::{
     contract_violations, fields_in, first_banned_word, label_contract_violations,
-    label_contract_violations_in_text, path_notes, render_path, unlabelled_lines, Label, Line,
-    BANNED_LEXICON, DERIVED_ONLY_FIELDS, OBSERVED_FIELDS,
+    label_contract_violations_in_text, render_path, unlabelled_lines, Line, BANNED_LEXICON,
+    DERIVED_ONLY_FIELDS, IDENTIFICATION_FIELDS, OBSERVED_FIELDS,
 };
 
 /// Every line of every command declares exactly one of the four labels.
@@ -155,17 +155,17 @@ fn unobservable_metadata_is_reported_as_absent_not_invented() {
         "the incompleteness must be stated:\n{stdout}"
     );
 
-    // The count of unobservable paths is an aggregate the tool computed, so it is `derived`.
+    // The traversal facts are aggregates the tool computed, so they are `derived` (`UD-037`).
     // The unknowns themselves are reported per path, by `show`.
     let status = s.run_ok(&["status", r.as_str()]);
     assert!(
-        status.contains("unobservable-paths=1"),
-        "status must count the unobserved path:\n{status}"
+        status.contains("traversal-complete=false  traversal-not-descended=1"),
+        "status must count the unobserved directory by its class:\n{status}"
     );
     assert!(
         !status
             .lines()
-            .any(|l| l.starts_with("observed") && l.contains("unobservable-paths=")),
+            .any(|l| l.starts_with("observed") && l.contains("traversal-")),
         "a computed count must not be labelled observed:\n{status}"
     );
 
@@ -192,7 +192,8 @@ fn a_never_observed_path_is_unknown() {
     let r = s.root().to_string_lossy().to_string();
     let out = s.run_ok(&["show", r.as_str(), "never-existed.txt"]);
     assert_all_labelled(&out);
-    let (label, text) = &lines(&out)[0];
+    // Line 0 is the contract header (`umbral-output/1`); the answer follows it.
+    let (label, text) = &lines(&out)[1];
     assert_eq!(label, "unknown");
     assert!(
         text.contains("reason=not-observed-in-any-run"),
@@ -296,7 +297,7 @@ fn the_ambiguous_case_in_that_fixture_is_a_real_tool_verdict() {
         "the replacement must be reported as ambiguous, by the tool, with its reason:\n{changes}"
     );
     assert!(
-        changes.contains("reason=DuplicateContentNotIdentity"),
+        changes.contains("reason=duplicate-content-not-identity"),
         "the tool must name why the evidence does not settle it:\n{changes}"
     );
 }
@@ -424,6 +425,10 @@ fn observed_lines_carry_only_filesystem_facts() {
     );
     for line in observed {
         for field in fields_in(line) {
+            // The identification field names the observation; it is not a claim (`UD-033`).
+            if IDENTIFICATION_FIELDS.contains(&field.as_str()) {
+                continue;
+            }
             assert!(
                 OBSERVED_FIELDS.contains(&field.as_str()),
                 "observed line carries `{field}`: {line}"
@@ -449,7 +454,7 @@ fn a_valid_utf8_path_renders_as_itself() {
         !r.escaped,
         "nothing needed escaping, so nothing must be declared"
     );
-    assert!(path_notes(&[("canonical", &r)]).is_empty());
+    assert_eq!(r.field("canonical"), "canonical=/tmp/ordinary-name.txt");
 }
 
 #[cfg(unix)]
@@ -464,13 +469,11 @@ fn a_non_utf8_path_is_escaped_and_declared() {
     assert_eq!(r.text, "/tmp/odd-\\xFF\\xFE.txt");
     assert!(r.escaped);
 
-    let notes = path_notes(&[("canonical", &r)]);
-    assert_eq!(notes.len(), 1);
-    assert_eq!(notes[0].label, Label::Derived);
-    assert!(
-        notes[0].text.contains("path-is-not-valid-utf8"),
-        "the note must give the reason: {}",
-        notes[0].text
+    // The declaration travels on the same line, right after the value it describes
+    // (`CONTRACT.md` §5), and names the reason.
+    assert_eq!(
+        r.field("canonical"),
+        "canonical=/tmp/odd-\\xFF\\xFE.txt  canonical-encoding=escaped:not-valid-utf8"
     );
 }
 
@@ -506,13 +509,38 @@ fn valid_multibyte_characters_survive_escaping() {
 }
 
 /// Every escaped path still produces output that satisfies the label contract, so the fix
-/// does not create a hole in the contract it had to work within.
+/// does not create a hole in the contract it had to work within: the encoding annotation is
+/// grammar, and may stand on an `observed` line without counting as an observed field.
+#[cfg(unix)]
 #[test]
 fn escaped_path_lines_satisfy_the_label_contract() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
     use std::path::Path;
-    let r = render_path(Path::new("/tmp/x"));
-    let mut lines = vec![Line::observed(format!("canonical={}", r.text))];
-    lines.extend(path_notes(&[("canonical", &r)]));
-    assert!(label_contract_violations(&lines).is_empty());
+    let r = render_path(Path::new(OsStr::from_bytes(b"/tmp/x\xff=y")));
+    assert!(r.escaped);
+    let lines = vec![Line::observed(r.field("canonical"))];
+    assert!(
+        label_contract_violations(&lines).is_empty(),
+        "{:?}",
+        label_contract_violations(&lines)
+    );
     assert!(unlabelled_lines(&umbral::report::render(&lines)).is_empty());
+}
+
+/// D-V01-15. A time before 1970 is a time, not zero: it converts to a negative offset and is
+/// written as the date it is. A time the log cannot represent is refused, never replaced.
+#[test]
+fn a_clock_before_1970_is_not_recorded_as_1970() {
+    use std::time::{Duration, UNIX_EPOCH};
+    let before = UNIX_EPOCH - Duration::from_secs(1);
+    let ns = umbral::report::unix_ns(before).expect("representable");
+    assert_eq!(ns, -1_000_000_000);
+    assert_eq!(
+        umbral::report::format_unix_ns(ns),
+        "1969-12-31T23:59:59.000Z"
+    );
+    assert_eq!(umbral::report::unix_ns(UNIX_EPOCH), Some(0));
+    let unrepresentable = UNIX_EPOCH + Duration::from_secs(400 * 365 * 86_400);
+    assert_eq!(umbral::report::unix_ns(unrepresentable), None);
 }

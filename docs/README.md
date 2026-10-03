@@ -11,11 +11,15 @@ authority ladder and reading rules live in the [root README](../README.md).
 | [Commitments](decisions/) | [`DECISIONS`](decisions/DECISIONS.md) | **the only place decisions live** (`UD-nnn`, immutable records) |
 | [Candidates and open questions](candidates/) | [`ARCHITECTURE-HYPOTHESES`](candidates/ARCHITECTURE-HYPOTHESES.md) · [`OPEN-QUESTIONS`](candidates/OPEN-QUESTIONS.md) · [`RESEARCH-AGENDA`](candidates/RESEARCH-AGENDA.md) | candidate mechanisms — all explicitly *not selected*; what is unresolved; what must be investigated |
 | [Product-level hypotheses](candidates/) | [`COEXISTENCE-STRATEGIES`](candidates/COEXISTENCE-STRATEGIES.md) · [`ENVIRONMENT-INTELLIGENCE`](candidates/ENVIRONMENT-INTELLIGENCE.md) | proposed, unratified hypothesis sets from the research cycles |
+| [Active version](versions/v0.2.md) | [`v0.2`](versions/v0.2.md) · [`V0.2-SCOPE-PROPOSAL`](candidates/V0.2-SCOPE-PROPOSAL.md) · [`V0.2-TECHNICAL-DESIGN`](candidates/V0.2-TECHNICAL-DESIGN.md) | v0.2 is active in contract integration; scope criteria and technical mechanisms remain proposals until accepted |
 | [V0](v0/) | [`V0-IMPLEMENTATION-PLAN`](v0/V0-IMPLEMENTATION-PLAN.md) | the frozen prototype's plan, invariants, criteria |
 | [Versions](versions/) | [`versions/README`](versions/README.md) | what each development version did — goal, evidence, known limitations. Frozen once the version closes |
 
 Elsewhere in the repository:
 
+- [`IDENTIFIERS.md`](IDENTIFIERS.md) — registry of the identifier namespaces in use, their owning
+  documents and their ranges, with the known collisions recorded. A derived index: it points at the
+  owners and is not authority.
 - [`research/`](../research/) — evidence: research artifacts, external briefs, source
   index, frozen history
 - [`experiments/`](../experiments/) — experiments and results, including V0's closeout in

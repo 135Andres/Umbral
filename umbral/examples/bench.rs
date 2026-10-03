@@ -126,9 +126,12 @@ fn main() {
                         ino: p.ino,
                         size: p.size,
                         mtime: p.mtime,
+                        ctime: None,
                     },
                     content: None,
                     error: None,
+                    reused_from: None,
+                    traversal: None,
                 })
                 .collect();
             log.append_run(NewRun {
@@ -136,6 +139,7 @@ fn main() {
                 finished_at_ns: n as i64,
                 root: root.to_path_buf(),
                 observations,
+                root_error: None,
             })
             .unwrap();
         }

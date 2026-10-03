@@ -1,6 +1,7 @@
 # umbral
 
-The v0.1 workspace observation instrument.
+The workspace observation instrument, at v0.2 (`0.2.0`, declared evidence complete on 2026-10-03,
+`UD-038`; see `docs/versions/v0.2.md`).
 
 ## What this is
 
@@ -16,26 +17,131 @@ alone what came from their filesystem and what the tool produced:
 - **`derived`** — the tool produced it: content fingerprints, stability verdicts, run
   identifiers, the run's own timestamps, workspace identifiers, composed paths, counts, and
   configuration echoed back.
-- **`ambiguous`** — the evidence permits more than one reading, with the reason named.
-- **`unknown`** — the tool does not have the information.
+- **`ambiguous`** — a classification the evidence leaves open between more than one outcome
+  (renamed, or recreated?), with the reason named. None is chosen.
+- **`unknown`** — a value that is not determinable from the evidence available: not observed,
+  not obtainable, not comparable. An error is a reason given on an `unknown` line, not a label
+  of its own (`UD-031`).
 
 The set of fields allowed on an `observed` line is a constant (`OBSERVED_FIELDS` in
 `src/report.rs`) and is enforced by a test, so the distinction cannot decay by inattention.
 
-### Paths that are not valid UTF-8
+### The output format: `umbral-output/1`
 
-A path is a byte string; the output is text. Where those disagree the tool neither refuses nor
-mangles. A byte that is not part of a valid UTF-8 sequence renders as `\xNN`, and a literal
-backslash renders as `\\` so an escape can never be mistaken for a name containing the same
-characters. The rendering is reversible. When it happens, the tool says so:
+Every output begins with a header naming the contract edition it follows, and every value is
+written by one escaping rule, specified in [`CONTRACT.md`](CONTRACT.md) (`UD-022`, `UD-030`):
 
 ```
-observed  canonical=/tmp/ws-\xFF\xFE
-derived   canonical-encoding=escaped  reason=path-is-not-valid-utf8
+derived   contract=umbral-output/1
+observed  canonical=/tmp/ws-\xFF\xFE  canonical-encoding=escaped:not-valid-utf8
 ```
 
-That line is required, not decorative: without it a reader could take the escaped form for the
-name on disk. Paths that are valid UTF-8 render as themselves and produce no such line.
+A path is a byte string; the output is text. What cannot stand in a line — a backslash (written
+`\\`), bytes that are not UTF-8, control characters such as a line feed, spaces that would be
+ambiguous, and characters that could disguise a name on a terminal — is written as `\xNN`. The
+writing is reversible and has exactly one form per value; names in any script, with single
+spaces, are written as themselves. When anything was escaped, the field is followed **on the same
+line** by `<field>-encoding=escaped:<reasons>`, so a reader is never left taking the escaped form
+for the name on disk, and never has to guess which value the note is about.
+
+The library reads it back (`umbral::contract::parse`), refusing anything it cannot reconstruct
+exactly — an unknown edition, a malformed or non-canonical escape, a truncated output — and
+keeping fields it does not know. Standard error is not part of the contract.
+
+### How each value was obtained
+
+Every observation has two components: its **metadata** (kind, size, mtime, physical identity),
+read for every entry, and — for a regular file only — its **content**, read and hashed. For each
+component the output states how it was obtained, in a closed vocabulary (`UD-031`, `UD-033`):
+
+| State | Meaning |
+|---|---|
+| `fresh` | obtained in this run; a value exists |
+| `reused` | carried from an earlier observation by the skip; never content verification. `show` names the observation that read the bytes: `content-source=<run>:<path>` |
+| `failed` | attempted, and no value was obtained — including a reading that kept changing |
+| `not-attempted` | it is recorded that no attempt was made (a path whose metadata failed: its kind is unknown) |
+| `not-recorded` | it is not recorded whether an attempt was made (a row written by an older build) |
+
+`show` writes `metadata=` and `content=` on each observation's line; a directory, symlink or
+special file has no `content=` because it has no content component. Every line of `show` names
+the observation it reports, `observation=<run>:<path>` ([`CONTRACT.md`](CONTRACT.md) §6a), so no
+line depends on the one above it.
+
+`observe` and `status` count by state, on lines that name their run: `metadata-fresh`,
+`metadata-failed`; `content-fresh`, `content-reused`, `content-failed`, `content-not-attempted`,
+`content-not-recorded` (they sum to `files + kind-unknown`); and the failed content readings by
+diagnostic (`unstable-observation`, `not-found`, `permission-denied`, `not-a-regular-file`,
+`read-error`).
+
+### Reading only what changed
+
+`observe` re-reads a regular file only when it may have changed (`UD-035`, `UD-036`). It compares
+the file with the previous run's observation **of the same path**, and carries that reading
+forward without reading the bytes when all of these are present and equal: the physical identity
+(`dev`, `ino`), the size, the mtime and the **ctime** — and the previous reading was valid.
+Anything else, anything absent, a path new to that run (a rename included): the file is read.
+
+`ctime` is in the condition because a writer can restore size and mtime but cannot set `ctime`.
+Measured before the decision (`experiments/e-td-2-3/`): on ext4, deleting and recreating a file
+with different bytes, the same length and the original mtime kept its inode in 1000 of 1000
+attempts; without `ctime` every one would have been skipped, with it none was.
+
+What each run read is counted, never timed:
+
+```
+derived   run=3  content-read-entries=1  content-read-bytes=36
+```
+
+An unchanged tree reads `0` entries and `0` bytes; one modified file reads exactly that file.
+
+Known limits, stated rather than hidden:
+
+- **It is a heuristic, not a guarantee** (`UD-018`). A change that leaves identity, size, mtime
+  and `ctime` all equal is not seen until something else moves: on a filesystem that does not
+  generate its own timestamps, or within one tick of a coarse clock. None was provoked in the
+  experiments; that does not make it impossible. A reused reading is therefore never presented
+  as verified in that run.
+- **A metadata change costs a read.** `chmod`, `chown` or a new hard link moves `ctime`, so the
+  file is read again although its bytes did not change.
+- `ctime` is recorded with every observation and shown on `show`'s `observed` line. Runs written
+  before this version did not record it, and say so (`fields=ctime  reason=not-recorded`).
+
+### What the traversal saw, and the rules of each run
+
+When part of the tree cannot be observed, the failure is recorded with its class, decided when it
+happens (`UD-037`): `not-descended` — a directory whose contents could not be listed, so
+everything below it is unobserved — or `metadata-failed` — an entry that could not be `lstat`ed,
+so only that entry is. A root that cannot be listed is a fact of the run. Any failure makes the
+run incomplete, and an incomplete run never reports `deleted` (v0.2 does not narrow that to the
+unobserved subtree).
+
+```
+derived   run=2  traversal-complete=false  traversal-not-descended=1  traversal-metadata-failed=0  traversal-not-recorded=0  root-not-descended=false
+unknown   observation=2:fotos  traversal=not-descended  observation-error=Permission denied (os error 13)
+derived   run=2  tool-version=0.2.0  scope=recursive,symlinks-not-followed,no-exclusions
+```
+
+Every run records the version of the build that wrote it and the scope it applied; runs written
+before this was recorded say so (`fields=tool-version,scope  reason=not-recorded`).
+
+### What a verdict rests on
+
+Each line of `changes` (and the comparison lines of `show`) states, besides the verdict and its
+subject `path=` (`UD-034`):
+
+- `reference=<run>:<path>` and `compared=<run>:<path>` — the observation the verdict relates on
+  each side, each with `reference-fields=` / `compared-fields=` — fields are associated by
+  key, not by position — listing the fields the rules consulted on it (`dev,ino,kind,size,mtime,hash`, a subset of them, or `none`);
+- `reference-absent=<run>` / `compared-absent=<run>` instead, where the verdict rests on the
+  path having no observation in that run (`created`, `deleted`, `unobserved`) — written only when
+  that is so;
+- `counterpart=<run>:<path>`, once per entry, with `counterpart-fields=` — other entries the
+  verdict rests on: every surviving hard link of a `deleted` entry, every other member of a group
+  of conflicting candidates;
+- `reference-complete=` and `compared-complete=` — how complete each run was. A verdict is
+  relative to both.
+
+The header line names the two runs: `compared  reference-run=…  compared-run=…`.
 
 ## What this is NOT
 
@@ -62,7 +168,7 @@ umbral status <root>          what is known now                      (read-only)
 umbral changes <root>         what changed between the last two runs (read-only)
 umbral show <root> <path>     the history of one path                (read-only)
 umbral workspaces             which workspaces exist on this machine (read-only)
-umbral check <root>           recompute derived state and verify the log (read-only)
+umbral check <root>           verify the log: references, stored values, no derived state (read-only)
 ```
 
 Exit codes: `0` success (including `ambiguous` and "no results" — they are results, not
@@ -103,7 +209,16 @@ here is not a statement about Umbral's persistence model.
 The log stores observations and the runs that produced them. It stores **no derived state**:
 there is no projection table, no cached current state, no stored reconciliation result.
 Everything derived is recomputed on read, so nothing can drift out of agreement with the log.
-`umbral check` demonstrates that.
+`umbral check` verifies the structural half of that claim — the stored tables are the log and
+nothing else — together with referential integrity and that every stored value is one this
+build can interpret, and that every reading names the run that actually read its bytes — never a
+later one, and a carried reading equal to the one it came from (`readings-consistent=`). Each of
+its verifications is shown failing by a test that corrupts a log on purpose; verifications that
+could not fail were removed (D-V01-11).
+
+The log schema is `umbral-v0.2.1`. Logs written by earlier builds (`umbral-v0.1`,
+`umbral-v0.1.1`, `umbral-v0.2`) are read as they are, and migrated in place, additively and in one transaction, the first time
+`observe` writes to them.
 
 ## Building and testing
 

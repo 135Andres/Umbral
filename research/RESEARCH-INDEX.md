@@ -131,6 +131,22 @@ S11 Desconstrucción Crítica y Validación Adversarial (adversarial critique)
     framing of the differentiator as a projection engine.
 
 -------------------------------------------------------------------------------
+S12 Linux kernel documentation — Multigrain Timestamps
+    Scope: inode timestamp semantics — what ctime is, that it is not settable from
+    userland, that coarse-grained timestamps can hide a change inside one jiffy, and
+    that fine-grained (multigrain) timestamps are a per-filesystem opt-in.
+    Status: EXTERNAL TECHNICAL DOCUMENTATION. Describes kernel behaviour; says nothing
+    about Umbral and validates no Umbral design.
+    Home: research/sources/S12-KERNEL-MULTIGRAIN-TIMESTAMPS.md — a REFERENCE RECORD with
+    citation and the minimum quotation, deliberately NOT a verbatim archive (the source
+    is a living document and is under its own licence).
+    Retrieved: 2026-09-12, against local kernel 7.1.13-200.fc44.x86_64.
+    Contributes: the external basis for UD-018 (ctime is an optimisation heuristic and
+    may never be used to assert content-verified) and the limits section of EXP-CTIME.
+    Does NOT contribute: any claim that ctime always changes, or any evidence about
+    ext4 on this project's CI runner — that remains UNKNOWN.
+
+-------------------------------------------------------------------------------
 2026-09-11 CYCLE — MINIMUM MODEL OF PROJECT REALITY (pointer)
 -------------------------------------------------------------------------------
   Evidence RM-1..RM-18 (four independent research passes: knowledge representation,
@@ -140,6 +156,16 @@ S11 Desconstrucción Crítica y Validación Adversarial (adversarial critique)
   hypothesis reduced to a one-record-type model (H24); three collapses falsified. Pass
   source claims carry URL-level provenance; only USLM was re-verified first-hand (stated
   in the report as a limitation).
+
+-------------------------------------------------------------------------------
+2026-09-13 CYCLE — v0.2 HISTORICAL CONTRACT (pointer)
+-------------------------------------------------------------------------------
+  The derivation of the historical guarantees (UD-023–UD-027) and of the candidate minimal
+  core was carried out in agent working reports that belong to the owner's private record
+  and are NOT archived here. The definitions the public decision records cite (D1–D9,
+  N1–N10, M6) are published as an extract in research/V0.2-HISTORICAL-CONTRACT-RESEARCH.md
+  (2026-10-02). The arguments behind them are not, and cannot be checked from this
+  repository — the same situation as the `MC §n` citations.
 
 -------------------------------------------------------------------------------
 GAPS IN THE CORPUS
