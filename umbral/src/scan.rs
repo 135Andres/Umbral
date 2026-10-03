@@ -20,7 +20,7 @@ use std::time::SystemTime;
 
 use walkdir::WalkDir;
 
-use crate::identity::{mtime_of, physical_id_of};
+use crate::identity::{ctime_of, mtime_of, physical_id_of};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum EntryKind {
@@ -63,6 +63,47 @@ pub struct Entry {
     /// (seconds, nanoseconds) since the Unix epoch — part of the OBSERVED STATE, so two
     /// scans of an unchanged tree carry equal mtimes.
     pub mtime: Option<(i64, u32)>,
+    /// (seconds, nanoseconds) of the inode's last status change — the one timestamp a writer
+    /// cannot set (`UD-018`). Part of the skip condition (`UD-035`). `None` where the platform
+    /// does not report it.
+    pub ctime: Option<(i64, u32)>,
+}
+
+/// The scope rules this build applies to every run, recorded with each run (`UD-037`): the
+/// whole tree below the root, symlinks observed as entries and never followed, nothing
+/// excluded.
+pub const SCOPE: &str = "recursive,symlinks-not-followed,no-exclusions";
+
+/// Which part of the scope a traversal failure leaves unobserved (`UD-025`, `UD-037`). Decided
+/// when the failure happens, never inferred later from its message.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TraversalClass {
+    /// A directory whose contents could not be listed: everything below it is unobserved.
+    NotDescended,
+    /// An entry that could not be `lstat`ed: only that entry is unobserved.
+    MetadataFailed,
+}
+
+impl TraversalClass {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            TraversalClass::NotDescended => "not-descended",
+            TraversalClass::MetadataFailed => "metadata-failed",
+        }
+    }
+}
+
+/// The class of a failure at `path`: `NotDescended` when the scan observed a directory there
+/// (it was listed, then could not be read), `MetadataFailed` otherwise.
+pub fn classify(path: &Path, entries: &[Entry]) -> TraversalClass {
+    if entries
+        .iter()
+        .any(|e| e.path == path && e.kind == EntryKind::Dir)
+    {
+        TraversalClass::NotDescended
+    } else {
+        TraversalClass::MetadataFailed
+    }
 }
 
 /// A path that could not be observed at all. Represented explicitly; never dropped.
@@ -70,6 +111,7 @@ pub struct Entry {
 pub struct PathError {
     pub path: PathBuf,
     pub message: String,
+    pub class: TraversalClass,
 }
 
 /// The result of one scan. The root itself is not an entry.
@@ -79,6 +121,9 @@ pub struct Scan {
     pub started_at: SystemTime,
     pub entries: Vec<Entry>,
     pub errors: Vec<PathError>,
+    /// The root itself could not be listed: nothing below it was observed. A fact of the run,
+    /// not of an entry.
+    pub root_error: Option<String>,
 }
 
 impl Scan {
@@ -86,14 +131,16 @@ impl Scan {
     /// error makes it incomplete — deliberately conservative: a partially-seen tree must
     /// not be used to conclude that something was deleted.
     pub fn complete(&self) -> bool {
-        self.errors.is_empty()
+        self.errors.is_empty() && self.root_error.is_none()
     }
 
     /// Deterministic equivalence of two scans of the same tree: same entries with the same
     /// observable state and the same order, and the same observed errors. Ignores
     /// `started_at` on purpose.
     pub fn equivalent_observable_state(&self, other: &Scan) -> bool {
-        self.entries == other.entries && self.errors == other.errors
+        self.entries == other.entries
+            && self.errors == other.errors
+            && self.root_error == other.root_error
     }
 }
 
@@ -134,6 +181,10 @@ pub fn scan(root: &Path) -> Result<Scan, ScanError> {
     let started_at = SystemTime::now();
     let mut entries: Vec<Entry> = Vec::new();
     let mut errors: Vec<PathError> = Vec::new();
+    // Failures reported by the walker are classified once every entry is known: the directory
+    // a listing failure belongs to may be reported before or after it.
+    let mut walk_failures: Vec<(PathBuf, String)> = Vec::new();
+    let mut root_error: Option<String> = None;
 
     for item in WalkDir::new(root).follow_links(false).min_depth(1) {
         match item {
@@ -149,6 +200,7 @@ pub fn scan(root: &Path) -> Result<Scan, ScanError> {
                     Err(e) => errors.push(PathError {
                         path: rel,
                         message: e.to_string(),
+                        class: TraversalClass::MetadataFailed,
                     }),
                 }
             }
@@ -158,14 +210,23 @@ pub fn scan(root: &Path) -> Result<Scan, ScanError> {
                     .and_then(|p| p.strip_prefix(root).ok())
                     .map(Path::to_path_buf)
                     .unwrap_or_default();
-                errors.push(PathError {
-                    path: rel,
-                    message: e.to_string(),
-                });
+                if rel.as_os_str().is_empty() {
+                    root_error = Some(e.to_string());
+                } else {
+                    walk_failures.push((rel, e.to_string()));
+                }
             }
         }
     }
 
+    for (path, message) in walk_failures {
+        let class = classify(&path, &entries);
+        errors.push(PathError {
+            path,
+            message,
+            class,
+        });
+    }
     entries.sort_by(|a, b| a.path.cmp(&b.path));
     errors.sort_by(|a, b| a.path.cmp(&b.path));
 
@@ -174,6 +235,7 @@ pub fn scan(root: &Path) -> Result<Scan, ScanError> {
         started_at,
         entries,
         errors,
+        root_error,
     })
 }
 
@@ -198,5 +260,6 @@ fn entry_from(path: PathBuf, m: &std::fs::Metadata) -> Entry {
         ino: pid.map(|p| p.ino),
         size: Some(m.len()),
         mtime: mtime_of(m),
+        ctime: ctime_of(m),
     }
 }

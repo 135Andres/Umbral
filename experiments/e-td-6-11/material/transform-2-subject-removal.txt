@@ -1,0 +1,168 @@
+$ umbral init /tmp/umbral-check-02/subject
+derived   contract=umbral-output/1
+observed  canonical=/tmp/umbral-check-02/subject
+derived   root=/tmp/umbral-check-02/subject
+derived   workspace-id=242c37d665addf11
+derived   state-dir=/tmp/umbral-check-02/data/umbral/ws-242c37d665addf11
+derived   initialised=true
+exit=0
+
+$ umbral observe /tmp/umbral-check-02/subject
+derived   contract=umbral-output/1
+observed  canonical=/tmp/umbral-check-02/subject
+derived   run=1  root=/tmp/umbral-check-02/subject
+derived   run=1  entries=14  files=13  dirs=1  symlinks=0  other=0  kind-unknown=0
+derived   run=1  metadata-fresh=14  metadata-failed=0
+derived   run=1  content-fresh=13  content-reused=0  content-failed=0  content-not-attempted=0  content-not-recorded=0
+derived   run=1  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
+derived   run=1  traversal-complete=true  traversal-not-descended=0  traversal-metadata-failed=0  traversal-not-recorded=0  root-not-descended=false
+derived   run=1  tool-version=0.1.0  scope=recursive,symlinks-not-followed,no-exclusions
+derived   run=1  content-read-entries=13  content-read-bytes=90
+derived   run=1  started=2026-10-03T07:25:19.335Z  finished=2026-10-03T07:25:19.335Z
+derived   run=1  complete=true
+exit=0
+
+# a.txt edited; locked/ made unreadable (mode 000)
+
+$ umbral observe /tmp/umbral-check-02/subject
+derived   contract=umbral-output/1
+observed  canonical=/tmp/umbral-check-02/subject
+derived   run=2  root=/tmp/umbral-check-02/subject
+derived   run=2  entries=13  files=12  dirs=1  symlinks=0  other=0  kind-unknown=0
+derived   run=2  metadata-fresh=13  metadata-failed=0
+derived   run=2  content-fresh=1  content-reused=11  content-failed=0  content-not-attempted=0  content-not-recorded=0
+derived   run=2  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
+derived   run=2  traversal-complete=false  traversal-not-descended=1  traversal-metadata-failed=0  traversal-not-recorded=0  root-not-descended=false
+derived   run=2  tool-version=0.1.0  scope=recursive,symlinks-not-followed,no-exclusions
+derived   run=2  content-read-entries=1  content-read-bytes=14
+derived   run=2  started=2026-10-03T07:25:20.537Z  finished=2026-10-03T07:25:20.537Z
+derived   run=2  complete=false
+exit=3
+
+# locked/ readable again; c.txt renamed to d.txt; link-two deleted
+
+$ umbral observe /tmp/umbral-check-02/subject
+derived   contract=umbral-output/1
+observed  canonical=/tmp/umbral-check-02/subject
+derived   run=3  root=/tmp/umbral-check-02/subject
+derived   run=3  entries=13  files=12  dirs=1  symlinks=0  other=0  kind-unknown=0
+derived   run=3  metadata-fresh=13  metadata-failed=0
+derived   run=3  content-fresh=3  content-reused=9  content-failed=0  content-not-attempted=0  content-not-recorded=0
+derived   run=3  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
+derived   run=3  traversal-complete=true  traversal-not-descended=0  traversal-metadata-failed=0  traversal-not-recorded=0  root-not-descended=false
+derived   run=3  tool-version=0.1.0  scope=recursive,symlinks-not-followed,no-exclusions
+derived   run=3  content-read-entries=3  content-read-bytes=22
+derived   run=3  started=2026-10-03T07:25:21.739Z  finished=2026-10-03T07:25:21.739Z
+derived   run=3  complete=true
+exit=0
+
+$ umbral status /tmp/umbral-check-02/subject
+derived   contract=umbral-output/1
+observed  canonical=/tmp/umbral-check-02/subject
+derived   root=/tmp/umbral-check-02/subject
+derived   workspace-id=242c37d665addf11
+derived   last-run=3  started=2026-10-03T07:25:21.739Z
+derived   last-run=3  complete=true
+derived   run=3  entries=13  files=12  dirs=1  symlinks=0  other=0  kind-unknown=0
+derived   run=3  metadata-fresh=13  metadata-failed=0
+derived   run=3  content-fresh=3  content-reused=9  content-failed=0  content-not-attempted=0  content-not-recorded=0
+derived   run=3  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
+derived   run=3  traversal-complete=true  traversal-not-descended=0  traversal-metadata-failed=0  traversal-not-recorded=0  root-not-descended=false
+derived   run=3  tool-version=0.1.0  scope=recursive,symlinks-not-followed,no-exclusions
+derived   log-runs=3  log-observations=40
+exit=0
+
+$ umbral changes /tmp/umbral-check-02/subject
+derived   contract=umbral-output/1
+derived   compared  reference-run=2  compared-run=3  reference-complete=false  compared-complete=true
+derived   count  unchanged=11
+derived   count  modified=0
+derived   count  created=1
+derived   count  deleted=1
+derived   count  unobserved=0
+derived   count  renamed-or-moved=1
+derived   count  recreated=0
+derived   count  ambiguous=0
+derived   renamed-or-moved  reference=2:c.txt  reference-fields=dev,ino  compared=3:d.txt  compared-fields=dev,ino  reference-complete=false  compared-complete=true
+derived   deleted  reference=2:link-two  reference-fields=dev,ino  compared-absent=3  counterpart=3:link-one  counterpart-fields=dev,ino  object-survives=true  reference-complete=false  compared-complete=true
+derived   created  reference-absent=2  compared=3:locked/inside.txt  compared-fields=dev,ino  reference-complete=false  compared-complete=true
+exit=0
+
+$ umbral show /tmp/umbral-check-02/subject a.txt
+derived   contract=umbral-output/1
+derived   hash=ac678d92b3d7  stability=stable  metadata=fresh  content=fresh
+observed  kind=file  size=6  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   hash=29a077efa2d8  stability=stable  metadata=fresh  content=fresh
+observed  kind=file  size=14  mtime=2026-10-03T07:25:20.535Z  ctime=2026-10-03T07:25:20.535Z
+derived   hash=29a077efa2d8  stability=stable  metadata=fresh  content=reused  content-source=2:a.txt
+observed  kind=file  size=14  mtime=2026-10-03T07:25:20.535Z  ctime=2026-10-03T07:25:20.535Z
+derived   modified  reference=1:a.txt  reference-fields=dev,ino,kind,size,mtime,hash  compared=2:a.txt  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=true  reference-complete=true  compared-complete=false
+derived   unchanged  reference=2:a.txt  reference-fields=dev,ino,kind,size,mtime,hash  compared=3:a.txt  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=false  compared-complete=true
+exit=0
+
+$ umbral show /tmp/umbral-check-02/subject b.txt
+derived   contract=umbral-output/1
+derived   hash=2001794aa22d  stability=stable  metadata=fresh  content=fresh
+observed  kind=file  size=6  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   hash=2001794aa22d  stability=stable  metadata=fresh  content=reused  content-source=1:b.txt
+observed  kind=file  size=6  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   hash=2001794aa22d  stability=stable  metadata=fresh  content=reused  content-source=1:b.txt
+observed  kind=file  size=6  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   unchanged  reference=1:b.txt  reference-fields=dev,ino,kind,size,mtime,hash  compared=2:b.txt  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=true  compared-complete=false
+derived   unchanged  reference=2:b.txt  reference-fields=dev,ino,kind,size,mtime,hash  compared=3:b.txt  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=false  compared-complete=true
+exit=0
+
+$ umbral show /tmp/umbral-check-02/subject d.txt
+derived   contract=umbral-output/1
+derived   hash=6fefa7c34afd  stability=stable  metadata=fresh  content=fresh
+observed  kind=file  size=8  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:21.737Z
+exit=0
+
+$ umbral show /tmp/umbral-check-02/subject link-one
+derived   contract=umbral-output/1
+derived   hash=7fde9f117e69  stability=stable  metadata=fresh  content=fresh
+observed  kind=file  size=7  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   hash=7fde9f117e69  stability=stable  metadata=fresh  content=reused  content-source=1:link-one
+observed  kind=file  size=7  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   hash=7fde9f117e69  stability=stable  metadata=fresh  content=fresh
+observed  kind=file  size=7  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:21.737Z
+derived   unchanged  reference=1:link-one  reference-fields=dev,ino,kind,size,mtime,hash  compared=2:link-one  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=true  compared-complete=false
+derived   unchanged  reference=2:link-one  reference-fields=dev,ino,kind,size,mtime,hash  compared=3:link-one  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=false  compared-complete=true
+exit=0
+
+$ umbral show /tmp/umbral-check-02/subject locked
+derived   contract=umbral-output/1
+derived   hash=none  stability=none  metadata=fresh
+observed  kind=dir  size=60  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   hash=none  stability=none  metadata=fresh
+observed  kind=dir  size=60  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:20.535Z
+unknown   traversal=not-descended  observation-error=IO error for operation on /tmp/umbral-check-02/subject/locked: Permission denied (os error 13)
+derived   hash=none  stability=none  metadata=fresh
+observed  kind=dir  size=60  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:21.737Z
+derived   unchanged  reference=1:locked  reference-fields=dev,ino,kind  compared=2:locked  compared-fields=dev,ino,kind  reference-complete=true  compared-complete=false
+derived   unchanged  reference=2:locked  reference-fields=dev,ino,kind  compared=3:locked  compared-fields=dev,ino,kind  reference-complete=false  compared-complete=true
+exit=0
+
+$ umbral show /tmp/umbral-check-02/subject line\x0Abreak.txt
+derived   contract=umbral-output/1
+derived   hash=0a61c6a450a2  stability=stable  metadata=fresh  content=fresh
+observed  kind=file  size=7  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   hash=0a61c6a450a2  stability=stable  metadata=fresh  content=reused  content-source=1:line\x0Abreak.txt  content-source-encoding=escaped:control-character
+observed  kind=file  size=7  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   hash=0a61c6a450a2  stability=stable  metadata=fresh  content=reused  content-source=1:line\x0Abreak.txt  content-source-encoding=escaped:control-character
+observed  kind=file  size=7  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   unchanged  reference=1:line\x0Abreak.txt  reference-encoding=escaped:control-character  reference-fields=dev,ino,kind,size,mtime,hash  compared=2:line\x0Abreak.txt  compared-encoding=escaped:control-character  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=true  compared-complete=false
+derived   unchanged  reference=2:line\x0Abreak.txt  reference-encoding=escaped:control-character  reference-fields=dev,ino,kind,size,mtime,hash  compared=3:line\x0Abreak.txt  compared-encoding=escaped:control-character  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=false  compared-complete=true
+exit=0
+
+$ umbral show /tmp/umbral-check-02/subject bytes-\xFF.txt
+derived   contract=umbral-output/1
+derived   hash=bac25e1466ab  stability=stable  metadata=fresh  content=fresh
+observed  kind=file  size=7  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   hash=bac25e1466ab  stability=stable  metadata=fresh  content=reused  content-source=1:bytes-\xFF.txt  content-source-encoding=escaped:not-valid-utf8
+observed  kind=file  size=7  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   hash=bac25e1466ab  stability=stable  metadata=fresh  content=reused  content-source=1:bytes-\xFF.txt  content-source-encoding=escaped:not-valid-utf8
+observed  kind=file  size=7  mtime=2026-10-03T07:25:19.332Z  ctime=2026-10-03T07:25:19.332Z
+derived   unchanged  reference=1:bytes-\xFF.txt  reference-encoding=escaped:not-valid-utf8  reference-fields=dev,ino,kind,size,mtime,hash  compared=2:bytes-\xFF.txt  compared-encoding=escaped:not-valid-utf8  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=true  compared-complete=false
+derived   unchanged  reference=2:bytes-\xFF.txt  reference-encoding=escaped:not-valid-utf8  reference-fields=dev,ino,kind,size,mtime,hash  compared=3:bytes-\xFF.txt  compared-encoding=escaped:not-valid-utf8  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=false  compared-complete=true
+exit=0

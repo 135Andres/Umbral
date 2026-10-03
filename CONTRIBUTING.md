@@ -120,7 +120,47 @@ Rules that apply to changes here:
 - **Documented limits stay documented.** A known limitation is not removed by making it
   quieter.
 
-## 6b. The V0 prototype is frozen
+## 6b. Documentation moves with the code
+
+Documentation is not a release task. A version's documentation is maintained as the
+version is built, not written at the end, and a change that makes an existing statement
+untrue updates that statement in the same unit of work.
+
+The rule is one question, asked before closing any significant task:
+
+> Is there anything a user, contributor or developer can read today that is no longer
+> true because of what I just did?
+
+If yes, correct it. In practice:
+
+- **Obsolete claims are corrected with the change that obsoletes them** — not deferred to
+  the end of the version. If a change alters observable behaviour, a CLI command, a
+  contract, an invariant, a requirement, a constraint, a decision, a version's scope or
+  its known limitations, the document that states it is updated in the same unit of work:
+  a separate documentation commit where §7's separation applies, never "later".
+- **Documentation promises nothing that does not exist.** Describe what is implemented,
+  or mark it explicitly as proposed, candidate, experimental or pending. Never present a
+  hypothesis as an implementation, and never present a planned capability as an available
+  one.
+- **Hypotheses, proposals and experiments are distinguishable from implemented
+  behaviour.** They live in their own homes — `docs/candidates/` for unratified material,
+  `experiments/` for method and result — and the state vocabulary stays explicit:
+  implemented · observed · verified · proposed · experimental · pending · rejected ·
+  unknown.
+- **One fact, one home.** Do not duplicate information across documents; if a document can
+  reference the canonical one instead of restating it, it references it. The canonical
+  home for each kind of information is listed in
+  [`docs/DOCUMENTATION-ARCHITECTURE.md`](docs/DOCUMENTATION-ARCHITECTURE.md); the
+  [`docs/README.md`](docs/README.md) index navigates by function.
+- **Known limitations stay visible.** A limitation is not removed because it is
+  inconvenient for the documentation.
+- **No artificial documentation changes.** An internal change that affects no behaviour,
+  architecture, contract, usage or developer-relevant knowledge requires no documentation
+  update. Say so in the pull request rather than manufacturing a documentary commit.
+- **Before closing a significant task, check the affected documentation** — and if
+  nothing needed updating, say that explicitly and why.
+
+## 6c. The V0 prototype is frozen
 
 `fsp-check/` is **closed and frozen**. It is kept as evidence of what was tested, not as
 a foundation. New product code is not accepted before the project has an accepted
@@ -137,6 +177,28 @@ What that means in practice:
 
 If you want to change the prototype's behaviour rather than its evidence, open a proposal
 first.
+
+## 6d. Branches — where a version's work lives
+
+`main` holds **integrated, completed** state. A version is developed on its own branch:
+
+```
+main     integrated versions only
+v0.2     development of v0.2
+```
+
+- Development of a version happens on that version's branch — `v0.2` for v0.2 — and its
+  commits stay there while the version is being built.
+- **Do not develop directly on `main`.** A commit that belongs to an unfinished version does
+  not belong on `main`.
+- The version is integrated by **merge to `main`**, and only after its closure review and the
+  project owner's authorization.
+- CI runs on `main` and on the version branch, so a version's commits are verified while they
+  are written rather than only once they are merged. Version branches are listed explicitly in
+  the [workflows](.github/workflows); adding the next one is a deliberate change to those files.
+
+Each version's goal, non-goals and acceptance criteria live in
+[`docs/versions/`](docs/versions/README.md).
 
 ## 7. Pull requests
 
@@ -178,4 +240,5 @@ generated indexes, and decoration that has to be maintained.
 
 - [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) applies to all project spaces.
 - By contributing you agree that your contribution is licensed under the
-  [Apache License 2.0](LICENSE), the license of this repository.
+  [GNU General Public License v3.0 or later](LICENSE) (`GPL-3.0-or-later`), the license of this
+  repository (`UD-028`).

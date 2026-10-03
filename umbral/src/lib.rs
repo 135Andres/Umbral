@@ -1,4 +1,4 @@
-//! Umbral v0.1 — a local, read-only workspace observation instrument.
+//! Umbral v0.2 — a local, read-only workspace observation instrument.
 //!
 //! # What this crate is
 //!
@@ -22,17 +22,22 @@
 //!
 //! - [`report::Label::Observed`] — a fact read from the filesystem during a named run
 //! - [`report::Label::Derived`] — a result computed from observations
-//! - [`report::Label::Ambiguous`] — insufficient or conflicting evidence, with a named reason
-//! - [`report::Label::Unknown`] — not observed, not observable, or not comparable
+//! - [`report::Label::Ambiguous`] — a classification the evidence leaves open between more
+//!   than one outcome, with a named reason
+//! - [`report::Label::Unknown`] — a value not determinable from the available evidence
 //!
 //! A missing value is never filled with an invented one.
 
+pub mod acquisition;
 pub mod content;
+pub mod contract;
 pub mod identity;
 pub mod log;
+pub mod observe;
 pub mod reconcile;
 pub mod report;
 pub mod scan;
+pub mod skip;
 pub mod workspace;
 
 pub use content::{ContentObservation, Stability};

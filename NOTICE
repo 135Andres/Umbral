@@ -1,8 +1,12 @@
 Umbral
 Copyright 2026 Andrés Félix
 
-This repository is licensed under the Apache License, Version 2.0 (see LICENSE).
+This repository is licensed under the GNU General Public License, version 3 or (at your
+option) any later version (SPDX: GPL-3.0-or-later). See LICENSE, and UD-028 in
+docs/decisions/DECISIONS.md. Copies of this repository obtained before 2026-10-02 under the
+Apache License, Version 2.0 keep that licence for those copies.
 
-It contains no third-party source code. The frozen V0 prototype in fsp-check/ declares its
-dependencies in fsp-check/Cargo.toml and fsp-check/Cargo.lock; those crates are not
-distributed here and carry their own licenses.
+It contains no third-party source code. The development crate in umbral/ declares its
+dependencies in umbral/Cargo.toml and the root Cargo.lock; the frozen V0 prototype in
+fsp-check/ declares its own in fsp-check/Cargo.toml and fsp-check/Cargo.lock. Those crates are
+not distributed here and carry their own licenses.

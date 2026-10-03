@@ -1,0 +1,120 @@
+{
+ "e_td_2": {
+  "atomic": {
+   "bytes_differ": 50,
+   "ctime_delta_ns_min": 1002318354,
+   "ctime_equal": 0,
+   "detected_ctime": 50,
+   "detected_metadata": 50,
+   "invalid": 0,
+   "repetitions": 50,
+   "skip_ctime": 0,
+   "skip_metadata": 0,
+   "verdicts_v01": {
+    "recreated": 50
+   },
+   "verdicts_v02_derived_ctime": {
+    "recreated": 50
+   },
+   "verdicts_v02_derived_metadata": {
+    "recreated": 50
+   }
+  },
+  "chmod": {
+   "bytes_differ": 0,
+   "ctime_delta_ns_min": 1001425613,
+   "ctime_equal": 0,
+   "detected_ctime": 0,
+   "detected_metadata": 0,
+   "invalid": 0,
+   "repetitions": 50,
+   "skip_ctime": 0,
+   "skip_metadata": 50,
+   "verdicts_v01": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_ctime": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_metadata": {
+    "unchanged": 50
+   }
+  },
+  "h2a_visible_without_ctime": 0,
+  "h2b_counterexamples": 0,
+  "h2d_disagreements": {
+   "ctime": 0,
+   "metadata": 0
+  },
+  "restore": {
+   "bytes_differ": 50,
+   "ctime_delta_ns_min": 1002682834,
+   "ctime_equal": 0,
+   "detected_ctime": 50,
+   "detected_metadata": 0,
+   "invalid": 0,
+   "repetitions": 50,
+   "skip_ctime": 0,
+   "skip_metadata": 50,
+   "verdicts_v01": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_ctime": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_metadata": {
+    "unchanged": 50
+   }
+  },
+  "touch": {
+   "bytes_differ": 0,
+   "ctime_delta_ns_min": 1001219835,
+   "ctime_equal": 0,
+   "detected_ctime": 0,
+   "detected_metadata": 0,
+   "invalid": 0,
+   "repetitions": 50,
+   "skip_ctime": 0,
+   "skip_metadata": 0,
+   "verdicts_v01": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_ctime": {
+    "unchanged": 50
+   },
+   "verdicts_v02_derived_metadata": {
+    "unchanged": 50
+   }
+  }
+ },
+ "e_td_3": {
+  "budget": 1000,
+  "ctime_equal": 0,
+  "first_cases": [],
+  "first_reuse_attempt": null,
+  "outcome": "not provoked in 1000 attempts",
+  "reuse_observed": 0,
+  "skip_ctime": 0,
+  "skip_metadata": 0,
+  "verdicts_v01": {},
+  "verdicts_v02_derived_ctime": {},
+  "verdicts_v02_derived_metadata": {}
+ },
+ "filesystem": {
+  "options": "rw,nosuid,nodev,inode64,huge=advise,usrquota",
+  "type": "tmpfs"
+ },
+ "h2c": {
+  "cases": 128,
+  "counterexamples": 0
+ },
+ "kernel": "7.2.7-arch1-1",
+ "label": "local-tmpfs",
+ "parameters": {
+  "budget": 1000,
+  "granularity_wait_s": 1.0,
+  "length": 16,
+  "repetitions": 50
+ },
+ "seconds": 203.8
+}

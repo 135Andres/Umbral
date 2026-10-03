@@ -1,9 +1,10 @@
 [package]
 name = "umbral"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Umbral v0.1 — a local, read-only workspace observation instrument (development code; NOT the product architecture)"
 publish = false
+license = "GPL-3.0-or-later"
 
 # Stack adopted for v0.1 ONLY (UD-014). Explicitly scoped, explicitly reversible, and
 # explicitly NOT an inheritance from the V0 experiment or a product technology choice.

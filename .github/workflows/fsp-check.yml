@@ -9,12 +9,16 @@
 # working-directory, because that is what keeps the two crates' builds independent.
 # The exclusion is load-bearing: if fsp-check/ were a workspace member, this build would
 # change. See the root Cargo.toml.
+#
+# Branches: the prototype is frozen, so this job exists as a regression guard rather than a
+# development signal. It runs on the version branches as well as `main` so that an accidental
+# change to fsp-check/ on a version branch is caught before it reaches `main`.
 
 name: fsp-check
 
 on:
   push:
-    branches: [main]
+    branches: [main, v0.2]
   pull_request:
     paths:
       - 'fsp-check/**'

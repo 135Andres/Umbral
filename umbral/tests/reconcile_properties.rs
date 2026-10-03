@@ -247,6 +247,27 @@ fn a_path_swap_is_two_renames() {
     assert_eq!(r.count(MutationKind::RenamedOrMoved), 2);
     assert_eq!(r.count(MutationKind::Modified), 0);
     assert_eq!(r.count(MutationKind::Unchanged), 0);
+    // D-V01-6: counting the renames is not enough. The same-path pairs that phase 2 already
+    // explained must not be classified again, so the swap is exactly two verdicts.
+    assert_eq!(r.count(MutationKind::Recreated), 0);
+    assert_eq!(r.count(MutationKind::Ambiguous), 0);
+    assert_eq!(r.mutations.len(), 2, "got: {:?}", r.mutations);
+}
+
+/// D-V01-6, partial case: `a` moved to `c` and a new object took `a`. The previous `a` is
+/// explained by the rename, and the new `a` is still classified against it — once.
+#[test]
+fn a_path_vacated_by_a_rename_and_refilled_is_classified_once() {
+    let prev = set(vec![mk("a.txt", 1, 10, Some(1))], true);
+    let cur = set(
+        vec![mk("a.txt", 1, 11, Some(2)), mk("c.txt", 1, 10, Some(1))],
+        true,
+    );
+    let r = reconcile(&prev, &cur);
+
+    assert_eq!(r.count(MutationKind::RenamedOrMoved), 1);
+    assert_eq!(r.count(MutationKind::Recreated), 1);
+    assert_eq!(r.mutations.len(), 2, "got: {:?}", r.mutations);
 }
 
 /// Two hard links to one object: one physical id, two entries. When the pairing is
@@ -263,14 +284,57 @@ fn several_candidates_for_one_identity_are_ambiguous() {
     );
     let r = reconcile(&prev, &cur);
 
-    assert_eq!(r.count(MutationKind::Ambiguous), 2);
+    // D-V01-8: every path in the conflicting group is reported, the previous-side ones
+    // included. Before the fix `l1` and `l2` received no verdict at all.
+    assert_eq!(
+        r.count(MutationKind::Ambiguous),
+        4,
+        "got: {:?}",
+        r.mutations
+    );
     assert_eq!(r.count(MutationKind::RenamedOrMoved), 0);
+    assert_eq!(r.count(MutationKind::Deleted), 0);
     for m in kinds(&r, MutationKind::Ambiguous) {
         assert_eq!(
             m.evidence.reason,
             Some(umbral::identity::AmbiguityReason::ConflictingCandidates)
         );
     }
+    let paths: Vec<_> = r.mutations.iter().map(|m| m.path.clone()).collect();
+    for p in ["l1", "l2", "m1", "m2"] {
+        assert!(
+            paths.contains(&PathBuf::from(p)),
+            "{p} not reported: {paths:?}"
+        );
+    }
+}
+
+/// D-V01-8: a previous-side path of a conflicting group that is still present in the
+/// current set is classified by its own same-path verdict, not reported a second time.
+#[test]
+fn a_conflicting_previous_path_still_present_is_reported_once() {
+    let prev = set(
+        vec![mk("l1", 1, 10, Some(1)), mk("l2", 1, 10, Some(1))],
+        true,
+    );
+    let cur = set(
+        vec![
+            mk("l1", 1, 99, Some(7)),
+            mk("m1", 1, 10, Some(1)),
+            mk("m2", 1, 10, Some(1)),
+        ],
+        true,
+    );
+    let r = reconcile(&prev, &cur);
+
+    let l1: Vec<_> = r
+        .mutations
+        .iter()
+        .filter(|m| m.path.as_path() == std::path::Path::new("l1"))
+        .collect();
+    assert_eq!(l1.len(), 1, "got: {:?}", r.mutations);
+    assert_eq!(l1[0].kind, MutationKind::Recreated);
+    assert_eq!(r.mutations.len(), 4, "got: {:?}", r.mutations);
 }
 
 /// Deleting one of two hard links leaves the object alive, and that is reported.
@@ -330,17 +394,27 @@ proptest! {
     #![proptest_config(ProptestConfig::with_cases(256))]
 
     /// With unique physical ids (no hard links), every previous path is consumed by exactly
-    /// one mutation and every current path is named by exactly one mutation.
+    /// one mutation and every current path is named by exactly one current-side mutation.
+    ///
+    /// Current objects either keep their own path's identity, take a fresh one, or take the
+    /// identity of another previous path (`perm`) — which generates renames, swaps and
+    /// renames over an existing path. Before D-V01-6 the generator produced no renames at
+    /// all, which is why a path swap classified twice went unnoticed.
     #[test]
     fn every_path_is_accounted_for_exactly_once(
-        spec in prop::collection::vec((any::<bool>(), any::<bool>(), any::<bool>(), 0u8..4u8), 1..8)
+        (spec, perm, fresh) in (1usize..8).prop_flat_map(|n| (
+            prop::collection::vec((any::<bool>(), any::<bool>(), 0u8..4u8), n),
+            Just((0..n).collect::<Vec<usize>>()).prop_shuffle(),
+            prop::collection::vec(any::<bool>(), n),
+        ))
     ) {
         let mut prev_paths = Vec::new();
         let mut cur_paths = Vec::new();
-        for (i, (in_prev, in_cur, same_id, h)) in spec.iter().enumerate() {
+        for (i, (in_prev, in_cur, h)) in spec.iter().enumerate() {
             let name = format!("p{i}.txt");
             let prev_ino = 100 + i as u64;
-            let cur_ino = if *same_id { prev_ino } else { 500 + i as u64 };
+            // `perm` is a permutation, so current identities stay unique.
+            let cur_ino = if fresh[i] { 500 + i as u64 } else { 100 + perm[i] as u64 };
             if *in_prev {
                 prev_paths.push(mk(&name, 1, prev_ino, Some(*h)));
             }
@@ -353,21 +427,39 @@ proptest! {
 
         let r = reconcile(&set(prev_paths, true), &set(cur_paths, true));
 
-        // P1: every previous path is accounted for exactly once, either by a same-path
-        // mutation or as the source of a rename.
+        // P1: every previous path is accounted for, at most once as the source of a rename and
+        // at most once by a same-path mutation. Both happen together in exactly one case: the
+        // path's object moved away AND a new object took the path. Then the rename describes
+        // the object and the same-path verdict describes the path — the frozen V0
+        // experiment's rule, fixed by UD-029. Nothing else may account for a path twice.
         for p in &prev_names {
-            let n = r.mutations.iter()
-                .filter(|m| {
-                    (m.old_path.is_none() && &m.path == p)
-                        || m.old_path.as_ref() == Some(p)
-                })
+            let as_source = r.mutations.iter()
+                .filter(|m| m.old_path.as_ref() == Some(p))
                 .count();
-            prop_assert_eq!(n, 1, "previous path {} accounted for {} times", p.display(), n);
+            let same_path = r.mutations.iter()
+                .filter(|m| m.old_path.is_none() && &m.path == p)
+                .count();
+            prop_assert!(as_source + same_path >= 1, "previous path {} not accounted for", p.display());
+            prop_assert!(as_source <= 1, "previous path {} is the source of {} renames", p.display(), as_source);
+            prop_assert!(same_path <= 1, "previous path {} has {} same-path verdicts", p.display(), same_path);
+            if as_source == 1 && same_path == 1 {
+                prop_assert!(
+                    cur_names.contains(p),
+                    "previous path {} renamed away and also given a same-path verdict, but no current entry holds it",
+                    p.display()
+                );
+            }
         }
 
-        // P2: every current path is named by exactly one mutation.
+        // P2: every current path is named by exactly one current-side mutation. `deleted`
+        // and `unobserved` are claims about the previous side: when an object is renamed
+        // over an existing path, the object that was there is reported `deleted` under the
+        // same path (V0's behaviour, kept by UD-029; OPEN-QUESTIONS Q26).
         for c in &cur_names {
-            let n = r.mutations.iter().filter(|m| m.path.as_path() == c.as_path()).count();
+            let n = r.mutations.iter()
+                .filter(|m| m.path.as_path() == c.as_path())
+                .filter(|m| !matches!(m.kind, MutationKind::Deleted | MutationKind::Unobserved))
+                .count();
             prop_assert_eq!(n, 1, "current path {} named {} times", c.display(), n);
         }
     }
@@ -394,4 +486,54 @@ proptest! {
             }
         }
     }
+}
+
+/// D-V01-9: the reference's completeness travels with every verdict.
+#[test]
+fn every_verdict_carries_the_completeness_of_its_reference() {
+    let prev = set(vec![mk("a.txt", 1, 10, Some(1))], false);
+    let cur = set(
+        vec![mk("a.txt", 1, 10, Some(1)), mk("b.txt", 1, 11, Some(2))],
+        true,
+    );
+    let r = reconcile(&prev, &cur);
+    let created = kinds(&r, MutationKind::Created);
+    assert_eq!(created.len(), 1);
+    assert!(!created[0].evidence.reference_complete);
+    assert!(r.mutations.iter().all(|m| !m.evidence.reference_complete));
+
+    let r = reconcile(&set(prev.paths.clone(), true), &cur);
+    assert!(r.mutations.iter().all(|m| m.evidence.reference_complete));
+}
+
+/// D-V01-17 (E-TD-2/E-TD-3, `experiments/e-td-2-3/README.md` §5.3). Two valid readings of the
+/// same object that differ are a content change, whatever the metadata says: a rewrite that
+/// keeps size and mtime, or a delete-and-recreate that keeps the inode (1000/1000 on ext4).
+/// Before the fix the verdict was `unchanged`, while the log held two different hashes.
+#[test]
+fn differing_valid_hashes_are_a_modification_even_with_equal_metadata() {
+    let r = reconcile(
+        &set(vec![mk("a.txt", 1, 10, Some(1))], true),
+        &set(vec![mk("a.txt", 1, 10, Some(2))], true),
+    );
+    let m = kinds(&r, MutationKind::Modified);
+    assert_eq!(m.len(), 1, "{:#?}", r.mutations);
+    assert_eq!(m[0].evidence.content_changed, Some(true));
+    assert!(kinds(&r, MutationKind::Unchanged).is_empty());
+
+    // Equal valid readings with equal metadata: compared, and stated as compared.
+    let r = reconcile(
+        &set(vec![mk("a.txt", 1, 10, Some(1))], true),
+        &set(vec![mk("a.txt", 1, 10, Some(1))], true),
+    );
+    let u = kinds(&r, MutationKind::Unchanged);
+    assert_eq!(u[0].evidence.content_changed, Some(false));
+
+    // No comparable reading: metadata alone, and nothing is claimed about the content.
+    let r = reconcile(
+        &set(vec![mk("a.txt", 1, 10, Some(1))], true),
+        &set(vec![mk("a.txt", 1, 10, None)], true),
+    );
+    let u = kinds(&r, MutationKind::Unchanged);
+    assert_eq!(u[0].evidence.content_changed, None);
 }

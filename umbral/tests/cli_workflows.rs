@@ -20,7 +20,7 @@ fn init_then_observe_then_read_is_the_whole_contract() {
     let obs = s.run_ok(&["observe", r.as_str()]);
     assert_all_labelled(&obs);
     assert!(
-        obs.contains("content-verified=2"),
+        obs.contains("content-fresh=2"),
         "both files are regular files:\n{obs}"
     );
 
@@ -70,7 +70,15 @@ fn two_observations_of_an_unchanged_tree_agree() {
     let r = s.root().to_string_lossy().to_string();
 
     let second = s.run_ok(&["observe", r.as_str()]);
-    assert!(second.contains("content-verified=2"), "got:\n{second}");
+    // Nothing changed, so nothing is read again: both readings are carried (`UD-036`).
+    assert!(
+        second.contains("content-fresh=0  content-reused=2"),
+        "got:\n{second}"
+    );
+    assert!(
+        second.contains("content-read-entries=0  content-read-bytes=0"),
+        "got:\n{second}"
+    );
 
     let changes = s.run_ok(&["changes", r.as_str()]);
     assert!(changes.contains("count  unchanged=3"), "got:\n{changes}");
@@ -183,4 +191,105 @@ fn show_reports_a_directory_without_inventing_content() {
         "a directory has no content hash:\n{out}"
     );
     assert!(out.contains("stability=none"), "got:\n{out}");
+}
+
+/// D-V01-12. `workspaces` reads the canonical root back from the stored workspace record, so
+/// it is not something the filesystem reported in this run: it is labelled `derived`. And it
+/// must come back exactly — before the fix the record was written lossily and read without
+/// unescaping, so a root containing `"` or `\` (or a byte that is not UTF-8) was listed wrong.
+#[cfg(unix)]
+#[test]
+fn workspaces_lists_the_recorded_root_exactly_and_as_derived() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+
+    let s = Sandbox::new();
+    let dir = s.root().join(OsStr::from_bytes(b"we\"ird\\name-\xFF"));
+    std::fs::create_dir(&dir).unwrap();
+    s.run_os_ok(&[OsStr::new("init"), dir.as_os_str()]);
+
+    let canonical = std::fs::canonicalize(&dir).unwrap();
+    let expected = umbral::report::render_path(&canonical).field("canonical");
+    let out = s.run_ok(&["workspaces"]);
+    assert_all_labelled(&out);
+    assert!(
+        out.contains(&format!("derived   {expected}\n")),
+        "expected the exact root {expected}, got:\n{out}"
+    );
+    // And it reads back to the exact bytes (`umbral-output/1`).
+    let parsed = umbral::contract::parse(&out).unwrap();
+    let listed = parsed.iter().find_map(|l| l.field("canonical")).unwrap();
+    assert_eq!(listed, canonical.as_os_str().as_bytes());
+    assert!(
+        !out.contains("observed"),
+        "a stored value is not observed:\n{out}"
+    );
+}
+
+/// D-V01-12. A record without a creation time says so instead of inventing 1970.
+#[test]
+fn workspaces_does_not_invent_a_missing_creation_time() {
+    let s = Sandbox::new();
+    let r = s.root().to_string_lossy().to_string();
+    s.run_ok(&["init", r.as_str()]);
+
+    let umbral_dir = s.data.path().join("umbral");
+    let ws_dir = std::fs::read_dir(&umbral_dir)
+        .unwrap()
+        .next()
+        .unwrap()
+        .unwrap()
+        .path();
+    let record = ws_dir.join("workspace.json");
+    let text = std::fs::read_to_string(&record).unwrap();
+    let edited: String = text
+        .lines()
+        .filter(|l| !l.contains("\"created_at_ns\""))
+        .map(|l| format!("{l}\n"))
+        .collect();
+    std::fs::write(&record, edited).unwrap();
+
+    let out = s.run_ok(&["workspaces"]);
+    assert!(out.contains("created=unknown"), "got:\n{out}");
+    assert!(!out.contains("1970"), "got:\n{out}");
+}
+
+/// D-V01-14. One workspace record that cannot be read or interpreted must not hide the others,
+/// and must not vanish silently either: before the fix, a record that was not UTF-8 made
+/// `workspaces` fail outright, and a record without a root was skipped without a trace.
+#[test]
+fn workspaces_reports_an_unreadable_record_and_still_lists_the_others() {
+    let s = Sandbox::new();
+    let r = s.root().to_string_lossy().to_string();
+    s.run_ok(&["init", r.as_str()]);
+
+    let umbral_dir = s.data.path().join("umbral");
+    let garbled = umbral_dir.join("ws-garbled");
+    std::fs::create_dir(&garbled).unwrap();
+    std::fs::write(
+        garbled.join("workspace.json"),
+        b"{\"canonical\": \"\xFF\xFE\"}",
+    )
+    .unwrap();
+    let rootless = umbral_dir.join("ws-rootless");
+    std::fs::create_dir(&rootless).unwrap();
+    std::fs::write(rootless.join("workspace.json"), "{}\n").unwrap();
+
+    let out = s.run_ok(&["workspaces"]);
+    assert_all_labelled(&out);
+    umbral::contract::parse(&out).unwrap();
+    let canonical = std::fs::canonicalize(s.root()).unwrap();
+    let expected = umbral::report::render_path(&canonical).field("canonical");
+    assert!(
+        out.contains(&expected),
+        "the readable workspace is still listed:\n{out}"
+    );
+    assert!(
+        out.contains("unknown   workspace-id=garbled  reason=record-unreadable"),
+        "got:\n{out}"
+    );
+    assert!(
+        out.contains("unknown   workspace-id=rootless  reason=record-without-root"),
+        "got:\n{out}"
+    );
 }

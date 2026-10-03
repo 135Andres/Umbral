@@ -47,12 +47,18 @@ pub struct RunMeta {
     pub entries: u64,
     /// Number of entries that could not be observed.
     pub errors: u64,
+    /// The build that wrote the run, and the scope rules it applied (`UD-037`). `None` for a
+    /// run written before they were recorded.
+    pub tool_version: Option<String>,
+    pub scope: Option<String>,
+    /// The root itself could not be listed (`UD-037`).
+    pub root_error: Option<String>,
 }
 
 impl RunMeta {
-    /// A run is complete when every path it tried to observe was observed.
+    /// A run is complete when every path it tried to observe was observed — the root included.
     pub fn complete(&self) -> bool {
-        self.errors == 0
+        self.errors == 0 && self.root_error.is_none()
     }
 }
 
@@ -66,14 +72,41 @@ pub struct Observation {
     pub ino: Option<u64>,
     pub size: Option<u64>,
     pub mtime: Option<(i64, u32)>,
+    pub ctime: Option<(i64, u32)>,
+    /// Whether this observation's run recorded `ctime` at all. Runs written before
+    /// `umbral-v0.2` did not: their absent `ctime` is "not recorded", never "not obtainable".
+    pub ctime_recorded: bool,
     pub hash: Option<[u8; 32]>,
     pub hashed_len: Option<u64>,
     pub stability: Option<Stability>,
+    /// The run in which the stored reading's bytes were actually read (`UD-021`, `UD-036`).
+    /// Equal to `run_id` for a fresh reading, earlier for one carried by a skip, `None` when
+    /// there is no reading.
+    pub hash_read_run: Option<RunId>,
     pub deltas: Vec<crate::content::GuardDelta>,
     pub error: Option<String>,
+    /// Why no content result was obtained, as recorded at observation time
+    /// ([`ContentError::record`](crate::content::ContentError::record)). `not-recorded` marks a
+    /// file row written by a `umbral-v0.1` build, which did not persist the reason.
+    pub content_error: Option<String>,
+    /// The class of the traversal failure recorded in `error`: `not-descended`,
+    /// `metadata-failed`, or `not-recorded` for a row written before classes were recorded.
+    pub traversal: Option<String>,
 }
 
 impl Observation {
+    /// A path the scan reported but could not `lstat`: it is stored with the placeholder kind
+    /// `other` and no metadata. Its kind was not observed, and readers must not present the
+    /// placeholder as if it had been (D-V01-16).
+    pub fn metadata_failed(&self) -> bool {
+        self.kind == EntryKind::Other
+            && self.error.is_some()
+            && self.dev.is_none()
+            && self.ino.is_none()
+            && self.size.is_none()
+            && self.mtime.is_none()
+    }
+
     /// The hash, only when the observation was stable. Same gate as
     /// [`ContentObservation::valid_hash`], applied to persisted rows.
     pub fn valid_hash(&self) -> Option<&[u8; 32]> {
@@ -88,12 +121,29 @@ impl Observation {
     }
 }
 
+/// One stored value that this build cannot interpret.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InvalidValue {
+    pub run_id: RunId,
+    /// The observation's path; `None` for a value stored on the run itself.
+    pub path: Option<PathBuf>,
+    /// The stored column.
+    pub field: &'static str,
+    /// Why the value is not interpretable, as a token.
+    pub reason: String,
+}
+
 /// An observation on its way into the log.
 #[derive(Debug, Clone)]
 pub struct NewObservation {
     pub entry: Entry,
     pub content: Option<ContentObservation>,
     pub error: Option<String>,
+    /// `Some(run)` when `content` is a reading carried from `run` by a skip: its bytes were not
+    /// read in this run. `None` for a reading made now.
+    pub reused_from: Option<RunId>,
+    /// The class of `error`, decided by the scan (`UD-037`).
+    pub traversal: Option<crate::scan::TraversalClass>,
 }
 
 /// A run on its way into the log.
@@ -103,6 +153,8 @@ pub struct NewRun {
     pub finished_at_ns: i64,
     pub root: PathBuf,
     pub observations: Vec<NewObservation>,
+    /// The root itself could not be listed (`UD-037`).
+    pub root_error: Option<String>,
 }
 
 #[derive(Debug)]
@@ -140,8 +192,20 @@ impl From<std::io::Error> for LogError {
     }
 }
 
-/// The schema version this build writes and understands.
-pub const SCHEMA_VERSION: &str = "umbral-v0.1";
+/// The log schema version this build writes.
+///
+/// `umbral-v0.1.1` added `observation.content_error` (D-V01-10). `umbral-v0.2` adds
+/// `hash_read_run`, `ctime_s` and `ctime_ns`, and records in `schema_meta` the first run whose
+/// `ctime` was recorded (`UD-036`). Earlier logs are still read, and are migrated in place,
+/// additively, the first time they are opened for writing.
+pub const SCHEMA_VERSION: &str = "umbral-v0.2.1";
+
+/// The earlier log schema versions, read and migrated by this build. `umbral-v0.2.1` adds the
+/// traversal class of each failure and, per run, the tool version, the scope and a root failure
+/// (`UD-037`).
+pub const SCHEMA_VERSION_V0_2: &str = "umbral-v0.2";
+pub const SCHEMA_VERSION_V0_1_1: &str = "umbral-v0.1.1";
+pub const SCHEMA_VERSION_V0_1: &str = "umbral-v0.1";
 
 /// The persistence seam.
 pub trait ObservationLog {
@@ -164,9 +228,14 @@ pub trait ObservationLog {
     /// answerable without any separate index.
     fn observations_for_path(&self, path: &Path) -> Result<Vec<Observation>, LogError>;
 
-    /// Every observation in the log, ordered by (run, path). Used by `check`, which
-    /// recomputes derived state from the raw rows rather than from any cached form.
+    /// Every observation in the log, ordered by (run, path).
     fn all_observations(&self) -> Result<Vec<Observation>, LogError>;
+
+    /// Stored values this build cannot interpret, read raw — before any normalisation. Used by
+    /// `check`: the readers above map an unknown value to an absence (a hash of the wrong
+    /// length reads as no hash), so only a raw reading can show that a row is corrupt
+    /// (D-V01-11).
+    fn invalid_values(&self) -> Result<Vec<InvalidValue>, LogError>;
 
     /// Count of runs and observations. Cheap enough for `status`.
     fn counts(&self) -> Result<(u64, u64), LogError>;

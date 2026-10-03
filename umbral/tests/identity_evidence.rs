@@ -63,27 +63,28 @@ fn partial_evidence_never_builds_an_id() {
     );
 }
 
-/// The reason strings are part of the output contract, so they are pinned.
+/// The reason strings are part of the output contract, so they are pinned. They are kebab-case,
+/// like every other token of the output (`UD-031`).
 #[test]
 fn ambiguity_reasons_have_stable_names() {
     assert_eq!(
         AmbiguityReason::IdentityChangedAtSamePath.as_str(),
-        "IdentityChangedAtSamePath"
+        "identity-changed-at-same-path"
     );
     assert_eq!(
         AmbiguityReason::MissingPhysicalEvidence.as_str(),
-        "MissingPhysicalEvidence"
+        "missing-physical-evidence"
     );
     assert_eq!(
         AmbiguityReason::ConflictingCandidates.as_str(),
-        "ConflictingCandidates"
+        "conflicting-candidates"
     );
     assert_eq!(
         AmbiguityReason::DuplicateContentNotIdentity.as_str(),
-        "DuplicateContentNotIdentity"
+        "duplicate-content-not-identity"
     );
     assert_eq!(
         AmbiguityReason::NoContentEvidence.as_str(),
-        "NoContentEvidence"
+        "no-content-evidence"
     );
 }

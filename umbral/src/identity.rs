@@ -39,7 +39,8 @@ pub enum AmbiguityReason {
     /// recreation, a replacement, or inode reuse — so it does not say anything.
     IdentityChangedAtSamePath,
     /// Several objects share one physical id in a way that admits more than one pairing.
-    /// Never resolved by picking one.
+    /// Never resolved by picking one. Every path involved is reported with this reason, on
+    /// both sides of the comparison.
     ConflictingCandidates,
     /// Content is identical, so content cannot separate the two sides. Duplicate content
     /// is not identity.
@@ -51,11 +52,11 @@ pub enum AmbiguityReason {
 impl AmbiguityReason {
     pub fn as_str(self) -> &'static str {
         match self {
-            AmbiguityReason::MissingPhysicalEvidence => "MissingPhysicalEvidence",
-            AmbiguityReason::IdentityChangedAtSamePath => "IdentityChangedAtSamePath",
-            AmbiguityReason::ConflictingCandidates => "ConflictingCandidates",
-            AmbiguityReason::DuplicateContentNotIdentity => "DuplicateContentNotIdentity",
-            AmbiguityReason::NoContentEvidence => "NoContentEvidence",
+            AmbiguityReason::MissingPhysicalEvidence => "missing-physical-evidence",
+            AmbiguityReason::IdentityChangedAtSamePath => "identity-changed-at-same-path",
+            AmbiguityReason::ConflictingCandidates => "conflicting-candidates",
+            AmbiguityReason::DuplicateContentNotIdentity => "duplicate-content-not-identity",
+            AmbiguityReason::NoContentEvidence => "no-content-evidence",
         }
     }
 }
@@ -122,6 +123,19 @@ pub fn physical_id_of(_m: &std::fs::Metadata) -> Option<PhysicalId> {
 pub fn mtime_of(m: &std::fs::Metadata) -> Option<(i64, u32)> {
     use std::os::unix::fs::MetadataExt;
     Some((m.mtime(), m.mtime_nsec() as u32))
+}
+
+/// The inode change time, where the platform reports one. It is not settable from userland,
+/// which is why it can expose a rewrite that restores size and mtime (`UD-018`, E-TD-2).
+#[cfg(unix)]
+pub fn ctime_of(m: &std::fs::Metadata) -> Option<(i64, u32)> {
+    use std::os::unix::fs::MetadataExt;
+    Some((m.ctime(), m.ctime_nsec() as u32))
+}
+
+#[cfg(not(unix))]
+pub fn ctime_of(_m: &std::fs::Metadata) -> Option<(i64, u32)> {
+    None
 }
 
 #[cfg(not(unix))]

@@ -17,7 +17,7 @@
 //! - `changes <root>` — what changed between the last two runs
 //! - `show <root> <path>` — the history of one path
 //! - `workspaces`     — which workspaces exist on this machine
-//! - `check <root>`   — recompute derived state and verify the log is self-consistent
+//! - `check <root>`   — verify the log: references, stored values, no derived state
 //!
 //! # Exit codes
 //!
@@ -28,13 +28,13 @@
 //!   be observed. Present so a script can see incompleteness instead of missing it.
 
 use std::ffi::{OsStr, OsString};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::ExitCode;
 
 use umbral::log::sqlite::SqliteLog;
-use umbral::log::{NewObservation, NewRun, ObservationLog};
+use umbral::log::ObservationLog;
 use umbral::report;
-use umbral::{content, scan, workspace};
+use umbral::workspace;
 
 const USAGE: &str = "\
 usage: umbral <command> [args]
@@ -45,7 +45,7 @@ usage: umbral <command> [args]
   changes <root>         read what changed between the last two runs (read-only)
   show <root> <path>     read the history of one path (read-only)
   workspaces             list workspaces on this machine (read-only)
-  check <root>           recompute derived state and verify the log (read-only)
+  check <root>           verify the log (read-only)
 
 State lives outside <root>, under $XDG_DATA_HOME/umbral/ (fallback ~/.local/share/umbral/).
 Nothing is ever written inside <root>.";
@@ -85,19 +85,14 @@ fn run(args: &[OsString]) -> u8 {
                     let canonical = report::render_path(&ws.canonical);
                     let given = report::render_path(&ws.root);
                     let state = report::render_path(&ws.state_dir);
-                    let mut lines = vec![
-                        report::Line::observed(format!("canonical={}", canonical.text)),
-                        report::Line::derived(format!("root={}", given.text)),
+                    let lines = vec![
+                        report::Line::observed(canonical.field("canonical")),
+                        report::Line::derived(given.field("root")),
                         report::Line::derived(format!("workspace-id={}", ws.id)),
-                        report::Line::derived(format!("state-dir={}", state.text)),
+                        report::Line::derived(state.field("state-dir")),
                         report::Line::derived("initialised=true"),
                     ];
-                    lines.extend(report::path_notes(&[
-                        ("canonical", &canonical),
-                        ("root", &given),
-                        ("state-dir", &state),
-                    ]));
-                    println!("{}", report::render(&lines));
+                    print!("{}", report::render(&lines));
                     0
                 }
                 Err(e) => runtime_error(&e),
@@ -142,29 +137,43 @@ fn run(args: &[OsString]) -> u8 {
         }
 
         "workspaces" => match workspace::list() {
-            Ok(list) => {
+            Ok(listing) => {
                 let mut lines = Vec::new();
-                if list.is_empty() {
+                if listing.workspaces.is_empty() && listing.unreadable.is_empty() {
                     lines.push(report::Line::unknown("workspaces=none"));
                 }
-                for w in &list {
-                    // Everything in a workspace record except the canonical root was
-                    // computed by the tool when the record was written: the identifier, the
-                    // creation timestamp, the tool version.
+                for w in &listing.workspaces {
+                    // Everything here is read back from a workspace record the tool wrote
+                    // earlier — including the canonical root, which the filesystem reported
+                    // at `init`, not in this run. So all of it is `derived` (D-V01-12).
                     let canonical = report::render_path(&w.canonical);
-                    lines.push(report::Line::observed(format!(
-                        "canonical={}",
-                        canonical.text
-                    )));
+                    lines.push(report::Line::derived(canonical.field("canonical")));
                     lines.push(report::Line::derived(format!("workspace-id={}", w.id)));
-                    lines.extend(report::path_notes(&[("canonical", &canonical)]));
+                    // The tool version is read from the record, so it is written like any
+                    // other stored value.
                     lines.push(report::Line::derived(format!(
-                        "created={}  tool-version={}",
-                        report::format_unix_ns(w.created_at_ns),
-                        w.tool_version
+                        "created={}  {}",
+                        w.created_at_ns
+                            .map(report::format_unix_ns)
+                            .unwrap_or_else(|| "unknown".to_string()),
+                        report::text_field("tool-version", &w.tool_version)
                     )));
                 }
-                println!("{}", report::render(&lines));
+                // A record that exists but cannot be read is reported, not skipped (D-V01-14).
+                for u in &listing.unreadable {
+                    // The id comes from a directory name, so it is written like any other value.
+                    let mut text = format!(
+                        "{}  reason={}",
+                        report::text_field("workspace-id", &u.id),
+                        u.reason
+                    );
+                    if let Some(e) = &u.error {
+                        text.push_str("  ");
+                        text.push_str(&report::text_field("record-error", e));
+                    }
+                    lines.push(report::Line::unknown(text));
+                }
+                print!("{}", report::render(&lines));
                 0
             }
             Err(e) => runtime_error(&e),
@@ -222,7 +231,7 @@ where
     };
     match f(&ws, log.as_ref()) {
         Ok(lines) => {
-            println!("{}", report::render(&lines));
+            print!("{}", report::render(&lines));
             0
         }
         Err(e) => runtime_error(&e),
@@ -234,86 +243,20 @@ fn observe(root: &Path) -> u8 {
         Ok(ws) => ws,
         Err(e) => return runtime_error(&e),
     };
-
-    let started_at_ns = now_ns();
-    let scan = match scan::scan(root) {
-        Ok(s) => s,
-        Err(e) => return runtime_error(&e),
-    };
-
-    let mut observations: Vec<NewObservation> = Vec::with_capacity(scan.entries.len());
-    let mut verified: u64 = 0;
-    let mut not_verified: u64 = 0;
-
-    for entry in &scan.entries {
-        let content_obs = if entry.kind == umbral::EntryKind::File {
-            let c = content::observe_content(&root.join(&entry.path));
-            if c.is_content_verified() {
-                verified += 1;
-            } else {
-                not_verified += 1;
-            }
-            Some(c)
-        } else {
-            None
-        };
-        observations.push(NewObservation {
-            entry: entry.clone(),
-            content: content_obs,
-            error: None,
-        });
-    }
-
-    // Paths that could not be observed at all are recorded as evidence, not dropped.
-    //
-    // A path can be BOTH an entry and an error: a directory whose metadata is readable but
-    // whose contents are not yields an entry (it exists) and an error (it could not be
-    // descended into). One path has one row per run, so the error is attached to the
-    // existing observation rather than duplicated into a second row.
-    let mut by_path: std::collections::BTreeMap<PathBuf, usize> = std::collections::BTreeMap::new();
-    for (i, o) in observations.iter().enumerate() {
-        by_path.insert(o.entry.path.clone(), i);
-    }
-    for err in &scan.errors {
-        match by_path.get(&err.path) {
-            Some(&i) => {
-                observations[i].error = Some(err.message.clone());
-            }
-            None => {
-                let idx = observations.len();
-                observations.push(NewObservation {
-                    entry: umbral::Entry {
-                        path: err.path.clone(),
-                        kind: umbral::EntryKind::Other,
-                        dev: None,
-                        ino: None,
-                        size: None,
-                        mtime: None,
-                    },
-                    content: None,
-                    error: Some(err.message.clone()),
-                });
-                by_path.insert(err.path.clone(), idx);
-            }
-        }
-    }
-
-    let finished_at_ns = now_ns();
-    let run = NewRun {
-        started_at_ns,
-        finished_at_ns,
-        root: ws.canonical.clone(),
-        observations,
-    };
-
     let mut log = match SqliteLog::open(&ws.log_path()) {
         Ok(l) => l,
         Err(e) => return runtime_error(&e),
     };
-    let run_id = match log.append_run(run) {
-        Ok(id) => id,
+    let observed = match umbral::observe::observe(
+        root,
+        &ws.canonical,
+        &mut log,
+        umbral::observe::Policy::Skip,
+    ) {
+        Ok(o) => o,
         Err(e) => return runtime_error(&e),
     };
+    let run_id = observed.run_id;
 
     let meta = match log.run(run_id) {
         Ok(Some(m)) => m,
@@ -324,9 +267,19 @@ fn observe(root: &Path) -> u8 {
         Err(e) => return runtime_error(&e),
     };
 
-    println!(
+    // The summary is counted from what the log stored, so it says what was recorded.
+    let stored = match log.observations_for_run(run_id) {
+        Ok(o) => o,
+        Err(e) => return runtime_error(&e),
+    };
+    print!(
         "{}",
-        report::render(&report::observe_summary(&ws, &meta, verified, not_verified))
+        report::render(&report::observe_summary(
+            &ws,
+            &meta,
+            &stored,
+            &observed.counters
+        ))
     );
 
     if meta.complete() {
@@ -339,11 +292,4 @@ fn observe(root: &Path) -> u8 {
         );
         3
     }
-}
-
-fn now_ns() -> i64 {
-    std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_nanos() as i64)
-        .unwrap_or(0)
 }
