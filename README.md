@@ -58,8 +58,10 @@ derived   run=1  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
 derived   run=1  metadata-fresh=5  metadata-failed=0
 derived   run=1  content-fresh=3  content-reused=0  content-failed=0  content-not-attempted=0  content-not-recorded=0
 derived   run=1  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
+derived   run=1  traversal-complete=true  traversal-not-descended=0  traversal-metadata-failed=0  traversal-not-recorded=0  root-not-descended=false
+derived   run=1  tool-version=0.1.0  scope=recursive,symlinks-not-followed,no-exclusions
 derived   run=1  content-read-entries=3  content-read-bytes=82
-derived   run=1  started=2026-10-03T04:21:43.434Z  finished=2026-10-03T04:21:43.434Z
+derived   run=1  started=2026-10-03T07:19:41.928Z  finished=2026-10-03T07:19:41.928Z
 derived   run=1  complete=true
 
 # ... api.md edited, faq.md added, latency-notes.md removed ...
@@ -72,8 +74,10 @@ derived   run=2  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
 derived   run=2  metadata-fresh=5  metadata-failed=0
 derived   run=2  content-fresh=2  content-reused=1  content-failed=0  content-not-attempted=0  content-not-recorded=0
 derived   run=2  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
+derived   run=2  traversal-complete=true  traversal-not-descended=0  traversal-metadata-failed=0  traversal-not-recorded=0  root-not-descended=false
+derived   run=2  tool-version=0.1.0  scope=recursive,symlinks-not-followed,no-exclusions
 derived   run=2  content-read-entries=2  content-read-bytes=53
-derived   run=2  started=2026-10-03T04:21:43.437Z  finished=2026-10-03T04:21:43.437Z
+derived   run=2  started=2026-10-03T07:19:41.934Z  finished=2026-10-03T07:19:41.934Z
 derived   run=2  complete=true
 
 $ umbral changes /tmp/umbral-demo
@@ -96,21 +100,22 @@ derived   contract=umbral-output/1
 observed  canonical=/tmp/umbral-demo
 derived   root=/tmp/umbral-demo
 derived   workspace-id=b8e1aa4d4ff5946a
-derived   last-run=2  started=2026-10-03T04:21:43.437Z
+derived   last-run=2  started=2026-10-03T07:19:41.934Z
 derived   last-run=2  complete=true
 derived   run=2  entries=5  files=3  dirs=2  symlinks=0  other=0  kind-unknown=0
 derived   run=2  metadata-fresh=5  metadata-failed=0
 derived   run=2  content-fresh=2  content-reused=1  content-failed=0  content-not-attempted=0  content-not-recorded=0
 derived   run=2  content-failed-diagnostics  unstable-observation=0  not-found=0  permission-denied=0  not-a-regular-file=0  read-error=0
-derived   run=2  unobservable-paths=0  reason=not-observed-at-observation-time
+derived   run=2  traversal-complete=true  traversal-not-descended=0  traversal-metadata-failed=0  traversal-not-recorded=0  root-not-descended=false
+derived   run=2  tool-version=0.1.0  scope=recursive,symlinks-not-followed,no-exclusions
 derived   log-runs=2  log-observations=10
 
 $ umbral show /tmp/umbral-demo docs/overview.md
 derived   contract=umbral-output/1
 derived   observation=1:docs/overview.md  hash=139e3fda7011  stability=stable  metadata=fresh  content=fresh
-observed  observation=1:docs/overview.md  kind=file  size=30  mtime=2026-10-03T04:21:43.431Z  ctime=2026-10-03T04:21:43.431Z
+observed  observation=1:docs/overview.md  kind=file  size=30  mtime=2026-10-03T07:19:41.921Z  ctime=2026-10-03T07:19:41.921Z
 derived   observation=2:docs/overview.md  hash=139e3fda7011  stability=stable  metadata=fresh  content=reused  content-source=1:docs/overview.md
-observed  observation=2:docs/overview.md  kind=file  size=30  mtime=2026-10-03T04:21:43.431Z  ctime=2026-10-03T04:21:43.431Z
+observed  observation=2:docs/overview.md  kind=file  size=30  mtime=2026-10-03T07:19:41.921Z  ctime=2026-10-03T07:19:41.921Z
 derived   unchanged  path=docs/overview.md  reference=1:docs/overview.md  reference-fields=dev,ino,kind,size,mtime,hash  compared=2:docs/overview.md  compared-fields=dev,ino,kind,size,mtime,hash  content-changed=false  reference-complete=true  compared-complete=true
 ```
 

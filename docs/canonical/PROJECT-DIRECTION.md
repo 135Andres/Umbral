@@ -90,7 +90,7 @@ WHAT COULD CHANGE OUR MIND
 - A candidate architecture scoring K1-K9 so decisively that scope assumptions change.
 - Any new explicit user decision — user authority always outranks research.
 
-CURRENT NEXT STEP (updated 2026-10-03: v0.2 SLICES 1–3 IMPLEMENTED; NEXT, SLICE 4)
+CURRENT NEXT STEP (updated 2026-10-03: v0.2 SLICES 1–4 IMPLEMENTED; NEXT, CLOSURE)
 
 Development proceeds by incremental versions on version branches. v0.2 is active on branch
 `v0.2`. Its acceptance criteria were accepted on 2026-10-02 (`UD-030`): version criteria
@@ -99,8 +99,10 @@ implemented the same day. Slice 2 was split (`UD-033`) and both halves are imple
 per-observation `basis` on `show`, `status` and `observe`, with `show` naming its entry; 2b
 (`UD-034`), the `basis` of a `changes` verdict as an explicit field list, with both sides'
 completeness. The O(changes) skip (slice 3, `UD-035`, `UD-036`) is implemented, with `ctime` in
-its condition after the pre-registered experiments E-TD-2/E-TD-3. Acquisition history (slice 4)
-needs its own criteria and acceptance. The vocabularies those slices use — `unknown` vs
+its condition after the pre-registered experiments E-TD-2/E-TD-3. Slice 4 (`UD-037`) records the
+traversal facts and the rules of each run, and verifies A2-V8 and A2-V9. What remains is the
+version's closure: the evidence per criterion, A2-V13 (human legibility), and the owner's
+declaration. The vocabularies those slices use — `unknown` vs
 `ambiguous`, acquisition states, roles and comparison sides — were adopted on 2026-10-02
 (`UD-031`). On 2026-10-02 a repository audit
 (research/history/AUDIT-2026-10-02.md) found v0.1 defects in `umbral/`; their correction on the

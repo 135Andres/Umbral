@@ -279,7 +279,13 @@ pub const DERIVED_ONLY_FIELDS: &[&str] = &[
     "permission-denied=",
     "not-a-regular-file=",
     "read-error=",
-    "unobservable-paths=",
+    "traversal-complete=",
+    "traversal-not-descended=",
+    "traversal-metadata-failed=",
+    "traversal-not-recorded=",
+    "root-not-descended=",
+    "scope=",
+    "traversal=",
     "log-runs=",
     "log-observations=",
     // Values computed from the bytes read
@@ -546,6 +552,7 @@ pub fn observe_summary(
     // Counted from what the log stored for this run, by the same function as `status`, so the
     // two cannot disagree (A2-T2a-5).
     out.extend(state_counts(run.id, obs));
+    out.extend(run_facts(run, obs));
     // What this run actually read: the measure of O(changes), counted, never timed (A2-V1).
     out.push(Line::derived(format!(
         "run={}  content-read-entries={}  content-read-bytes={}",
@@ -560,6 +567,44 @@ pub fn observe_summary(
         )),
         Line::derived(format!("run={}  complete={}", run.id, run.complete())),
     ]);
+    out
+}
+
+/// The traversal facts of one run and the rules it applied (`UD-025`, `UD-027`, `UD-037`): which
+/// part of the scope was not observed, by class, and the build and scope that produced it.
+pub fn run_facts(run: &RunMeta, obs: &[Observation]) -> Vec<Line> {
+    let count = |class: &str| {
+        obs.iter()
+            .filter(|o| o.traversal.as_deref() == Some(class))
+            .count()
+    };
+    let mut out = vec![Line::derived(format!(
+        "run={}  traversal-complete={}  traversal-not-descended={}  traversal-metadata-failed={}  traversal-not-recorded={}  root-not-descended={}",
+        run.id,
+        run.complete(),
+        count("not-descended"),
+        count("metadata-failed"),
+        count("not-recorded"),
+        run.root_error.is_some()
+    ))];
+    if let Some(e) = &run.root_error {
+        out.push(Line::unknown(format!(
+            "run={}  {}",
+            run.id,
+            text_field("root-error", e)
+        )));
+    }
+    match (&run.tool_version, &run.scope) {
+        (Some(v), Some(s)) => out.push(Line::derived(format!(
+            "run={}  {}  scope={s}",
+            run.id,
+            text_field("tool-version", v)
+        ))),
+        _ => out.push(Line::unknown(format!(
+            "run={}  fields=tool-version,scope  reason=not-recorded",
+            run.id
+        ))),
+    }
     out
 }
 
@@ -658,13 +703,7 @@ pub fn status(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, cra
     let obs = log.observations_for_run(run.id)?;
     out.extend(state_counts(run.id, &obs));
 
-    // Paths with an observation error, including directories that exist but could not be
-    // descended into: a fact about the traversal, kept as it is until slice 4.
-    let errored = obs.iter().filter(|o| o.error.is_some()).count();
-    out.push(Line::derived(format!(
-        "run={}  unobservable-paths={errored}  reason=not-observed-at-observation-time",
-        run.id
-    )));
+    out.extend(run_facts(&run, &obs));
 
     let (runs, observations) = log.counts()?;
     out.push(Line::derived(format!(
@@ -895,8 +934,10 @@ pub fn show(
             )));
         }
         if let Some(e) = &o.error {
+            // The class says which part of the scope the failure left unobserved (`UD-037`).
+            let class = o.traversal.as_deref().unwrap_or("not-recorded");
             out.push(Line::unknown(format!(
-                "{subject}  {}",
+                "{subject}  traversal={class}  {}",
                 text_field("observation-error", e)
             )));
         }

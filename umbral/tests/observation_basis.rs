@@ -81,6 +81,7 @@ fn every_case() -> NewRun {
             content,
             error: error.map(str::to_string),
             reused_from: None,
+            traversal: None,
         };
     NewRun {
         started_at_ns: 1_000,
@@ -136,6 +137,7 @@ fn every_case() -> NewRun {
                 Some("No such file or directory (os error 2)"),
             ),
         ],
+        root_error: None,
     }
 }
 
@@ -243,7 +245,9 @@ fn every_line_of_show_names_the_observation_it_reports() {
             content: Some(stable(2)),
             error: None,
             reused_from: None,
+            traversal: None,
         }],
+        root_error: None,
     })
     .unwrap();
 
@@ -302,7 +306,9 @@ fn each_line_of_show_reports_the_observation_it_names() {
                 content: Some(stable(byte)),
                 error: None,
                 reused_from: None,
+                traversal: None,
             }],
+            root_error: None,
         })
         .unwrap();
     }
