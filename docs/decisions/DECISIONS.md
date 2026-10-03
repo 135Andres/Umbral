@@ -1070,6 +1070,35 @@ Reversibility: medium — a later edition can change these, as a recorded change
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-035 — `ctime` enters the v0.2 skip condition (D-PEND-2); phase 1 consults valid hashes
+Authority: USER (owner instruction, private, 2026-10-03 — chosen among proposed alternatives on
+the evidence of E-TD-2 and E-TD-3).
+Evidence: `experiments/e-td-2-3/README.md` §5 (tmpfs, btrfs, ext4). On ext4, a file deleted and
+recreated with different bytes, equal length and the original mtime kept its `dev`+`ino` in 1000
+of 1000 attempts, and a metadata-only condition skipped every one (L1 demonstrated). `ctime`
+differed in all 1350 cases where the bytes changed. In all of them the v0.1 verdict was
+`unchanged`, although both readings were valid and their hashes differed.
+Statement:
+  1. **D-PEND-2 is decided: `ctime` enters the skip condition** (`V0.2-TECHNICAL-DESIGN.md` §C.1,
+     condition 6), as an equality that must hold; a missing `ctime` on either side means the
+     entry is read. `UD-018` is unchanged: `ctime` remains a heuristic, never a guarantee, and a
+     reused reading is never presented as content-verified.
+  2. **v0.1 defect `D-V01-17` is corrected under the terms of `UD-029`:** when two observations
+     share identity and both hold a valid reading of a regular file, reconciliation consults the
+     hashes before answering `unchanged`; differing hashes give `modified` with
+     `content-changed=true`, whatever the metadata says.
+Relationship to existing records: closes the question `UD-018` left open (D-PEND-2); extends
+`UD-029` to one more defect. None is amended.
+Consequences: the cost `UD-018` accepted applies — a metadata change that does not alter content
+(`chmod`, `chown`, a new hard link) forces a re-read. The skip's residual false negatives are
+those of `ctime` itself (§D.4) and are declared in the version record.
+Scope guard: this record does NOT accept slice 3's criteria, does NOT select anything left open
+by `UD-021` beyond what slice 3 will specify, and does NOT decide Q26.
+Reversibility: high for `ctime` (removing a term only enlarges the skipped set, which needs its
+own record); the correction is covered by a test.
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -1081,7 +1110,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
                          (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023, UD-024,
-                         UD-025, UD-026, UD-027, UD-030, UD-031, UD-033, UD-034.) A scoped commitment expires with its version
+                         UD-025, UD-026, UD-027, UD-030, UD-031, UD-033, UD-034, UD-035.) A scoped commitment expires with its version
                          unless a later record extends it.
   DECIDED (scoped to `umbral/` v0.1 defects)
                        — committed for the named corrections only (UD-029, UD-032).
