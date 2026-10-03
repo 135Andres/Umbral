@@ -1,8 +1,10 @@
 # AGENTS.md
 
 Entry point for AI agents working in this repository. Deliberately short — it routes, it
-does not explain. **Read [`README.md`](README.md) first**; it holds the orientation, the
-authority ladder and the rules for reading claims, and it is canonical for this repository.
+does not explain. **Read [`docs/READING-THIS-REPOSITORY.md`](docs/READING-THIS-REPOSITORY.md)
+first**; it holds the authority ladder, the rules for reading claims and the naming of sources,
+and it is canonical for this repository. [`README.md`](README.md) is the short introduction for
+newcomers.
 
 This repository is the project's durable memory. Agent memory, session history and skills
 are operational tooling only. If they disagree with the files here, the files win — and a
