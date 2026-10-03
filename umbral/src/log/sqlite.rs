@@ -32,23 +32,94 @@ use rusqlite::{Connection, OptionalExtension};
 
 use super::{
     InvalidValue, LogError, NewObservation, NewRun, Observation, ObservationLog, RunId, RunMeta,
-    SCHEMA_VERSION, SCHEMA_VERSION_V0_1,
+    SCHEMA_VERSION, SCHEMA_VERSION_V0_1, SCHEMA_VERSION_V0_1_1,
 };
 use crate::content::{hex, GuardDelta, Stability};
 use crate::scan::EntryKind;
 
 pub struct SqliteLog {
     conn: Connection,
-    /// The SQL expression that yields `content_error`. A `umbral-v0.1` log opened read-only
-    /// has no such column and cannot be migrated, so the value is derived the same way the
-    /// migration would derive it.
-    content_error_expr: &'static str,
+    /// How each column added after `umbral-v0.1` is read. A log opened read-only cannot be
+    /// migrated, so a column it lacks is derived the same way the migration would derive it.
+    columns: Columns,
 }
+
+#[derive(Debug, Clone, Copy)]
+struct Columns {
+    content_error: &'static str,
+    hash_read_run: &'static str,
+    ctime_s: &'static str,
+    ctime_ns: &'static str,
+    /// The first run whose `ctime` was recorded; earlier runs report it as not recorded.
+    ctime_recorded_from: i64,
+}
+
+impl Columns {
+    fn current(ctime_recorded_from: i64) -> Self {
+        Columns {
+            content_error: "content_error",
+            hash_read_run: "hash_read_run",
+            ctime_s: "ctime_s",
+            ctime_ns: "ctime_ns",
+            ctime_recorded_from,
+        }
+    }
+
+    /// An earlier log, read without migrating it.
+    fn legacy(version: &str) -> Self {
+        Columns {
+            content_error: if version == SCHEMA_VERSION_V0_1 {
+                LEGACY_CONTENT_ERROR
+            } else {
+                "content_error"
+            },
+            hash_read_run: LEGACY_HASH_READ_RUN,
+            ctime_s: "NULL",
+            ctime_ns: "NULL",
+            ctime_recorded_from: i64::MAX,
+        }
+    }
+
+    fn select(&self) -> String {
+        format!(
+            "run_id, path, kind, dev, ino, size, mtime_s, mtime_ns,
+             hash, hashed_len, hash_stability, hash_deltas, obs_error, {}, {}, {}, {}",
+            self.content_error, self.hash_read_run, self.ctime_s, self.ctime_ns
+        )
+    }
+}
+
+/// `hash_read_run` for a row written before `umbral-v0.2`: those builds read every file in its
+/// own run, so a stored reading was read in the row's run (`UD-036`).
+const LEGACY_HASH_READ_RUN: &str = "CASE WHEN hash IS NOT NULL THEN run_id END";
+
+/// The key of `schema_meta` holding the first run whose `ctime` was recorded.
+const CTIME_FROM_KEY: &str = "ctime_recorded_from_run";
 
 /// `content_error` for a `umbral-v0.1` row: a file with no content result had an error whose
 /// reason that build did not persist.
 const LEGACY_CONTENT_ERROR: &str =
     "CASE WHEN kind = 'file' AND hash_stability IS NULL THEN 'not-recorded' END";
+
+/// `umbral-v0.1` -> `umbral-v0.1.1`: add `content_error` and mark the earlier file rows whose
+/// reason was not persisted. Additive: no row is removed and no earlier value is changed.
+const MIGRATE_V0_1_TO_V0_1_1: &str = "
+    ALTER TABLE observation ADD COLUMN content_error TEXT;
+    UPDATE observation SET content_error = (CASE WHEN kind = 'file' AND hash_stability IS NULL THEN 'not-recorded' END);
+";
+
+/// `umbral-v0.1.1` -> `umbral-v0.2`: add `hash_read_run` and `ctime`, attribute each stored
+/// reading to its own run (those builds had no skip), and record the first run whose `ctime`
+/// will be recorded — so the earlier runs' absent `ctime` reads as not recorded (`UD-036`).
+const MIGRATE_V0_1_1_TO_V0_2: &str = "
+    ALTER TABLE observation ADD COLUMN hash_read_run INTEGER;
+    ALTER TABLE observation ADD COLUMN ctime_s INTEGER;
+    ALTER TABLE observation ADD COLUMN ctime_ns INTEGER;
+    UPDATE observation SET hash_read_run = run_id WHERE hash IS NOT NULL;
+    INSERT INTO schema_meta (key, value) VALUES ('ctime_recorded_from_run',
+        CAST(COALESCE((SELECT seq FROM sqlite_sequence WHERE name = 'run'), 0) + 1 AS TEXT));
+    UPDATE schema_meta SET value = 'umbral-v0.2' WHERE key = 'schema_version';
+";
 
 // Hand-written rather than derived: the connection handle is an implementation detail and
 // has no useful representation to print.
@@ -84,6 +155,9 @@ CREATE TABLE IF NOT EXISTS observation (
     hash_deltas     TEXT,
     obs_error       TEXT,
     content_error   TEXT,
+    hash_read_run   INTEGER,           -- the run that read the stored bytes (UD-036)
+    ctime_s         INTEGER,
+    ctime_ns        INTEGER,
     PRIMARY KEY (run_id, path),
     -- A stored hash without a stability verdict would be a hash whose validity is unknown.
     CHECK (hash IS NULL OR hash_stability IS NOT NULL)
@@ -133,32 +207,40 @@ impl SqliteLog {
                     "BEGIN;
                      {SCHEMA}
                      INSERT INTO schema_meta (key, value) VALUES ('schema_version', '{SCHEMA_VERSION}');
+                     INSERT INTO schema_meta (key, value) VALUES ('{CTIME_FROM_KEY}', '1');
                      COMMIT;"
                 ))?;
             }
             None => return Err(LogError::UnknownSchema("none".into())),
             Some(v) if v == SCHEMA_VERSION => {}
-            Some(v) if v == SCHEMA_VERSION_V0_1 => Self::migrate_from_v0_1(&conn)?,
+            // Every step of a migration runs in one transaction: a log is never left between
+            // two versions.
+            Some(v) if v == SCHEMA_VERSION_V0_1 => conn.execute_batch(&format!(
+                "BEGIN; {} {} COMMIT;",
+                MIGRATE_V0_1_TO_V0_1_1, MIGRATE_V0_1_1_TO_V0_2
+            ))?,
+            Some(v) if v == SCHEMA_VERSION_V0_1_1 => {
+                conn.execute_batch(&format!("BEGIN; {MIGRATE_V0_1_1_TO_V0_2} COMMIT;"))?
+            }
             Some(v) => return Err(LogError::UnknownSchema(v)),
         }
+        let from = Self::ctime_recorded_from(&conn)?;
         Ok(SqliteLog {
             conn,
-            content_error_expr: "content_error",
+            columns: Columns::current(from),
         })
     }
 
-    /// `umbral-v0.1` -> `umbral-v0.1.1`, in one transaction: add `content_error`, mark the
-    /// earlier file rows whose reason was not persisted, and record the new version. Additive:
-    /// no row is removed and no earlier value is changed.
-    fn migrate_from_v0_1(conn: &Connection) -> Result<(), LogError> {
-        conn.execute_batch(&format!(
-            "BEGIN;
-             ALTER TABLE observation ADD COLUMN content_error TEXT;
-             UPDATE observation SET content_error = ({LEGACY_CONTENT_ERROR});
-             UPDATE schema_meta SET value = '{SCHEMA_VERSION}' WHERE key = 'schema_version';
-             COMMIT;"
-        ))?;
-        Ok(())
+    fn ctime_recorded_from(conn: &Connection) -> Result<i64, LogError> {
+        let v: Option<String> = conn
+            .query_row(
+                &format!("SELECT value FROM schema_meta WHERE key='{CTIME_FROM_KEY}'"),
+                [],
+                |r| r.get(0),
+            )
+            .optional()?;
+        v.and_then(|v| v.parse().ok())
+            .ok_or_else(|| LogError::Inconsistent(format!("{CTIME_FROM_KEY} missing or invalid")))
     }
 
     /// Open the state file with **no write capability at all**.
@@ -179,13 +261,16 @@ impl SqliteLog {
             )
             .optional()?;
         match stored {
-            Some(v) if v == SCHEMA_VERSION => Ok(SqliteLog {
+            Some(v) if v == SCHEMA_VERSION => {
+                let from = Self::ctime_recorded_from(&conn)?;
+                Ok(SqliteLog {
+                    conn,
+                    columns: Columns::current(from),
+                })
+            }
+            Some(v) if v == SCHEMA_VERSION_V0_1 || v == SCHEMA_VERSION_V0_1_1 => Ok(SqliteLog {
                 conn,
-                content_error_expr: "content_error",
-            }),
-            Some(v) if v == SCHEMA_VERSION_V0_1 => Ok(SqliteLog {
-                conn,
-                content_error_expr: LEGACY_CONTENT_ERROR,
+                columns: Columns::legacy(&v),
             }),
             Some(v) => Err(LogError::UnknownSchema(v)),
             None => Err(LogError::UnknownSchema("<absent>".into())),
@@ -234,14 +319,16 @@ impl ObservationLog for SqliteLog {
             let mut stmt = tx.prepare(
                 "INSERT INTO observation
                  (run_id, path, kind, dev, ino, size, mtime_s, mtime_ns,
-                  hash, hashed_len, hash_stability, hash_deltas, obs_error, content_error)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
+                  hash, hashed_len, hash_stability, hash_deltas, obs_error, content_error,
+                  hash_read_run, ctime_s, ctime_ns)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17)",
             )?;
             for obs in &run.observations {
                 let NewObservation {
                     entry,
                     content,
                     error,
+                    reused_from,
                 } = obs;
                 let (hash, hashed_len, stability, deltas, content_error) = match content {
                     Some(c) => (
@@ -257,6 +344,13 @@ impl ObservationLog for SqliteLog {
                     Some((s, n)) => (Some(s), Some(n as i64)),
                     None => (None, None),
                 };
+                let (ctime_s, ctime_ns) = match entry.ctime {
+                    Some((s, n)) => (Some(s), Some(n as i64)),
+                    None => (None, None),
+                };
+                // A reading made now was read in this run; a carried one names the run that
+                // read it, unchanged (`UD-036`).
+                let hash_read_run = hash.as_ref().map(|_| reused_from.unwrap_or(run_id));
                 stmt.execute(rusqlite::params![
                     run_id,
                     path_to_blob(&entry.path),
@@ -272,6 +366,9 @@ impl ObservationLog for SqliteLog {
                     deltas,
                     error,
                     content_error,
+                    hash_read_run,
+                    ctime_s,
+                    ctime_ns,
                 ])?;
             }
         }
@@ -313,43 +410,40 @@ impl ObservationLog for SqliteLog {
 
     fn observations_for_run(&self, id: RunId) -> Result<Vec<Observation>, LogError> {
         let mut stmt = self.conn.prepare(&format!(
-            "SELECT run_id, path, kind, dev, ino, size, mtime_s, mtime_ns,
-                    hash, hashed_len, hash_stability, hash_deltas, obs_error, {}
-             FROM observation WHERE run_id = ?1 ORDER BY path ASC",
-            self.content_error_expr
+            "SELECT {} FROM observation WHERE run_id = ?1 ORDER BY path ASC",
+            self.columns.select()
         ))?;
-        let rows = stmt.query_map([id], row_to_observation)?;
+        let from = self.columns.ctime_recorded_from;
+        let rows = stmt.query_map([id], |r| row_to_observation(r, from))?;
         Ok(rows.collect::<Result<Vec<_>, _>>()?)
     }
 
     fn observations_for_path(&self, path: &Path) -> Result<Vec<Observation>, LogError> {
         let mut stmt = self.conn.prepare(&format!(
-            "SELECT run_id, path, kind, dev, ino, size, mtime_s, mtime_ns,
-                    hash, hashed_len, hash_stability, hash_deltas, obs_error, {}
-             FROM observation WHERE path = ?1 ORDER BY run_id ASC",
-            self.content_error_expr
+            "SELECT {} FROM observation WHERE path = ?1 ORDER BY run_id ASC",
+            self.columns.select()
         ))?;
-        let rows = stmt.query_map([path_to_blob(path)], row_to_observation)?;
+        let from = self.columns.ctime_recorded_from;
+        let rows = stmt.query_map([path_to_blob(path)], |r| row_to_observation(r, from))?;
         Ok(rows.collect::<Result<Vec<_>, _>>()?)
     }
 
     fn all_observations(&self) -> Result<Vec<Observation>, LogError> {
         let mut stmt = self.conn.prepare(&format!(
-            "SELECT run_id, path, kind, dev, ino, size, mtime_s, mtime_ns,
-                    hash, hashed_len, hash_stability, hash_deltas, obs_error, {}
-             FROM observation ORDER BY run_id ASC, path ASC",
-            self.content_error_expr
+            "SELECT {} FROM observation ORDER BY run_id ASC, path ASC",
+            self.columns.select()
         ))?;
-        let rows = stmt.query_map([], row_to_observation)?;
+        let from = self.columns.ctime_recorded_from;
+        let rows = stmt.query_map([], |r| row_to_observation(r, from))?;
         Ok(rows.collect::<Result<Vec<_>, _>>()?)
     }
 
     fn invalid_values(&self) -> Result<Vec<InvalidValue>, LogError> {
         let mut out = Vec::new();
         let mut stmt = self.conn.prepare(&format!(
-            "SELECT run_id, path, kind, length(hash), hash_stability, hash_deltas, mtime_ns, {}
+            "SELECT run_id, path, kind, length(hash), hash_stability, hash_deltas, mtime_ns, {}, {}
              FROM observation ORDER BY run_id ASC, path ASC",
-            self.content_error_expr
+            self.columns.content_error, self.columns.ctime_ns
         ))?;
         let mut rows = stmt.query([])?;
         while let Some(r) = rows.next()? {
@@ -361,6 +455,7 @@ impl ObservationLog for SqliteLog {
             let deltas: Option<String> = r.get(5)?;
             let mtime_ns: Option<i64> = r.get(6)?;
             let content_error: Option<String> = r.get(7)?;
+            let ctime_ns: Option<i64> = r.get(8)?;
 
             let mut bad = |field: &'static str, reason: String| {
                 out.push(InvalidValue {
@@ -393,6 +488,11 @@ impl ObservationLog for SqliteLog {
             if let Some(n) = mtime_ns {
                 if !(0..1_000_000_000).contains(&n) {
                     bad("mtime_ns", "out-of-range".into());
+                }
+            }
+            if let Some(n) = ctime_ns {
+                if !(0..1_000_000_000).contains(&n) {
+                    bad("ctime_ns", "out-of-range".into());
                 }
             }
             if let Some(e) = &content_error {
@@ -443,7 +543,7 @@ impl ObservationLog for SqliteLog {
     }
 }
 
-fn row_to_observation(r: &rusqlite::Row<'_>) -> rusqlite::Result<Observation> {
+fn row_to_observation(r: &rusqlite::Row<'_>, ctime_from: i64) -> rusqlite::Result<Observation> {
     let path: Vec<u8> = r.get(1)?;
     let kind: String = r.get(2)?;
     let dev: Option<i64> = r.get(3)?;
@@ -457,6 +557,10 @@ fn row_to_observation(r: &rusqlite::Row<'_>) -> rusqlite::Result<Observation> {
     let deltas: Option<String> = r.get(11)?;
     let error: Option<String> = r.get(12)?;
     let content_error: Option<String> = r.get(13)?;
+    let hash_read_run: Option<i64> = r.get(14)?;
+    let ctime_s: Option<i64> = r.get(15)?;
+    let ctime_ns: Option<i64> = r.get(16)?;
+    let run_id: RunId = r.get(0)?;
 
     let hash_arr = match hash {
         Some(v) if v.len() == 32 => {
@@ -472,15 +576,23 @@ fn row_to_observation(r: &rusqlite::Row<'_>) -> rusqlite::Result<Observation> {
         _ => None,
     };
 
+    let ctime = match (ctime_s, ctime_ns) {
+        (Some(s), Some(n)) => Some((s, n as u32)),
+        _ => None,
+    };
+
     Ok(Observation {
-        run_id: r.get(0)?,
+        run_id,
         path: blob_to_path(&path),
         kind: EntryKind::parse(&kind),
         dev: dev.map(|v| v as u64),
         ino: ino.map(|v| v as u64),
         size: size.map(|v| v as u64),
         mtime,
+        ctime,
+        ctime_recorded: run_id >= ctime_from,
         hash: hash_arr,
+        hash_read_run,
         hashed_len: hashed_len.map(|v| v as u64),
         stability: stability.as_deref().and_then(Stability::parse),
         deltas: deltas

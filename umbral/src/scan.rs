@@ -20,7 +20,7 @@ use std::time::SystemTime;
 
 use walkdir::WalkDir;
 
-use crate::identity::{mtime_of, physical_id_of};
+use crate::identity::{ctime_of, mtime_of, physical_id_of};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum EntryKind {
@@ -63,6 +63,10 @@ pub struct Entry {
     /// (seconds, nanoseconds) since the Unix epoch — part of the OBSERVED STATE, so two
     /// scans of an unchanged tree carry equal mtimes.
     pub mtime: Option<(i64, u32)>,
+    /// (seconds, nanoseconds) of the inode's last status change — the one timestamp a writer
+    /// cannot set (`UD-018`). Part of the skip condition (`UD-035`). `None` where the platform
+    /// does not report it.
+    pub ctime: Option<(i64, u32)>,
 }
 
 /// A path that could not be observed at all. Represented explicitly; never dropped.
@@ -198,5 +202,6 @@ fn entry_from(path: PathBuf, m: &std::fs::Metadata) -> Entry {
         ino: pid.map(|p| p.ino),
         size: Some(m.len()),
         mtime: mtime_of(m),
+        ctime: ctime_of(m),
     }
 }

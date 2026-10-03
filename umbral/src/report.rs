@@ -30,7 +30,8 @@
 use std::path::Path;
 
 use crate::acquisition::{
-    content_diagnostic, content_state, metadata_state, AcquisitionState, FAILED_DIAGNOSTICS,
+    content_diagnostic, content_source, content_state, metadata_state, AcquisitionState,
+    FAILED_DIAGNOSTICS,
 };
 use crate::content::{hex_short, Stability};
 use crate::log::{Observation, ObservationLog, RunId, RunMeta};
@@ -287,6 +288,10 @@ pub const DERIVED_ONLY_FIELDS: &[&str] = &[
     // The tool's account of how each component was obtained (`UD-031`)
     "metadata=",
     "content=",
+    "content-source=",
+    // The content work of one run (A2-V1)
+    "content-read-entries=",
+    "content-read-bytes=",
     // Configuration echoed back
     "root=",
     "tool-version=",
@@ -297,7 +302,7 @@ pub const DERIVED_ONLY_FIELDS: &[&str] = &[
 ///
 /// Deliberately exhaustive rather than a denylist: adding an `observed` field is then a
 /// deliberate act that requires changing this list, instead of something that slips in.
-pub const OBSERVED_FIELDS: &[&str] = &["canonical=", "kind=", "size=", "mtime="];
+pub const OBSERVED_FIELDS: &[&str] = &["canonical=", "kind=", "size=", "mtime=", "ctime="];
 
 /// Every `name=` field present in a line of output: the key of each item that has one. Items
 /// are separated by two spaces (`CONTRACT.md` §2), so a `=` inside a value is never mistaken
@@ -505,6 +510,13 @@ fn opt_hash(o: &Observation) -> String {
     }
 }
 
+fn opt_time(t: Option<(i64, u32)>) -> String {
+    match t {
+        Some((s, n)) => format_unix_ns(s * 1_000_000_000 + n as i64),
+        None => "none".to_string(),
+    }
+}
+
 fn opt_stability(o: &Observation) -> String {
     match o.stability {
         Some(s) => s.as_str().to_string(),
@@ -516,7 +528,12 @@ fn opt_stability(o: &Observation) -> String {
 // observe
 // ---------------------------------------------------------------------------------------
 
-pub fn observe_summary(ws: &Workspace, run: &RunMeta, obs: &[Observation]) -> Vec<Line> {
+pub fn observe_summary(
+    ws: &Workspace,
+    run: &RunMeta,
+    obs: &[Observation],
+    counters: &crate::observe::Counters,
+) -> Vec<Line> {
     // Everything here describes the run the tool just performed, so all of it is the tool's
     // own output. The one exception is the canonical root: that is the filesystem's answer
     // about where the observed path really is.
@@ -529,6 +546,11 @@ pub fn observe_summary(ws: &Workspace, run: &RunMeta, obs: &[Observation]) -> Ve
     // Counted from what the log stored for this run, by the same function as `status`, so the
     // two cannot disagree (A2-T2a-5).
     out.extend(state_counts(run.id, obs));
+    // What this run actually read: the measure of O(changes), counted, never timed (A2-V1).
+    out.push(Line::derived(format!(
+        "run={}  content-read-entries={}  content-read-bytes={}",
+        run.id, counters.read_entries, counters.read_bytes
+    )));
     out.extend([
         Line::derived(format!(
             "run={}  started={}  finished={}",
@@ -821,6 +843,11 @@ pub fn show(
         if let Some(c) = content_state(o) {
             basis.push_str(&format!("  content={}", c.as_str()));
         }
+        // A reused reading names the observation that actually read its bytes (`UD-036`).
+        if let Some(source) = content_source(o) {
+            basis.push_str("  ");
+            basis.push_str(&reference_field("content-source", source, &o.path));
+        }
         out.push(Line::derived(format!(
             "{subject}  hash={}  stability={}  {basis}",
             opt_hash(o),
@@ -830,13 +857,11 @@ pub fn show(
         // kind is a placeholder, so it is listed as absent instead (D-V01-16).
         if !o.metadata_failed() {
             out.push(Line::observed(format!(
-                "{subject}  kind={}  size={}  mtime={}",
+                "{subject}  kind={}  size={}  mtime={}  ctime={}",
                 kind_field(o),
                 opt_u64(o.size),
-                match o.mtime {
-                    Some((s, n)) => format_unix_ns(s * 1_000_000_000 + n as i64),
-                    None => "none".to_string(),
-                }
+                opt_time(o.mtime),
+                opt_time(o.ctime)
             )));
         }
 
@@ -853,10 +878,20 @@ pub fn show(
         if o.dev.is_none() || o.ino.is_none() {
             absent.push("physical-identity");
         }
+        // `ctime` absent from a run that recorded it was not obtainable; from an earlier run,
+        // it was never recorded — a different statement (`UD-036`, A2-V8).
+        if o.ctime.is_none() && o.ctime_recorded {
+            absent.push("ctime");
+        }
         if !absent.is_empty() {
             out.push(Line::unknown(format!(
                 "{subject}  fields={}  reason=not-obtainable-at-observation-time",
                 absent.join(",")
+            )));
+        }
+        if o.ctime.is_none() && !o.ctime_recorded {
+            out.push(Line::unknown(format!(
+                "{subject}  fields=ctime  reason=not-recorded"
             )));
         }
         if let Some(e) = &o.error {
@@ -981,9 +1016,54 @@ pub fn check(ws: &Workspace, log: &dyn ObservationLog) -> Result<Vec<Line>, crat
         !only_log
     )));
 
-    let ok = orphans == 0 && invalid.is_empty() && only_log;
+    // 4. Every reading is attributed to the run that read it (`UD-036`): never a later run, and
+    //    a carried reading equals the fresh reading of the observation it names.
+    let broken = broken_readings(&all);
+    out.push(Line::derived(format!(
+        "readings-consistent={}  invalid-readings={}",
+        broken.is_empty(),
+        broken.len()
+    )));
+    for (o, reason) in &broken {
+        out.push(Line::derived(format!(
+            "invalid-reading  run={}  {}  reason={reason}",
+            o.run_id,
+            render_path(&o.path).field("path")
+        )));
+    }
+
+    let ok = orphans == 0 && invalid.is_empty() && only_log && broken.is_empty();
     out.push(Line::derived(format!("consistent={ok}")));
     Ok(out)
+}
+
+/// Observations whose reading is not attributed as `UD-036` requires, with the reason.
+fn broken_readings(all: &[Observation]) -> Vec<(&Observation, &'static str)> {
+    let by_key: std::collections::BTreeMap<(RunId, &Path), &Observation> = all
+        .iter()
+        .map(|o| ((o.run_id, o.path.as_path()), o))
+        .collect();
+    let mut out = Vec::new();
+    for o in all {
+        let Some(hash) = o.hash else { continue };
+        let reason = match o.hash_read_run {
+            None => Some("reading-without-read-run"),
+            Some(r) if r > o.run_id => Some("read-run-after-own-run"),
+            Some(r) if r == o.run_id => None,
+            Some(r) => match by_key.get(&(r, o.path.as_path())) {
+                None => Some("source-missing"),
+                Some(src) if src.hash_read_run != Some(r) => Some("source-not-fresh"),
+                Some(src) if src.hash != Some(hash) || src.stability != o.stability => {
+                    Some("differs-from-source")
+                }
+                Some(_) => None,
+            },
+        };
+        if let Some(reason) = reason {
+            out.push((o, reason));
+        }
+    }
+    out
 }
 
 /// The identification field naming one observation: `observation=<run>:<path>` (`UD-033`).

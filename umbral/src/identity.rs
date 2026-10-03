@@ -125,6 +125,19 @@ pub fn mtime_of(m: &std::fs::Metadata) -> Option<(i64, u32)> {
     Some((m.mtime(), m.mtime_nsec() as u32))
 }
 
+/// The inode change time, where the platform reports one. It is not settable from userland,
+/// which is why it can expose a rewrite that restores size and mtime (`UD-018`, E-TD-2).
+#[cfg(unix)]
+pub fn ctime_of(m: &std::fs::Metadata) -> Option<(i64, u32)> {
+    use std::os::unix::fs::MetadataExt;
+    Some((m.ctime(), m.ctime_nsec() as u32))
+}
+
+#[cfg(not(unix))]
+pub fn ctime_of(_m: &std::fs::Metadata) -> Option<(i64, u32)> {
+    None
+}
+
 #[cfg(not(unix))]
 pub fn mtime_of(m: &std::fs::Metadata) -> Option<(i64, u32)> {
     m.modified()

@@ -19,6 +19,7 @@ fn entry(path: &str, ino: u64, size: u64) -> Entry {
         ino: Some(ino),
         size: Some(size),
         mtime: Some((1_000, 0)),
+        ctime: None,
     }
 }
 
@@ -43,6 +44,7 @@ fn run(entries: Vec<(Entry, Option<ContentObservation>)>) -> NewRun {
                 entry,
                 content,
                 error: None,
+                reused_from: None,
             })
             .collect(),
     }
@@ -158,7 +160,7 @@ fn the_only_stored_tables_are_the_log() {
 
 #[test]
 fn the_schema_version_is_recorded_and_an_unknown_one_is_refused() {
-    assert_eq!(SCHEMA_VERSION, "umbral-v0.1.1");
+    assert_eq!(SCHEMA_VERSION, "umbral-v0.2");
 
     let t = tempfile::TempDir::new().unwrap();
     let path = t.path().join("log.sqlite");
@@ -310,9 +312,11 @@ fn created_states_whether_its_reference_was_complete() {
                 ino: None,
                 size: None,
                 mtime: None,
+                ctime: None,
             },
             content: None,
             error: Some("permission denied".into()),
+            reused_from: None,
         });
         log.append_run(incomplete).unwrap();
         log.append_run(run(vec![
@@ -543,7 +547,7 @@ fn a_v0_1_log_is_migrated_in_place_when_opened_for_writing() {
             |r| r.get(0),
         )
         .unwrap();
-    assert_eq!(version, "umbral-v0.1.1");
+    assert_eq!(version, "umbral-v0.2");
 }
 
 /// D-V01-11. `check` must look at the stored values, not at a normalised reading of them:
@@ -677,9 +681,11 @@ fn a_path_whose_metadata_failed_is_not_shown_as_observed() {
                 ino: None,
                 size: None,
                 mtime: None,
+                ctime: None,
             },
             content: None,
             error: Some("No such file or directory (os error 2)".into()),
+            reused_from: None,
         }],
     })
     .unwrap();
@@ -701,4 +707,157 @@ fn a_path_whose_metadata_failed_is_not_shown_as_observed() {
         "an unobserved kind is not `other`:\n{status}"
     );
     assert!(status.contains("kind-unknown=1"), "got:\n{status}");
+}
+
+// ---------------------------------------------------------------------------------------
+// v0.2 slice 3 — `hash_read_run` and `ctime` (A2-T3-6, A2-T3-7, A2-T3-8; `UD-036`)
+// ---------------------------------------------------------------------------------------
+
+/// `umbral-v0.1.1`: the v0.1 schema plus `content_error`, exactly as that build wrote it.
+fn schema_v0_1_1() -> String {
+    SCHEMA_V0_1
+        .replace(
+            "hashed_len INTEGER, hash_stability TEXT, hash_deltas TEXT, obs_error TEXT,",
+            "hashed_len INTEGER, hash_stability TEXT, hash_deltas TEXT, obs_error TEXT, content_error TEXT,",
+        )
+        .replace("'umbral-v0.1')", "'umbral-v0.1.1')")
+}
+
+fn stored_version(path: &std::path::Path) -> String {
+    rusqlite::Connection::open(path)
+        .unwrap()
+        .query_row(
+            "SELECT value FROM schema_meta WHERE key='schema_version'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap()
+}
+
+/// A2-T3-7. Both earlier schemas migrate in one step to `umbral-v0.2`. A reading stored by those
+/// builds was read in its own run — they had no skip — so its `hash_read_run` is its run; their
+/// `ctime` was never recorded, and is reported as such, not as "not obtainable".
+#[test]
+fn earlier_logs_migrate_with_their_readings_attributed_and_ctime_not_recorded() {
+    for (name, schema) in [
+        ("v0.1", SCHEMA_V0_1.to_string()),
+        ("v0.1.1", schema_v0_1_1()),
+    ] {
+        let t = tempfile::TempDir::new().unwrap();
+        let path = t.path().join("log.sqlite");
+        rusqlite::Connection::open(&path)
+            .unwrap()
+            .execute_batch(&schema)
+            .unwrap();
+
+        // Read-only first: the same values, derived, and nothing written.
+        {
+            let log = SqliteLog::open_read_only(&path).unwrap();
+            let ok = &log
+                .observations_for_path(std::path::Path::new("ok"))
+                .unwrap()[0];
+            assert_eq!(ok.hash_read_run, Some(1), "{name}");
+            assert!(!ok.ctime_recorded, "{name}");
+        }
+        assert_ne!(
+            stored_version(&path),
+            "umbral-v0.2",
+            "{name}: a read-only open wrote"
+        );
+
+        let mut log = SqliteLog::open(&path).unwrap();
+        assert_eq!(stored_version(&path), "umbral-v0.2", "{name}");
+        let old = log.observations_for_run(1).unwrap();
+        let ok = old
+            .iter()
+            .find(|o| o.path == std::path::Path::new("ok"))
+            .unwrap();
+        let locked = old
+            .iter()
+            .find(|o| o.path == std::path::Path::new("locked"))
+            .unwrap();
+        assert_eq!(ok.hash_read_run, Some(1), "{name}");
+        assert_eq!(
+            locked.hash_read_run, None,
+            "{name}: no reading, no reading's run"
+        );
+        assert_eq!((ok.ctime, ok.ctime_recorded), (None, false), "{name}");
+
+        let id = log
+            .append_run(run(vec![(entry("new", 9, 1), Some(verified(3, 1)))]))
+            .unwrap();
+        let new = &log.observations_for_run(id).unwrap()[0];
+        assert!(
+            new.ctime_recorded,
+            "{name}: runs after the migration record ctime"
+        );
+        assert_eq!(new.hash_read_run, Some(id), "{name}");
+
+        let show = umbral::report::render(
+            &umbral::report::show(&ws(), &log, std::path::Path::new("ok")).unwrap(),
+        );
+        assert!(
+            show.contains("unknown   observation=1:ok  fields=ctime  reason=not-recorded"),
+            "{name}:\n{show}"
+        );
+    }
+}
+
+fn corrupt_and_check(sql: &str) -> String {
+    let t = tempfile::TempDir::new().unwrap();
+    let path = t.path().join("log.sqlite");
+    {
+        let mut log = SqliteLog::open(&path).unwrap();
+        log.append_run(run(vec![(entry("a", 1, 1), Some(verified(1, 1)))]))
+            .unwrap();
+        let mut reused = run(vec![(entry("a", 1, 1), Some(verified(1, 1)))]);
+        reused.observations[0].reused_from = Some(1);
+        log.append_run(reused).unwrap();
+    }
+    let clean = {
+        let log = SqliteLog::open_read_only(&path).unwrap();
+        umbral::report::render(&umbral::report::check(&ws(), &log).unwrap())
+    };
+    assert!(
+        clean.contains("readings-consistent=true  invalid-readings=0"),
+        "{clean}"
+    );
+    rusqlite::Connection::open(&path)
+        .unwrap()
+        .execute_batch(sql)
+        .unwrap();
+    let log = SqliteLog::open_read_only(&path).unwrap();
+    umbral::report::render(&umbral::report::check(&ws(), &log).unwrap())
+}
+
+/// A2-T3-8. Every violation of the reading invariant is reported, and makes the log
+/// inconsistent.
+#[test]
+fn check_reports_every_broken_reading_attribution() {
+    for (sql, reason) in [
+        (
+            "UPDATE observation SET hash_read_run = 7 WHERE run_id = 2;",
+            "read-run-after-own-run",
+        ),
+        (
+            "UPDATE observation SET hash = X'0202020202020202020202020202020202020202020202020202020202020202' WHERE run_id = 2;",
+            "differs-from-source",
+        ),
+        (
+            "UPDATE observation SET hash_read_run = 2 WHERE run_id = 1;",
+            "read-run-after-own-run",
+        ),
+        (
+            "DELETE FROM observation WHERE run_id = 1;",
+            "source-missing",
+        ),
+        (
+            "UPDATE observation SET hash_read_run = NULL WHERE run_id = 2;",
+            "reading-without-read-run",
+        ),
+    ] {
+        let out = corrupt_and_check(sql);
+        assert!(out.contains(&format!("reason={reason}")), "{sql}\n{out}");
+        assert!(out.contains("consistent=false"), "{sql}\n{out}");
+    }
 }
