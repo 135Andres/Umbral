@@ -83,11 +83,21 @@ fn unchanged_by_metadata_consults_identity_kind_and_file_metadata() {
         &set(vec![mk("a", 1, 10, Some(1))], true),
         &set(vec![mk("a", 1, 10, Some(1))], true),
     );
+    // Both readings valid: they are consulted first (D-V01-17, `UD-035`).
+    let m = only(&r, "a", MutationKind::Unchanged);
+    assert_eq!(m.evidence.content_changed, Some(false));
+    assert_eq!(m.evidence.basis.reference, related("a", FILE_META_HASH));
+    assert_eq!(m.evidence.basis.compared, related("a", FILE_META_HASH));
+    assert!(m.evidence.basis.counterparts.is_empty());
+
+    // Without a valid reading on one side, the metadata alone answers.
+    let r = reconcile(
+        &set(vec![mk("a", 1, 10, Some(1))], true),
+        &set(vec![mk("a", 1, 10, None)], true),
+    );
     let m = only(&r, "a", MutationKind::Unchanged);
     assert_eq!(m.evidence.content_changed, None);
     assert_eq!(m.evidence.basis.reference, related("a", FILE_META));
-    assert_eq!(m.evidence.basis.compared, related("a", FILE_META));
-    assert!(m.evidence.basis.counterparts.is_empty());
 }
 
 #[test]
