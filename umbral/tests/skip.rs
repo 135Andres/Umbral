@@ -374,6 +374,24 @@ fn skipping_gives_the_verdicts_of_reading_everything_over_the_mutation_matrix() 
     std::fs::remove_file(t.root().join("link-a.txt")).unwrap();
     both(&mut skip, &mut all);
     both(&mut skip, &mut all); // unchanged again, after reuse
+
+    // E-TD-4's extension: a writer that restores size and mtime. Without it the comparison
+    // would never meet the case a metadata-only skip gets wrong (`V0.2-TECHNICAL-DESIGN.md`
+    // §H.4). With `ctime` in the condition the two observations agree — the run that reads
+    // everything and the run that skips — and both see the change (D-V01-17).
+    let before = t.stat("keep.txt");
+    std::thread::sleep(std::time::Duration::from_millis(1100));
+    t.write("keep.txt", b"KEEP");
+    set_mtime(&t.root().join("keep.txt"), filetime_of(&before));
+    let moved = ctime_of(&before) != ctime_of(&t.stat("keep.txt"));
+    both(&mut skip, &mut all);
+    if moved {
+        assert!(
+            changes(&skip, t.root()).contains("modified  path=keep.txt"),
+            "{}",
+            changes(&skip, t.root())
+        );
+    }
 }
 
 /// The one admissible difference (`UD-021`, F-TD-4), shown on hand-built observations: a

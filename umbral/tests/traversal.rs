@@ -401,3 +401,46 @@ fn no_later_step_rewrites_an_earlier_emission() {
         5
     );
 }
+
+/// E-TD-8 (`V0.2-TECHNICAL-DESIGN.md` §H.4): an incomplete run that also skips a file and loses
+/// another. The skipped file keeps its attributed reading, the lost file is `unobserved` — never
+/// `deleted` — and the run says why it is incomplete.
+#[cfg(unix)]
+#[test]
+fn an_incomplete_run_with_a_skip_and_a_vanished_file() {
+    use std::os::unix::fs::PermissionsExt;
+    let t = tempfile::TempDir::new().unwrap();
+    if !permissions_apply(t.path()) {
+        eprintln!("NOT EXERCISED: permissions do not apply to this user");
+        return;
+    }
+    std::fs::write(t.path().join("kept.txt"), b"kept").unwrap();
+    std::fs::write(t.path().join("gone.txt"), b"gone").unwrap();
+    std::fs::create_dir(t.path().join("locked")).unwrap();
+    let mut log = SqliteLog::open_in_memory().unwrap();
+    observe(t.path(), t.path(), &mut log, Policy::Skip).unwrap();
+
+    std::fs::remove_file(t.path().join("gone.txt")).unwrap();
+    std::fs::set_permissions(
+        t.path().join("locked"),
+        std::fs::Permissions::from_mode(0o000),
+    )
+    .unwrap();
+    let second = observe(t.path(), t.path(), &mut log, Policy::Skip);
+    std::fs::set_permissions(
+        t.path().join("locked"),
+        std::fs::Permissions::from_mode(0o755),
+    )
+    .unwrap();
+    let second = second.unwrap();
+    assert_eq!(second.counters.read_entries, 0, "kept.txt is skipped");
+
+    let kept = &log.observations_for_path(Path::new("kept.txt")).unwrap()[1];
+    assert_eq!(kept.hash_read_run, Some(1));
+    let changes = render(&umbral::report::changes(&ws(t.path()), &log).unwrap());
+    assert!(changes.contains("count  deleted=0"), "{changes}");
+    assert!(changes.contains("unobserved  path=gone.txt"), "{changes}");
+    assert!(changes.contains("compared-complete=false"), "{changes}");
+    let status = render(&umbral::report::status(&ws(t.path()), &log).unwrap());
+    assert!(status.contains("traversal-not-descended=1"), "{status}");
+}
