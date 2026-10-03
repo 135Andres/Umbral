@@ -1,7 +1,7 @@
 # umbral
 
-The v0.1 workspace observation instrument, with v0.2 in development on branch `v0.2` (slice 1,
-the output contract `umbral-output/1`, is in place).
+The workspace observation instrument, at v0.2 (`0.2.0`, declared evidence complete on 2026-10-03,
+`UD-038`; see `docs/versions/v0.2.md`).
 
 ## What this is
 
@@ -118,7 +118,7 @@ unobserved subtree).
 ```
 derived   run=2  traversal-complete=false  traversal-not-descended=1  traversal-metadata-failed=0  traversal-not-recorded=0  root-not-descended=false
 unknown   observation=2:fotos  traversal=not-descended  observation-error=Permission denied (os error 13)
-derived   run=2  tool-version=0.1.0  scope=recursive,symlinks-not-followed,no-exclusions
+derived   run=2  tool-version=0.2.0  scope=recursive,symlinks-not-followed,no-exclusions
 ```
 
 Every run records the version of the build that wrote it and the scope it applied; runs written
