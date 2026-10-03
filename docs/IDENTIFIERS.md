@@ -53,7 +53,7 @@ inside one experiment's own files, and must not be cited from outside it.
 | PREFIX | OWNER | RANGE | KIND | SCOPE | COLLISION |
 |---|---|---|---|---|---|
 | `MC §n` | `research/sources/PROJECT-MASTER-CONTEXT.md` (**private, untracked**) | §1–§52+ | charter / user intent | project | — |
-| `UD` | `docs/decisions/DECISIONS.md` | UD-001–UD-034 | decision record | project | — |
+| `UD` | `docs/decisions/DECISIONS.md` | UD-001–UD-035 | decision record | project | — |
 | `A` | `docs/canonical/INVARIANTS.md` | A1–A11 | invariant | project | **yes** — see §4.8 |
 | `P` | `docs/canonical/PRINCIPLES.md` | P1–P9 | principle | project | **yes** — see §4.2 |
 | `C` | `docs/canonical/CONSTRAINTS.md` | C1–C12 | constraint | project | — |
@@ -85,7 +85,7 @@ inside one experiment's own files, and must not be cited from outside it.
 | `INV` | `docs/v0/V0-IMPLEMENTATION-PLAN.md` §12 | INV-1–INV-8 | invariant | V0 | — |
 | `F-V01` | `experiments/v0.1-reader-protocol/README.md` | F-V01-1–F-V01-9 | reader-protocol finding | version-local (v0.1) | — |
 | `P-V01` | `experiments/v0.1-reader-protocol/EVIDENCE-B.md` | P-V01-1–P-V01-2 | protocol defect | version-local (v0.1) | — |
-| `D-V01` | `docs/versions/v0.1.md` | D-V01-1–D-V01-16 | implementation defect | version-local (v0.1) | **yes** — written bare as `D4`, see §4.10 |
+| `D-V01` | `docs/versions/v0.1.md` | D-V01-1–D-V01-17 | implementation defect | version-local (v0.1) | **yes** — written bare as `D4`, see §4.10 |
 | `N-V01` | `docs/versions/v0.1.md` | N-V01-1 | presentation note | version-local (v0.1) | — |
 | `A1-AI` | `experiments/exp-ai-01/` | A1-AI | evidence class | project | — |
 | `DOC-FRICTION` | `experiments/exp-doc1/DOC-FRICTION-LOG.md` | 001–018 | friction finding | experiment-local (EXP-DOC-1) | — |

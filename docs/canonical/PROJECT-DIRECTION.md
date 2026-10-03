@@ -27,7 +27,7 @@ filesystem sovereign and make the semantic layer a derived, rebuildable, user-go
 projection (MC §12, §28, §39).
 
 WHAT WE HAVE DECIDED
-See DECISIONS.md (UD-001..UD-034, plus the P5 interpretive record). Headlines: open
+See DECISIONS.md (UD-001..UD-035, plus the P5 interpretive record). Headlines: open
 source, no ads, licensed GPL-3.0-or-later (UD-028); no mandatory taxonomy; no hidden prompt
 injection; Sonora not an authority; local-first with file survivability; incremental
 version development; v0.2's bounded content-read optimisation, observation-basis and
