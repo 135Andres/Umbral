@@ -1,8 +1,32 @@
-# Documentation
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../assets/brand/mark-dark.svg">
+    <img src="../assets/brand/mark-light.svg" alt="" width="48">
+  </picture>
+</p>
 
-This directory holds the project's working documentation, grouped by function. Each file
-has exactly one role and one home; this page is only a map. The repository's full
-authority ladder and reading rules live in [Reading this repository](READING-THIS-REPOSITORY.md).
+<h1 align="center">Umbral documentation</h1>
+
+<p align="center"><a href="../README.md">Project home</a> · <a href="../umbral/README.md">Tool guide</a> · <a href="READING-THIS-REPOSITORY.md">Reading this repository</a></p>
+
+---
+
+This directory is the project's working memory, grouped by function. Each file has exactly one
+role and one home; this page is only a map. The authority ladder and the rules for reading
+claims live in [Reading this repository](READING-THIS-REPOSITORY.md).
+
+## Start here
+
+| I want to… | Read |
+|---|---|
+| know where the project stands, in one screen | [`PROJECT-DIRECTION`](canonical/PROJECT-DIRECTION.md) |
+| understand what Umbral is meant to become | [`VISION`](canonical/VISION.md) |
+| see what has actually been decided | [`DECISIONS`](decisions/DECISIONS.md) — the only place decisions live |
+| see what each version did, and its evidence | [Version records](versions/README.md) · latest: [`v0.2`](versions/v0.2.md) |
+| see what is still open | [`OPEN-QUESTIONS`](candidates/OPEN-QUESTIONS.md) · [`ARCHITECTURE-HYPOTHESES`](candidates/ARCHITECTURE-HYPOTHESES.md) |
+| find where an identifier (`UD-031`, `A2-V3`, …) is defined | [`IDENTIFIERS`](IDENTIFIERS.md) |
+
+## The full map
 
 | Category | Files | For |
 |---|---|---|
