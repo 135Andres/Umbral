@@ -269,8 +269,20 @@ pub fn reconcile(previous: &ObservationSet, current: &ObservationSet) -> Reconci
                     cur_matched[ci] = true;
 
                     let mut fields = observable_fields(prev, cur);
-                    let (kind, content_changed) = if same_observable(prev, cur) {
-                        (MutationKind::Unchanged, None)
+                    // Two valid readings are consulted before the metadata can answer: a
+                    // change that keeps size and mtime — or a recreation that keeps the inode —
+                    // is still a change when the bytes read differ (D-V01-17).
+                    let both_read = prev.valid_hash.is_some() && cur.valid_hash.is_some();
+                    let (kind, content_changed) = if both_read && hashes_differ(prev, cur) {
+                        fields.push("hash");
+                        (MutationKind::Modified, Some(true))
+                    } else if same_observable(prev, cur) {
+                        if both_read {
+                            fields.push("hash");
+                            (MutationKind::Unchanged, Some(false))
+                        } else {
+                            (MutationKind::Unchanged, None)
+                        }
                     } else if hashes_equal(prev, cur) {
                         // Metadata moved, bytes did not.
                         fields.push("hash");
