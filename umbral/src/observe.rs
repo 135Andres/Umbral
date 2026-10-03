@@ -93,6 +93,7 @@ pub fn observe(
             content: None,
             error: None,
             reused_from: None,
+            traversal: None,
         };
         if entry.kind == EntryKind::File {
             let prev = previous.get(&entry.path);
@@ -133,7 +134,10 @@ pub fn observe(
     }
     for err in &scan.errors {
         match by_path.get(&err.path) {
-            Some(&i) => observations[i].error = Some(err.message.clone()),
+            Some(&i) => {
+                observations[i].error = Some(err.message.clone());
+                observations[i].traversal = Some(err.class);
+            }
             None => {
                 by_path.insert(err.path.clone(), observations.len());
                 observations.push(NewObservation {
@@ -149,6 +153,7 @@ pub fn observe(
                     content: None,
                     error: Some(err.message.clone()),
                     reused_from: None,
+                    traversal: Some(err.class),
                 });
             }
         }
@@ -161,6 +166,7 @@ pub fn observe(
             finished_at_ns,
             root: recorded_root.to_path_buf(),
             observations,
+            root_error: scan.root_error.clone(),
         })
         .map_err(ObserveError::Log)?;
     Ok(Observed { run_id, counters })

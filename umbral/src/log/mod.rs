@@ -47,12 +47,18 @@ pub struct RunMeta {
     pub entries: u64,
     /// Number of entries that could not be observed.
     pub errors: u64,
+    /// The build that wrote the run, and the scope rules it applied (`UD-037`). `None` for a
+    /// run written before they were recorded.
+    pub tool_version: Option<String>,
+    pub scope: Option<String>,
+    /// The root itself could not be listed (`UD-037`).
+    pub root_error: Option<String>,
 }
 
 impl RunMeta {
-    /// A run is complete when every path it tried to observe was observed.
+    /// A run is complete when every path it tried to observe was observed — the root included.
     pub fn complete(&self) -> bool {
-        self.errors == 0
+        self.errors == 0 && self.root_error.is_none()
     }
 }
 
@@ -83,6 +89,9 @@ pub struct Observation {
     /// ([`ContentError::record`](crate::content::ContentError::record)). `not-recorded` marks a
     /// file row written by a `umbral-v0.1` build, which did not persist the reason.
     pub content_error: Option<String>,
+    /// The class of the traversal failure recorded in `error`: `not-descended`,
+    /// `metadata-failed`, or `not-recorded` for a row written before classes were recorded.
+    pub traversal: Option<String>,
 }
 
 impl Observation {
@@ -133,6 +142,8 @@ pub struct NewObservation {
     /// `Some(run)` when `content` is a reading carried from `run` by a skip: its bytes were not
     /// read in this run. `None` for a reading made now.
     pub reused_from: Option<RunId>,
+    /// The class of `error`, decided by the scan (`UD-037`).
+    pub traversal: Option<crate::scan::TraversalClass>,
 }
 
 /// A run on its way into the log.
@@ -142,6 +153,8 @@ pub struct NewRun {
     pub finished_at_ns: i64,
     pub root: PathBuf,
     pub observations: Vec<NewObservation>,
+    /// The root itself could not be listed (`UD-037`).
+    pub root_error: Option<String>,
 }
 
 #[derive(Debug)]
@@ -185,9 +198,12 @@ impl From<std::io::Error> for LogError {
 /// `hash_read_run`, `ctime_s` and `ctime_ns`, and records in `schema_meta` the first run whose
 /// `ctime` was recorded (`UD-036`). Earlier logs are still read, and are migrated in place,
 /// additively, the first time they are opened for writing.
-pub const SCHEMA_VERSION: &str = "umbral-v0.2";
+pub const SCHEMA_VERSION: &str = "umbral-v0.2.1";
 
-/// The earlier log schema versions, read and migrated by this build.
+/// The earlier log schema versions, read and migrated by this build. `umbral-v0.2.1` adds the
+/// traversal class of each failure and, per run, the tool version, the scope and a root failure
+/// (`UD-037`).
+pub const SCHEMA_VERSION_V0_2: &str = "umbral-v0.2";
 pub const SCHEMA_VERSION_V0_1_1: &str = "umbral-v0.1.1";
 pub const SCHEMA_VERSION_V0_1: &str = "umbral-v0.1";
 

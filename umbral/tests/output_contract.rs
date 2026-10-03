@@ -155,17 +155,17 @@ fn unobservable_metadata_is_reported_as_absent_not_invented() {
         "the incompleteness must be stated:\n{stdout}"
     );
 
-    // The count of unobservable paths is an aggregate the tool computed, so it is `derived`.
+    // The traversal facts are aggregates the tool computed, so they are `derived` (`UD-037`).
     // The unknowns themselves are reported per path, by `show`.
     let status = s.run_ok(&["status", r.as_str()]);
     assert!(
-        status.contains("unobservable-paths=1"),
-        "status must count the unobserved path:\n{status}"
+        status.contains("traversal-complete=false  traversal-not-descended=1"),
+        "status must count the unobserved directory by its class:\n{status}"
     );
     assert!(
         !status
             .lines()
-            .any(|l| l.starts_with("observed") && l.contains("unobservable-paths=")),
+            .any(|l| l.starts_with("observed") && l.contains("traversal-")),
         "a computed count must not be labelled observed:\n{status}"
     );
 
