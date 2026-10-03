@@ -1099,6 +1099,31 @@ own record); the correction is covered by a test.
 Status: DECIDED (scoped to v0.2).
 
 ================================================================================
+UD-036 — v0.2 slice 3: how the skip is persisted and shown; slice 3 accepted
+Authority: USER (owner instruction, private, 2026-10-02/03 — chosen among proposed alternatives,
+then the drafted criteria accepted).
+Statement: the owner decides, for v0.2:
+  - the run in which a reading's bytes were actually read is persisted with the observation
+    (`hash_read_run`); a skip carries it unchanged, a read sets it to the current run;
+  - the skip compares an entry only with the previous run's observation of the **same path**:
+    a renamed file is read;
+  - a reused reading names its source on `show`: `content-source=<run>:<path>`;
+  - `ctime` is recorded with every observation and shown as an `observed` field;
+  - rows written before this slice receive `hash_read_run = run_id`, a value derived from their
+    schema version (those builds read every file in its own run); their `ctime` is reported as
+    not recorded;
+and accepts the criteria `A2-T3-1`–`A2-T3-12` in `docs/candidates/V0.2-SCOPE-PROPOSAL.md` §9.7 as
+written on 2026-10-03.
+Relationship to existing records: fixes the persistence `UD-021` required to distinguish, and the
+schema `UD-022` listed as open, within `UD-016`, `UD-017`, `UD-018` and `UD-035`; none is amended.
+Consequences: slice 3 may be implemented, test-first. The log schema becomes `umbral-v0.2`.
+Scope guard: this record does NOT define traversal facts or acquisition history beyond the
+content component (slice 4), does NOT settle Q25 or Q26, and does NOT declare v0.2 complete.
+Reversibility: medium — the schema change is additive; reverting the skip leaves the column
+truthful (every row would again be read in its own run).
+Status: DECIDED (scoped to v0.2).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.
@@ -1110,7 +1135,7 @@ STATUS VOCABULARY (so no reader has to infer a record's state)
   DECIDED (scoped to v0.2)
                        — committed for the named version; explicitly not project-wide.
                          (UD-016, UD-017, UD-019, UD-020, UD-021, UD-022, UD-023, UD-024,
-                         UD-025, UD-026, UD-027, UD-030, UD-031, UD-033, UD-034, UD-035.) A scoped commitment expires with its version
+                         UD-025, UD-026, UD-027, UD-030, UD-031, UD-033, UD-034, UD-035, UD-036.) A scoped commitment expires with its version
                          unless a later record extends it.
   DECIDED (scoped to `umbral/` v0.1 defects)
                        — committed for the named corrections only (UD-029, UD-032).
