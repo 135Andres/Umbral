@@ -1,12 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
-<rect width="1280" height="640" fill="#14161a"/>
-<g transform="translate(120 150) scale(3.2)">
-  <path d="M14 52V26a18 18 0 0 1 36 0v26" fill="none" stroke="#ece8df" stroke-width="4" stroke-linecap="round"/>
-  <rect x="8" y="50" width="48" height="4" rx="2" fill="#f0a93e"/>
-  <circle cx="32" cy="34" r="3" fill="#f0a93e"/>
-</g>
-<text x="370" y="300" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="120" font-weight="600" fill="#ece8df">umbral</text>
-<text x="374" y="380" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="36" fill="#a3a29c">Your files, your project — humans and AI working</text>
-<text x="374" y="428" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="36" fill="#a3a29c">together without mistaking a guess for a fact.</text>
-<text x="374" y="520" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="26" fill="#f0a93e">local-first · open source · research</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-label="Umbral">
+<rect width="1280" height="640" fill="#000000"/>
+<rect x="0" y="0" width="1280" height="40" fill="#8b5cf6"/>
+<text x="64" y="27" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="20" font-weight="800" letter-spacing="4" fill="#000000">LOCAL · OPEN SOURCE · IN DESIGN</text>
+<g transform="translate(64 150) scale(3.4)"><path d="M14 52V10h36v42" fill="none" stroke="#ffffff" stroke-width="7" stroke-linejoin="miter"/><rect x="4" y="50" width="56" height="9" fill="#8b5cf6"/><rect x="28" y="26" width="8" height="8" fill="#8b5cf6"/></g>
+<text x="330" y="300" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="140" font-weight="800" letter-spacing="6" fill="#ffffff">UMBRAL</text>
+<rect x="330" y="336" width="886" height="8" fill="#8b5cf6"/>
+<text x="330" y="412" font-family="'Arial Black', 'Helvetica Neue', Arial, ui-sans-serif, sans-serif" font-size="40" font-weight="900" fill="#ffffff">YOUR PROJECT CONTINUES.</text>
+<text x="330" y="464" font-family="'Arial Black', 'Helvetica Neue', Arial, ui-sans-serif, sans-serif" font-size="40" font-weight="900" fill="#8b5cf6">EVEN WHEN YOU SWITCH AGENTS.</text>
 </svg>

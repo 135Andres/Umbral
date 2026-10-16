@@ -1,34 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="312" viewBox="0 0 1120 312" role="img" aria-labelledby="title desc">
-  <title id="title">Agent continuity — proposed workflow</title>
-  <desc id="desc">Work in your AI tool, leave context with source references, and resume with the same or another agent. Proposed design, not yet implemented.</desc>
-  <rect width="1120" height="312" rx="12" fill="#eee8f8"/>
-  <g font-family="sans-serif">
-    <text x="36" y="38" fill="#6d28d9" font-size="12" font-weight="700" letter-spacing="2">PROPOSED WORKFLOW</text>
-    <text x="36" y="69" fill="#21152e" font-size="23" font-weight="600">One project. Continuity across sessions.</text>
-    <rect x="36" y="98" width="316" height="136" fill="#faf8fe" stroke="#b9a8ce"/>
-    <rect x="402" y="98" width="316" height="136" fill="#faf8fe" stroke="#b9a8ce"/>
-    <rect x="768" y="98" width="316" height="136" fill="#5920b0"/>
-    <g fill="none" stroke="#6d28d9" stroke-width="2">
-      <path d="M364 166h26m-7-6 7 6-7 6"/>
-      <path d="M730 166h26m-7-6 7 6-7 6"/>
-    </g>
-    <g fill="#6d28d9" font-size="12" font-family="monospace" font-weight="700">
-      <text x="56" y="125">01</text>
-      <text x="422" y="125">02</text>
-    </g>
-    <text x="788" y="125" fill="#ded0f6" font-size="12" font-family="monospace" font-weight="700">03</text>
-    <g fill="#21152e" font-size="28" font-weight="650">
-      <text x="56" y="168">Work</text>
-      <text x="422" y="168">Leave context</text>
-    </g>
-    <text x="788" y="168" fill="#ffffff" font-size="28" font-weight="650">Continue</text>
-    <g fill="#51425f" font-size="15">
-      <text x="56" y="204">In your usual AI tool.</text>
-      <text x="422" y="204">Goal, sources and next action.</text>
-    </g>
-    <text x="788" y="204" fill="#eee6fb" font-size="15">With the same or another agent.</text>
-    <path d="M36 261h1048" stroke="#c7b9db"/>
-    <circle cx="42" cy="285" r="4" fill="#6d28d9"/>
-    <text x="56" y="290" fill="#51425f" font-size="14">Changed sources are surfaced for review.</text>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="312" viewBox="0 0 1120 312" role="img" aria-label="Agent continuity — proposed workflow">
+<title>Agent continuity — proposed workflow</title>
+<desc>Work in your AI tool, leave context with source references, and resume with the same or another agent. Proposed design, not yet implemented.</desc>
+<rect x="2" y="2" width="1116" height="308" fill="#ffffff" stroke="#000000" stroke-width="4"/>
+<rect x="2" y="2" width="1116" height="22" fill="#6d28d9"/>
+<text x="36" y="18" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="800" letter-spacing="3" fill="#ffffff">PROPOSED WORKFLOW</text>
+<text x="36" y="70" font-family="'Arial Black', 'Helvetica Neue', Arial, ui-sans-serif, sans-serif" font-size="26" font-weight="900" fill="#000000">ONE PROJECT. CONTINUITY ACROSS SESSIONS.</text>
+<rect x="44" y="106" width="308" height="128" fill="#6d28d9"/><rect x="36" y="98" width="308" height="128" fill="#ffffff" stroke="#000000" stroke-width="4"/>
+<text x="56" y="126" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#6d28d9">[01]</text>
+<text x="56" y="170" font-family="'Arial Black', 'Helvetica Neue', Arial, ui-sans-serif, sans-serif" font-size="28" font-weight="900" fill="#000000">WORK</text>
+<text x="56" y="204" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" fill="#000000">In your usual AI tool.</text>
+<path d="M360 157h20v-9l14 14-14 14v-9h-20z" fill="#000000"/>
+<rect x="410" y="106" width="308" height="128" fill="#6d28d9"/><rect x="402" y="98" width="308" height="128" fill="#ffffff" stroke="#000000" stroke-width="4"/>
+<text x="422" y="126" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#6d28d9">[02]</text>
+<text x="422" y="170" font-family="'Arial Black', 'Helvetica Neue', Arial, ui-sans-serif, sans-serif" font-size="28" font-weight="900" fill="#000000">LEAVE CONTEXT</text>
+<text x="422" y="204" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" fill="#000000">Goal, sources and next action.</text>
+<path d="M726 157h20v-9l14 14-14 14v-9h-20z" fill="#000000"/>
+<rect x="776" y="106" width="308" height="128" fill="#000000"/><rect x="768" y="98" width="308" height="128" fill="#6d28d9" stroke="#000000" stroke-width="4"/>
+<text x="788" y="126" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#ffffff">[03]</text>
+<text x="788" y="170" font-family="'Arial Black', 'Helvetica Neue', Arial, ui-sans-serif, sans-serif" font-size="28" font-weight="900" fill="#ffffff">CONTINUE</text>
+<text x="788" y="204" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" fill="#ffffff">With the same or another agent.</text>
+<rect x="36" y="252" width="1048" height="4" fill="#000000"/>
+<rect x="36" y="276" width="12" height="12" fill="#6d28d9"/>
+<text x="58" y="287" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" fill="#000000">Changed sources are surfaced for review.</text>
 </svg>

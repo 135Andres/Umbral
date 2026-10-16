@@ -10,9 +10,9 @@
 <p align="center"><a href="README.md">English</a> · <b>Español</b></p>
 
 <p align="center">
-  <a href="docs/candidates/CONTINUITY-PILOT.md"><img alt="Continuidad: en diseño" src="https://img.shields.io/badge/continuidad-en_dise%C3%B1o-6d28d9"></a>
-  <a href="docs/versions/v0.2.md"><img alt="Instrumento disponible: v0.2" src="https://img.shields.io/badge/observer-v0.2-52525b"></a>
-  <a href="LICENSE"><img alt="GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-52525b"></a>
+  <a href="docs/candidates/CONTINUITY-PILOT.md"><img alt="Continuidad: en diseño" src="https://img.shields.io/badge/continuidad-en_dise%C3%B1o-6d28d9?style=for-the-badge"></a>
+  <a href="docs/versions/v0.2.md"><img alt="Instrumento disponible: v0.2" src="https://img.shields.io/badge/observer-v0.2-000000?style=for-the-badge"></a>
+  <a href="LICENSE"><img alt="GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-000000?style=for-the-badge"></a>
 </p>
 
 ---
