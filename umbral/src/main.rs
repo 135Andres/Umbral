@@ -19,6 +19,13 @@
 //! - `workspaces`     — which workspaces exist on this machine
 //! - `check <root>`   — verify the log: references, stored values, no derived state
 //!
+//! Task continuity, `umbral-continuity/1` (UD-040), JSON on stdout. The only commands that
+//! write inside the project, and only under `<root>/.umbral/`:
+//!
+//! - `task save <root>` — save a revision; the input is one JSON object on stdin
+//! - `task resume <root> <task-id> [--revision <id>]` — read a revision and evaluate its sources
+//! - `task list <root> [--limit <n>] [--cursor <task-id>]` — list tasks
+//!
 //! # Exit codes
 //!
 //! - `0` success. Includes `ambiguous` and "no results": they are results, not errors.
@@ -26,6 +33,7 @@
 //! - `2` usage error.
 //! - `3` `observe` only: the run was recorded but incomplete, because some paths could not
 //!   be observed. Present so a script can see incompleteness instead of missing it.
+//! - `4` `task` only: revision conflict or fork. `5` `task` only: an unreadable record.
 
 use std::ffi::{OsStr, OsString};
 use std::path::Path;
@@ -47,8 +55,13 @@ usage: umbral <command> [args]
   workspaces             list workspaces on this machine (read-only)
   check <root>           verify the log (read-only)
 
-State lives outside <root>, under $XDG_DATA_HOME/umbral/ (fallback ~/.local/share/umbral/).
-Nothing is ever written inside <root>.";
+  task save <root>                        save a task revision (JSON on stdin)
+  task resume <root> <task-id> [--revision <id>]
+  task list <root> [--limit <n>] [--cursor <task-id>]
+
+Observer state lives outside <root>, under $XDG_DATA_HOME/umbral/ (fallback
+~/.local/share/umbral/), and the observer never writes inside <root>. Only `task save`
+writes inside <root>, and only under <root>/.umbral/.";
 
 fn main() -> ExitCode {
     // OS-native arguments, deliberately. A path is a byte string, and a file whose name is
@@ -179,6 +192,9 @@ fn run(args: &[OsString]) -> u8 {
             Err(e) => runtime_error(&e),
         },
 
+        #[cfg(unix)]
+        "task" => task(args),
+
         _ => {
             eprintln!("unknown command: {cmd}");
             eprintln!("{USAGE}");
@@ -292,4 +308,77 @@ fn observe(root: &Path) -> u8 {
         );
         3
     }
+}
+
+#[cfg(unix)]
+fn task(args: &[OsString]) -> u8 {
+    use std::io::Read;
+    use umbral::continuity::{self, Channel, Error};
+
+    let sub = arg(args, 2).and_then(OsStr::to_str);
+    let Some(root) = arg(args, 3) else {
+        return usage("task save|resume|list <root> ...");
+    };
+    let root = Path::new(root);
+    let text = |i: usize| arg(args, i).map(|a| a.to_str().ok_or(()));
+
+    let result = match sub {
+        Some("save") if args.len() == 4 => {
+            let mut input = Vec::new();
+            match std::io::stdin().read_to_end(&mut input) {
+                Err(e) => Err(Error::Io(format!("stdin: {e}"))),
+                Ok(_) => match serde_json::from_slice(&input) {
+                    Ok(input) => continuity::save(root, input, Channel::Cli),
+                    Err(e) => Err(Error::InvalidInput(format!("stdin: {e}"))),
+                },
+            }
+        }
+        Some("resume") => {
+            let (task, revision) = match (text(4), arg(args, 5), text(6), args.len()) {
+                (Some(Ok(t)), None, None, 5) => (t, None),
+                (Some(Ok(t)), Some(f), Some(Ok(r)), 7) if f == "--revision" => (t, Some(r)),
+                (Some(Err(())), ..) => ("", None),
+                _ => return usage("task resume <root> <task-id> [--revision <id>]"),
+            };
+            continuity::resume(root, task, revision)
+        }
+        Some("list") => {
+            let mut limit = None;
+            let mut cursor = None;
+            let mut i = 4;
+            while i < args.len() {
+                match (arg(args, i).and_then(OsStr::to_str), text(i + 1)) {
+                    (Some("--limit"), Some(Ok(n))) if limit.is_none() => match n.parse() {
+                        Ok(n) => limit = Some(n),
+                        Err(_) => {
+                            return usage("task list <root> [--limit <n>] [--cursor <task-id>]")
+                        }
+                    },
+                    (Some("--cursor"), Some(Ok(c))) if cursor.is_none() => cursor = Some(c),
+                    _ => return usage("task list <root> [--limit <n>] [--cursor <task-id>]"),
+                }
+                i += 2;
+            }
+            continuity::list(root, limit, cursor)
+        }
+        _ => return usage("task save|resume|list <root> ..."),
+    };
+
+    let (doc, code) = match result {
+        Ok(doc) => {
+            if let Some(w) = doc.get("privacy_warning").and_then(|w| w.as_str()) {
+                eprintln!("note: {w}");
+            }
+            (doc, 0)
+        }
+        Err(e) => {
+            eprintln!("error: {e}");
+            (e.to_json(), e.exit_code())
+        }
+    };
+    match serde_json::to_string_pretty(&doc) {
+        Ok(s) => println!("{s}"),
+        Err(e) => return runtime_error(&e),
+    }
+    code
 }

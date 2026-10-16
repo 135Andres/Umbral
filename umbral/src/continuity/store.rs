@@ -111,14 +111,21 @@ impl Store {
                 file: file.clone(),
                 reason,
             };
-            let Some(id) = file.strip_suffix(".json").filter(|s| super::is_revision_id(s))
+            let Some(id) = file
+                .strip_suffix(".json")
+                .filter(|s| super::is_revision_id(s))
             else {
                 return Err(bad("registro-invalido", "not a revision file name".into()));
             };
             let path = dir.join(&name);
             match std::fs::symlink_metadata(&path) {
                 Ok(m) if m.is_file() => {}
-                Ok(_) => return Err(Error::Unsafe(format!("{} is not a regular file", path.display()))),
+                Ok(_) => {
+                    return Err(Error::Unsafe(format!(
+                        "{} is not a regular file",
+                        path.display()
+                    )))
+                }
                 Err(e) => return Err(io_err(&file, &e)),
             }
             let bytes = std::fs::read(&path).map_err(|e| io_err(&file, &e))?;
@@ -134,10 +141,12 @@ impl Store {
             }
             let rev: Revision = serde_json::from_value(value)
                 .map_err(|e| bad("registro-invalido", e.to_string()))?;
-            super::ops::check_record(&rev)
-                .map_err(|e| bad("registro-invalido", e.to_string()))?;
+            super::ops::check_record(&rev).map_err(|e| bad("registro-invalido", e.to_string()))?;
             if rev.task != task {
-                return Err(bad("registro-invalido", "task does not match its directory".into()));
+                return Err(bad(
+                    "registro-invalido",
+                    "task does not match its directory".into(),
+                ));
             }
             revs.push((id.to_string(), rev));
         }

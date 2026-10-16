@@ -225,7 +225,8 @@ impl Error {
 
     /// The error document written to stdout.
     pub fn to_json(&self) -> Value {
-        let mut v = json!({ "contract": EDITION, "error": self.token(), "message": self.to_string() });
+        let mut v =
+            json!({ "contract": EDITION, "error": self.token(), "message": self.to_string() });
         let extra = match self {
             Error::LimitExceeded {
                 field,

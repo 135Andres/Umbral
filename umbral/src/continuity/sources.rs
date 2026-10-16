@@ -81,7 +81,10 @@ pub(super) fn check_path(bytes: &[u8]) -> Result<(), String> {
 
 /// What one read of a source found.
 pub(super) enum Seen {
-    Hash { hash: String, size: u64 },
+    Hash {
+        hash: String,
+        size: u64,
+    },
     Absent,
     /// Not a readable regular file inside the root. Rejected at save; `unknown` at resume.
     Refused(Reason),

@@ -94,7 +94,10 @@ fn check_count(field: &str, n: usize, max: usize) -> Result<(), Error> {
 /// Everything the emitter declared. `paths` are the source paths, as written.
 fn check_declared(r: &Revision, paths: &[String]) -> Result<(), Error> {
     if !super::is_task_id(&r.task) {
-        return Err(invalid(format!("task id {:?} does not match the rule", r.task)));
+        return Err(invalid(format!(
+            "task id {:?} does not match the rule",
+            r.task
+        )));
     }
     check_count("parents", r.parents.len(), 8)?;
     if let Some(p) = r.parents.iter().find(|p| !super::is_revision_id(p)) {
@@ -179,7 +182,8 @@ pub(super) fn check_record(r: &Revision) -> Result<(), Error> {
                     && s.size.is_some()
                     && s.hash.as_deref().is_some_and(|h| {
                         h.strip_prefix("blake3:").is_some_and(|x| {
-                            x.len() == 64 && x.bytes().all(|c| matches!(c, b'0'..=b'9' | b'a'..=b'f'))
+                            x.len() == 64
+                                && x.bytes().all(|c| matches!(c, b'0'..=b'9' | b'a'..=b'f'))
                         })
                     })
             }
@@ -358,28 +362,36 @@ pub fn resume(root: &Path, task: &str, revision: Option<&str>) -> Result<Value, 
     for s in &rev.sources {
         let mut e = json!({ "path": s.path, "recorded": s });
         let (state, reason) = match (&s.hash, s.capture) {
-            (Some(recorded), Capture::Captured) => match sources::inspect(&root, &decode(&s.path))
-            {
-                Seen::Hash { hash, size } => {
-                    e["current"] = json!({ "hash": hash, "size": size });
-                    (if hash == *recorded { "match" } else { "differs" }, None)
-                }
-                Seen::Absent => ("absent", None),
-                Seen::Refused(r) => ("unknown", Some(r)),
-                Seen::Unknown {
-                    reason,
-                    deltas,
-                    detail,
-                } => {
-                    if let Some(d) = deltas {
-                        e["deltas"] = json!(d);
+            (Some(recorded), Capture::Captured) => {
+                match sources::inspect(&root, &decode(&s.path)) {
+                    Seen::Hash { hash, size } => {
+                        e["current"] = json!({ "hash": hash, "size": size });
+                        (
+                            if hash == *recorded {
+                                "match"
+                            } else {
+                                "differs"
+                            },
+                            None,
+                        )
                     }
-                    if let Some(d) = detail {
-                        e["detail"] = json!(d);
+                    Seen::Absent => ("absent", None),
+                    Seen::Refused(r) => ("unknown", Some(r)),
+                    Seen::Unknown {
+                        reason,
+                        deltas,
+                        detail,
+                    } => {
+                        if let Some(d) = deltas {
+                            e["deltas"] = json!(d);
+                        }
+                        if let Some(d) = detail {
+                            e["detail"] = json!(d);
+                        }
+                        ("unknown", Some(reason))
                     }
-                    ("unknown", Some(reason))
                 }
-            },
+            }
             _ => ("unknown", Some(Reason::NoRecordedHash)),
         };
         e["state"] = json!(state);
@@ -405,7 +417,10 @@ pub fn resume(root: &Path, task: &str, revision: Option<&str>) -> Result<Value, 
         .declarations
         .iter()
         .filter(|d| {
-            d.kind == Kind::Check && d.depends_on.iter().any(|p| states.get(p.as_str()) != Some(&"match"))
+            d.kind == Kind::Check
+                && d.depends_on
+                    .iter()
+                    .any(|p| states.get(p.as_str()) != Some(&"match"))
         })
         .map(|d| d.id.as_str())
         .collect();
