@@ -14,7 +14,15 @@ use crate::content::{self, ContentError, Stability};
 /// Reading the index runs `core.fsmonitor`, a program the observed repository names: it is
 /// switched off on the command line, which outranks every config file (B-01).
 fn git(root: &Path, args: &[&str], input: &[u8]) -> Result<std::process::Output, Error> {
-    let mut child = Command::new(git_program()?)
+    let mut cmd = Command::new(git_program()?);
+    // An inherited `GIT_DIR`, `GIT_INDEX_FILE`, `GIT_CONFIG_*`... would point git at another
+    // repository or bring in config (B-04). `GIT_CEILING_DIRECTORIES` only narrows discovery.
+    for (k, _) in std::env::vars_os() {
+        if k.as_bytes().starts_with(b"GIT_") && k != "GIT_CEILING_DIRECTORIES" {
+            cmd.env_remove(k);
+        }
+    }
+    let mut child = cmd
         .args(["-c", "core.fsmonitor=false"])
         .args(args)
         .current_dir(root)

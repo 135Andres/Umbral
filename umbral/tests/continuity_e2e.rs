@@ -940,3 +940,56 @@ fn b02_a_git_planted_in_the_repository_is_never_run() {
     }
     assert!(!witness.exists(), "a planted git was run");
 }
+
+/// B-04: `GIT_*` variables inherited from the caller (a hook exports `GIT_DIR`) do not move
+/// git to another repository, nor bring in config.
+#[test]
+fn b04_inherited_git_variables_are_ignored() {
+    let dir = repo();
+    let root = dir.path();
+    let r = root.to_str().unwrap();
+    std::fs::write(root.join(".gitignore"), ".env\n").unwrap();
+    std::fs::write(root.join(".env"), "TOKEN=1").unwrap();
+    let other = repo();
+    std::fs::write(other.path().join(".env"), "x").unwrap();
+    git(other.path(), &["add", "-f", ".env"]);
+    git(other.path(), &["commit", "-q", "-m", "env"]);
+    let head = Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .current_dir(root)
+        .output()
+        .unwrap()
+        .stdout;
+    let head = String::from_utf8(head).unwrap().trim().to_string();
+
+    let bin = TempDir::new().unwrap();
+    let witness = bin.path().join("witness");
+    let evil = bin.path().join("fsmonitor");
+    witness_script(&evil, &witness);
+    let other_git = other.path().join(".git");
+    let env = [
+        ("GIT_DIR", other_git.as_os_str()),
+        ("GIT_WORK_TREE", root.as_os_str()),
+        ("GIT_CONFIG_COUNT", "1".as_ref()),
+        ("GIT_CONFIG_KEY_0", "core.fsmonitor".as_ref()),
+        ("GIT_CONFIG_VALUE_0", evil.as_os_str()),
+    ];
+    let (out, doc) = umbral_env(
+        &["task", "save", r],
+        Some(&input("t", Value::Null, &["a.txt"])),
+        &env,
+    );
+    assert_eq!(out.status.code(), Some(0), "{doc}");
+    assert_eq!(doc["git"]["head"], head.as_str());
+    let (out, doc) = umbral_env(
+        &["task", "save", r],
+        Some(&input("e", Value::Null, &[".env"])),
+        &env,
+    );
+    assert_eq!(out.status.code(), Some(2), "{doc}");
+    assert_eq!(doc["sources"][0]["reason"], "git-ignored");
+    assert!(
+        !witness.exists(),
+        "core.fsmonitor from the environment was run"
+    );
+}
