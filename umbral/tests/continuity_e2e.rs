@@ -1423,3 +1423,55 @@ fn m1_forbidden_text_foreign_dependencies_canonical_bytes_and_goal_cut() {
     let (_, listed) = run(&["list", "--cursor", "t"], root);
     assert_eq!(listed["tasks"][0]["heads"][0]["goal_truncated"], false);
 }
+
+/// B-07, deterministic: another revision of the task appears while a first save runs (a
+/// `git` wrapper plants it when the save asks for HEAD). The save writes, reports the fork
+/// with exit 4, and still gives the privacy warning, since it created the state.
+#[test]
+fn b07_a_first_save_that_forks_still_gives_the_privacy_warning() {
+    use std::os::unix::fs::PermissionsExt;
+    let donor = repo();
+    let other = saved(donor.path(), &input("t", Value::Null, &["a.txt"]));
+    let record = task_dir(donor.path(), "t").join(format!("{other}.json"));
+
+    let dir = repo();
+    let root = dir.path();
+    let real = std::env::split_paths(&std::env::var_os("PATH").unwrap())
+        .map(|d| d.join("git"))
+        .find(|p| p.is_file())
+        .unwrap();
+    let bin = TempDir::new().unwrap();
+    let tasks = task_dir(root, "t");
+    std::fs::write(
+        bin.path().join("git"),
+        format!(
+            "#!/bin/sh\ncase \"$*\" in *--verify*) mkdir -p '{t}' && cp '{r}' '{t}/' ;; esac\nexec '{g}' \"$@\"\n",
+            t = tasks.display(),
+            r = record.display(),
+            g = real.display()
+        ),
+    )
+    .unwrap();
+    std::fs::set_permissions(
+        bin.path().join("git"),
+        std::fs::Permissions::from_mode(0o755),
+    )
+    .unwrap();
+    let mut path = bin.path().as_os_str().to_os_string();
+    path.push(":");
+    path.push(std::env::var_os("PATH").unwrap());
+
+    let (out, err) = umbral_env(
+        &["task", "save", root.to_str().unwrap()],
+        Some(&input("t", Value::Null, &["a.txt"])),
+        &[("PATH", path.as_os_str())],
+    );
+    assert_eq!(out.status.code(), Some(4), "{err}");
+    assert_eq!(err["error"], "bifurcacion");
+    assert!(err["privacy_warning"].is_string(), "{err}");
+    assert!(String::from_utf8_lossy(&out.stderr).contains("note: Records in .umbral/"));
+    let mut expected = vec![format!("{}.json", err["revision"].as_str().unwrap())];
+    expected.push(format!("{other}.json"));
+    expected.sort();
+    assert_eq!(files(&tasks), expected);
+}
