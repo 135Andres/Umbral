@@ -30,6 +30,8 @@
 
 pub mod acquisition;
 pub mod content;
+#[cfg(unix)]
+pub mod continuity;
 pub mod contract;
 pub mod identity;
 pub mod log;

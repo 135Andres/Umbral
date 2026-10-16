@@ -91,7 +91,7 @@ impl Written {
 }
 
 /// Characters that could make a written value look like something else on a terminal.
-fn is_deceptive(c: char) -> bool {
+pub(crate) fn is_deceptive(c: char) -> bool {
     matches!(c as u32,
         0x0080..=0x009F            // C1 controls
         | 0x061C | 0x200E | 0x200F // bidirectional marks
