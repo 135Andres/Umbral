@@ -299,6 +299,18 @@ pub fn save(root: &Path, input: SaveInput, channel: Channel) -> Result<Value, Er
         }
         rev.sources.push(s);
     }
+    let readable: Vec<Vec<u8>> = input
+        .sources
+        .iter()
+        .filter(|p| !rejected.iter().any(|(r, _)| r == *p))
+        .map(|p| decode(p))
+        .collect();
+    let ignored = sources::git_ignored(&root, &readable)?;
+    for p in &input.sources {
+        if ignored.contains(&decode(p)) {
+            rejected.push((p.clone(), "git-ignored"));
+        }
+    }
     if !rejected.is_empty() {
         return Err(Error::SourceRejected(rejected));
     }
@@ -334,26 +346,36 @@ pub fn save(root: &Path, input: SaveInput, channel: Channel) -> Result<Value, Er
     Ok(out)
 }
 
-pub fn resume(root: &Path, task: &str, revision: Option<&str>) -> Result<Value, Error> {
-    if !super::is_task_id(task) {
-        return Err(invalid(format!("task id {task:?} does not match the rule")));
-    }
-    let root = sources::git_root(root)?;
-    let Some(revs) = Store::new(root.clone()).load_task(task)? else {
-        return Ok(json!({ "contract": EDITION, "state": "no-record", "task": task }));
+/// A task's revisions, its heads and the one asked for (the single head by default).
+/// `None` when the task has no record.
+type Selected = (Vec<(String, Revision)>, Vec<String>, String);
+
+fn select(store: &Store, task: &str, revision: Option<&str>) -> Result<Option<Selected>, Error> {
+    let Some(revs) = store.load_task(task)? else {
+        return Ok(None);
     };
     let heads = store::heads(task, &revs)?;
     let id = match revision {
         Some(r) => r.to_string(),
         None if heads.len() == 1 => heads[0].clone(),
-        None if heads.is_empty() => {
-            return Ok(json!({ "contract": EDITION, "state": "no-record", "task": task }))
-        }
+        None if heads.is_empty() => return Ok(None),
         None => return Err(fork(None, &heads, &revs)),
     };
-    let Some((_, rev)) = revs.iter().find(|(r, _)| *r == id) else {
+    if !revs.iter().any(|(r, _)| *r == id) {
         return Err(Error::NoSuchRevision(id));
+    }
+    Ok(Some((revs, heads, id)))
+}
+
+pub fn resume(root: &Path, task: &str, revision: Option<&str>) -> Result<Value, Error> {
+    if !super::is_task_id(task) {
+        return Err(invalid(format!("task id {task:?} does not match the rule")));
+    }
+    let root = sources::git_root(root)?;
+    let Some((revs, heads, id)) = select(&Store::new(root.clone()), task, revision)? else {
+        return Ok(json!({ "contract": EDITION, "state": "no-record", "task": task }));
     };
+    let rev = &revs.iter().find(|(r, _)| *r == id).expect("selected").1;
 
     let mut states: BTreeMap<&str, &str> = BTreeMap::new();
     let mut counts: BTreeMap<&str, usize> = BTreeMap::new();
@@ -453,6 +475,34 @@ pub fn resume(root: &Path, task: &str, revision: Option<&str>) -> Result<Value, 
         "checks_needing_review": checks_needing_review,
         "declarations_without_dependencies": without_dependencies,
         "limits": LIMITS,
+    }))
+}
+
+/// One revision as a portable document (contract §6.1): the file's bytes as they are, with
+/// where they came from. Readable by any JSON tool; the revision id is the first 32 hex
+/// digits of BLAKE3 over `record`.
+pub fn export(root: &Path, task: &str, revision: Option<&str>) -> Result<Value, Error> {
+    if !super::is_task_id(task) {
+        return Err(invalid(format!("task id {task:?} does not match the rule")));
+    }
+    let store = Store::new(sources::git_root(root)?);
+    let Some((_, _, id)) = select(&store, task, revision)? else {
+        return Err(Error::NoSuchRevision(format!("task {task} has no record")));
+    };
+    let bytes = store.raw(task, &id)?;
+    let record = String::from_utf8(bytes).map_err(|_| Error::Record {
+        token: "registro-invalido",
+        task: task.to_string(),
+        file: format!("{id}.json"),
+        reason: "not UTF-8".into(),
+    })?;
+    Ok(json!({
+        "contract": EDITION,
+        "format": EDITION,
+        "task": task,
+        "revision": id,
+        "integrity": "ok",
+        "record": record,
     }))
 }
 

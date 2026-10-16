@@ -130,7 +130,7 @@ impl Store {
             }
             let bytes = std::fs::read(&path).map_err(|e| io_err(&file, &e))?;
             if revision_id(&bytes) != id {
-                return Err(bad("registro-alterado", "hash-mismatch".into()));
+                return Err(bad("registro-alterado", altered(&bytes).into()));
             }
             let value: Value = serde_json::from_slice(&bytes)
                 .map_err(|e| bad("registro-invalido", e.to_string()))?;
@@ -151,6 +151,22 @@ impl Store {
             revs.push((id.to_string(), rev));
         }
         Ok(Some(revs))
+    }
+
+    /// The bytes of one revision file, checked against its name again: the file may have
+    /// changed since the task was loaded.
+    pub fn raw(&self, task: &str, id: &str) -> Result<Vec<u8>, Error> {
+        let path = self.chain()[2].join(task).join(format!("{id}.json"));
+        let bytes = std::fs::read(&path).map_err(|e| io_err(id, &e))?;
+        if revision_id(&bytes) != id {
+            return Err(Error::Record {
+                token: "registro-alterado",
+                task: task.to_string(),
+                file: format!("{id}.json"),
+                reason: altered(&bytes).into(),
+            });
+        }
+        Ok(bytes)
     }
 
     /// Create the directories a save needs. `true` when `.umbral/` itself was created.
@@ -207,6 +223,19 @@ impl Store {
             .and_then(|d| d.sync_all())
             .map_err(|e| io_err("sync task directory", &e))?;
         Ok((id, created))
+    }
+}
+
+/// Why a file's bytes no longer match its name (contract §5.4). A canonical record has no
+/// line that starts like a Git conflict marker.
+fn altered(bytes: &[u8]) -> &'static str {
+    let marker = bytes.split(|b| *b == b'\n').any(|l| {
+        l.starts_with(b"<<<<<<< ") || l.starts_with(b">>>>>>> ") || l.starts_with(b"=======")
+    });
+    if marker {
+        "conflict-markers"
+    } else {
+        "hash-mismatch"
     }
 }
 

@@ -9,7 +9,7 @@ mod ops;
 mod sources;
 mod store;
 
-pub use ops::{list, resume, save, Expected, SaveInput};
+pub use ops::{export, list, resume, save, Expected, SaveInput};
 
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::{json, Value};

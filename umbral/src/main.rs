@@ -25,6 +25,7 @@
 //! - `task save <root>` — save a revision; the input is one JSON object on stdin
 //! - `task resume <root> <task-id> [--revision <id>]` — read a revision and evaluate its sources
 //! - `task list <root> [--limit <n>] [--cursor <task-id>]` — list tasks
+//! - `task export <root> <task-id> [--revision <id>]` — one revision as a portable document
 //!
 //! # Exit codes
 //!
@@ -58,6 +59,7 @@ usage: umbral <command> [args]
   task save <root>                        save a task revision (JSON on stdin)
   task resume <root> <task-id> [--revision <id>]
   task list <root> [--limit <n>] [--cursor <task-id>]
+  task export <root> <task-id> [--revision <id>]
 
 Observer state lives outside <root>, under $XDG_DATA_HOME/umbral/ (fallback
 ~/.local/share/umbral/), and the observer never writes inside <root>. Only `task save`
@@ -317,7 +319,7 @@ fn task(args: &[OsString]) -> u8 {
 
     let sub = arg(args, 2).and_then(OsStr::to_str);
     let Some(root) = arg(args, 3) else {
-        return usage("task save|resume|list <root> ...");
+        return usage("task save|resume|list|export <root> ...");
     };
     let root = Path::new(root);
     let text = |i: usize| arg(args, i).map(|a| a.to_str().ok_or(()));
@@ -333,14 +335,18 @@ fn task(args: &[OsString]) -> u8 {
                 },
             }
         }
-        Some("resume") => {
+        Some(op @ ("resume" | "export")) => {
             let (task, revision) = match (text(4), arg(args, 5), text(6), args.len()) {
                 (Some(Ok(t)), None, None, 5) => (t, None),
                 (Some(Ok(t)), Some(f), Some(Ok(r)), 7) if f == "--revision" => (t, Some(r)),
                 (Some(Err(())), ..) => ("", None),
-                _ => return usage("task resume <root> <task-id> [--revision <id>]"),
+                _ => return usage(&format!("task {op} <root> <task-id> [--revision <id>]")),
             };
-            continuity::resume(root, task, revision)
+            if op == "resume" {
+                continuity::resume(root, task, revision)
+            } else {
+                continuity::export(root, task, revision)
+            }
         }
         Some("list") => {
             let mut limit = None;
@@ -361,7 +367,7 @@ fn task(args: &[OsString]) -> u8 {
             }
             continuity::list(root, limit, cursor)
         }
-        _ => return usage("task save|resume|list <root> ..."),
+        _ => return usage("task save|resume|list|export <root> ..."),
     };
 
     let (doc, code) = match result {

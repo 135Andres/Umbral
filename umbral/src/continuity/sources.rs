@@ -1,6 +1,7 @@
 //! Git and the working copy: the only two things a continuity record captures.
 
 use std::ffi::OsStr;
+use std::io::Write;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -8,23 +9,37 @@ use std::process::{Command, Stdio};
 use super::{io_err, Error, GitState, HeadState, Reason};
 use crate::content::{self, ContentError, Stability};
 
-/// Run git with separate arguments, no shell, no optional locks and no prompt. Neither
-/// subcommand used here runs hooks or touches the network.
-fn git(root: &Path, args: &[&str]) -> Result<std::process::Output, Error> {
-    Command::new("git")
+/// Run git with separate arguments, no shell, no optional locks and no prompt. No
+/// subcommand used here (`rev-parse`, `check-ignore`) runs hooks or touches the network.
+fn git(root: &Path, args: &[&str], input: &[u8]) -> Result<std::process::Output, Error> {
+    let mut child = Command::new("git")
         .args(args)
         .current_dir(root)
         .env("GIT_OPTIONAL_LOCKS", "0")
         .env("GIT_TERMINAL_PROMPT", "0")
-        .stdin(Stdio::null())
-        .output()
-        .map_err(|e| Error::NoGit(format!("cannot run git: {e}")))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| Error::NoGit(format!("cannot run git: {e}")))?;
+    let mut stdin = child.stdin.take();
+    // Written from another thread, so a full stdout pipe cannot block the write.
+    std::thread::scope(|s| {
+        s.spawn(move || {
+            if let Some(pipe) = stdin.as_mut() {
+                // A write error shows up as git's own failure.
+                let _ = pipe.write_all(input);
+            }
+        });
+        child.wait_with_output()
+    })
+    .map_err(|e| Error::NoGit(format!("cannot run git: {e}")))
 }
 
 /// The canonical root, which must be the toplevel of a git worktree.
 pub(super) fn git_root(root: &Path) -> Result<PathBuf, Error> {
     let canonical = std::fs::canonicalize(root).map_err(|e| io_err("root", &e))?;
-    let out = git(&canonical, &["rev-parse", "--show-toplevel"])?;
+    let out = git(&canonical, &["rev-parse", "--show-toplevel"], b"")?;
     if !out.status.success() {
         return Err(Error::NoGit(format!(
             "{} is not inside a git repository",
@@ -43,7 +58,7 @@ pub(super) fn git_root(root: &Path) -> Result<PathBuf, Error> {
 }
 
 pub(super) fn git_head(root: &Path) -> Result<GitState, Error> {
-    let out = git(root, &["rev-parse", "--verify", "-q", "HEAD"])?;
+    let out = git(root, &["rev-parse", "--verify", "-q", "HEAD"], b"")?;
     if !out.status.success() {
         // The root is already known to be a repository: a HEAD that does not resolve is unborn.
         return Ok(GitState {
@@ -59,6 +74,38 @@ pub(super) fn git_head(root: &Path) -> Result<GitState, Error> {
         head_state: HeadState::Present,
         head: Some(head),
     })
+}
+
+/// Which of `paths` (raw bytes, relative to the root) Git ignores (contract P6). A tracked
+/// file is not ignored: its content is already versioned.
+pub(super) fn git_ignored(root: &Path, paths: &[Vec<u8>]) -> Result<Vec<Vec<u8>>, Error> {
+    if paths.is_empty() {
+        return Ok(Vec::new());
+    }
+    // `./` keeps a name such as `:(exclude)x` from being read as pathspec magic; git echoes
+    // each ignored path as it was given.
+    let input: Vec<u8> = paths
+        .iter()
+        .flat_map(|p| b"./".iter().chain(p).chain(&[0]))
+        .copied()
+        .collect();
+    let out = git(root, &["check-ignore", "-z", "--stdin"], &input)?;
+    // 0: some ignored, 1: none ignored, anything else: git failed.
+    match out.status.code() {
+        Some(0 | 1) => {}
+        _ => {
+            return Err(Error::Io(format!(
+                "git check-ignore failed: {}",
+                String::from_utf8_lossy(&out.stderr).trim()
+            )))
+        }
+    }
+    Ok(out
+        .stdout
+        .split(|b| *b == 0)
+        .filter_map(|p| p.strip_prefix(b"./"))
+        .map(<[u8]>::to_vec)
+        .collect())
 }
 
 /// A relative source path as raw bytes, checked against contract §3.5.
