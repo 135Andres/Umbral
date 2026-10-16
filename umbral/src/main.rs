@@ -317,57 +317,65 @@ fn task(args: &[OsString]) -> u8 {
     use std::io::Read;
     use umbral::continuity::{self, Channel, Error};
 
-    let sub = arg(args, 2).and_then(OsStr::to_str);
-    let Some(root) = arg(args, 3) else {
-        return usage("task save|resume|list|export <root> ...");
+    // A usage error is an input error: it also gets the JSON document (contract §6.3).
+    let usage = |expected: &str| {
+        Err(Error::InvalidInput(format!(
+            "usage: umbral task {expected}"
+        )))
     };
-    let root = Path::new(root);
-    let text = |i: usize| arg(args, i).map(|a| a.to_str().ok_or(()));
+    // Shown as given, lossily if it is not UTF-8; the id rules then reject it (C-M3).
+    let text = |i: usize| arg(args, i).map(OsStr::to_string_lossy);
+    const ID: &str = "<root> <task-id> [--revision <id>]";
+    const LIST: &str = "list <root> [--limit <n>] [--cursor <task-id>]";
 
-    let result = match sub {
-        Some("save") if args.len() == 4 => {
+    let result = match (arg(args, 2).and_then(OsStr::to_str), arg(args, 3)) {
+        (Some("save"), Some(root)) if args.len() == 4 => {
             let mut input = Vec::new();
             match std::io::stdin().read_to_end(&mut input) {
                 Err(e) => Err(Error::Io(format!("stdin: {e}"))),
                 Ok(_) => match serde_json::from_slice(&input) {
-                    Ok(input) => continuity::save(root, input, Channel::Cli),
+                    Ok(input) => continuity::save(Path::new(root), input, Channel::Cli),
                     Err(e) => Err(Error::InvalidInput(format!("stdin: {e}"))),
                 },
             }
         }
-        Some(op @ ("resume" | "export")) => {
-            let (task, revision) = match (text(4), arg(args, 5), text(6), args.len()) {
-                (Some(Ok(t)), None, None, 5) => (t, None),
-                (Some(Ok(t)), Some(f), Some(Ok(r)), 7) if f == "--revision" => (t, Some(r)),
-                (Some(Err(())), ..) => ("", None),
-                _ => return usage(&format!("task {op} <root> <task-id> [--revision <id>]")),
+        (Some(op @ ("resume" | "export")), Some(root)) => {
+            let call = |task: &str, revision: Option<&str>| {
+                if op == "resume" {
+                    continuity::resume(Path::new(root), task, revision)
+                } else {
+                    continuity::export(Path::new(root), task, revision)
+                }
             };
-            if op == "resume" {
-                continuity::resume(root, task, revision)
-            } else {
-                continuity::export(root, task, revision)
+            match (text(4), text(5), text(6), args.len()) {
+                (Some(t), None, None, 5) => call(&t, None),
+                (Some(t), Some(f), Some(r), 7) if f == "--revision" => call(&t, Some(&r)),
+                _ => usage(&format!("{op} {ID}")),
             }
         }
-        Some("list") => {
+        (Some("list"), Some(root)) => {
             let mut limit = None;
             let mut cursor = None;
             let mut i = 4;
-            while i < args.len() {
-                match (arg(args, i).and_then(OsStr::to_str), text(i + 1)) {
-                    (Some("--limit"), Some(Ok(n))) if limit.is_none() => match n.parse() {
+            let mut bad = false;
+            while i < args.len() && !bad {
+                match (text(i).as_deref(), text(i + 1)) {
+                    (Some("--limit"), Some(n)) if limit.is_none() => match n.parse() {
                         Ok(n) => limit = Some(n),
-                        Err(_) => {
-                            return usage("task list <root> [--limit <n>] [--cursor <task-id>]")
-                        }
+                        Err(_) => bad = true,
                     },
-                    (Some("--cursor"), Some(Ok(c))) if cursor.is_none() => cursor = Some(c),
-                    _ => return usage("task list <root> [--limit <n>] [--cursor <task-id>]"),
+                    (Some("--cursor"), Some(c)) if cursor.is_none() => cursor = Some(c),
+                    _ => bad = true,
                 }
                 i += 2;
             }
-            continuity::list(root, limit, cursor)
+            if bad {
+                usage(LIST)
+            } else {
+                continuity::list(Path::new(root), limit, cursor.as_deref())
+            }
         }
-        _ => return usage("task save|resume|list|export <root> ..."),
+        _ => usage("save|resume|list|export <root> ..."),
     };
 
     let (doc, code) = match result {

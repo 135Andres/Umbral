@@ -375,10 +375,20 @@ fn select(store: &Store, task: &str, revision: Option<&str>) -> Result<Option<Se
     Ok(Some((revs, heads, id)))
 }
 
-pub fn resume(root: &Path, task: &str, revision: Option<&str>) -> Result<Value, Error> {
+/// The ids `resume` and `export` are given. A malformed revision is invalid input, not a
+/// missing revision.
+fn check_ids(task: &str, revision: Option<&str>) -> Result<(), Error> {
     if !super::is_task_id(task) {
         return Err(invalid(format!("task id {task:?} does not match the rule")));
     }
+    if let Some(r) = revision.filter(|r| !super::is_revision_id(r)) {
+        return Err(invalid(format!("revision {r:?} is not a revision id")));
+    }
+    Ok(())
+}
+
+pub fn resume(root: &Path, task: &str, revision: Option<&str>) -> Result<Value, Error> {
+    check_ids(task, revision)?;
     let root = sources::git_root(root)?;
     let Some((revs, heads, id)) = select(&Store::new(root.clone()), task, revision)? else {
         return Ok(json!({ "contract": EDITION, "state": "no-record", "task": task }));
@@ -490,9 +500,7 @@ pub fn resume(root: &Path, task: &str, revision: Option<&str>) -> Result<Value, 
 /// where they came from. Readable by any JSON tool; the revision id is the first 32 hex
 /// digits of BLAKE3 over `record`.
 pub fn export(root: &Path, task: &str, revision: Option<&str>) -> Result<Value, Error> {
-    if !super::is_task_id(task) {
-        return Err(invalid(format!("task id {task:?} does not match the rule")));
-    }
+    check_ids(task, revision)?;
     let store = Store::new(sources::git_root(root)?);
     let Some((_, _, id)) = select(&store, task, revision)? else {
         return Err(Error::NoSuchRevision(format!("task {task} has no record")));

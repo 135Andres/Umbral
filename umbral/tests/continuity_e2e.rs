@@ -1237,3 +1237,43 @@ fn b07_concurrent_saves_fork_visibly_and_keep_the_privacy_warning() {
     }
     assert!(forks > 0, "no save forked the task in 10 rounds of {PROCS}");
 }
+
+/// A M-3 / C-M4 / C-M3: usage errors of `task` are input errors with the JSON document on
+/// stdout; a task id or revision that is not UTF-8 is reported as given (lossily), never as
+/// an empty id, and extra arguments are not ignored.
+#[test]
+fn m3_task_usage_errors_are_json_and_name_what_was_given() {
+    let dir = repo();
+    let root = dir.path().to_str().unwrap();
+    for args in [
+        &["task"][..],
+        &["task", "frob", root],
+        &["task", "resume", root],
+        &["task", "resume", root, "t", "extra"],
+        &["task", "export", root, "t", "--revision"],
+        &["task", "list", root, "--limit", "x"],
+        &["task", "list", root, "--limit"],
+        &["task", "save", root, "extra"],
+        &["task", "resume", root, "t", "--revision", "garbage"],
+    ] {
+        let (out, err) = umbral(args, None);
+        assert_eq!(out.status.code(), Some(2), "{args:?}: {err}");
+        assert_eq!(err["error"], "entrada-invalida", "{args:?}");
+    }
+    let bad = std::ffi::OsStr::from_bytes(b"x\xff");
+    for extra in [&[][..], &["junk"]] {
+        let out = Command::new(BIN)
+            .args(["task".as_ref(), "resume".as_ref(), root.as_ref(), bad])
+            .args(extra)
+            .output()
+            .unwrap();
+        let err: Value = serde_json::from_slice(&out.stdout).unwrap();
+        assert_eq!(out.status.code(), Some(2), "{err}");
+        assert_eq!(err["error"], "entrada-invalida");
+        let message = err["message"].as_str().unwrap();
+        assert!(!message.contains("\"\""), "{message}");
+        if extra.is_empty() {
+            assert!(message.contains("x\u{fffd}"), "{message}");
+        }
+    }
+}
