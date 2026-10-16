@@ -263,6 +263,21 @@ pub fn save(root: &Path, input: SaveInput, channel: Channel) -> Result<Value, Er
         sources: Vec::new(),
     };
     check_declared(&rev, &input.sources)?;
+    // Malformed is invalid input, not a conflict (A M-7).
+    let expected: &[String] = match &input.expected_revision {
+        None => &[],
+        Some(Expected::One(id)) => std::slice::from_ref(id),
+        Some(Expected::Many(ids)) => ids,
+    };
+    let distinct: BTreeSet<&String> = expected.iter().collect();
+    if expected.iter().any(|id| !super::is_revision_id(id))
+        || distinct.len() != expected.len()
+        || matches!(&input.expected_revision, Some(Expected::Many(ids)) if ids.len() < 2)
+    {
+        return Err(invalid(
+            "expected_revision must be null, a revision id, or a list of 2 or more distinct ids",
+        ));
+    }
 
     let existing = store.load_task(&rev.task)?.unwrap_or_default();
     let heads = store::heads(&rev.task, &existing)?;

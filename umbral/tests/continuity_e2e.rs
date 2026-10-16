@@ -1277,3 +1277,27 @@ fn m3_task_usage_errors_are_json_and_name_what_was_given() {
         }
     }
 }
+
+/// A M-7: a malformed `expected_revision` is invalid input, not a revision conflict (a
+/// client that retries on conflict would loop).
+#[test]
+fn m7_a_malformed_expected_revision_is_invalid_input() {
+    let dir = repo();
+    let root = dir.path();
+    let id = "0".repeat(32);
+    for expected in [
+        json!("garbage"),
+        json!([]),
+        json!([id]),
+        json!([id, id]),
+        json!([id, "x"]),
+    ] {
+        let (code, err) = save(root, &input("t", expected.clone(), &["a.txt"]));
+        assert_eq!(
+            (code, &err["error"]),
+            (Some(2), &json!("entrada-invalida")),
+            "{expected}: {err}"
+        );
+    }
+    assert!(!root.join(".umbral").exists());
+}
