@@ -1,4 +1,4 @@
-//! The operations of `umbral-continuity/1` §6: save, resume, list.
+//! The operations of `umbral-continuity/1` §6: save, resume, list, export.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;

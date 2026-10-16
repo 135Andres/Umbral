@@ -1,4 +1,5 @@
-//! Umbral v0.2 — a local, read-only workspace observation instrument.
+//! Umbral v0.2 — a local, read-only workspace observation instrument, plus the task
+//! continuity pilot (`continuity`, UD-040), which writes under `<root>/.umbral/` only.
 //!
 //! # What this crate is
 //!
@@ -13,7 +14,7 @@
 //!
 //! Deliberately absent, and each absence is a decision, not an oversight:
 //! watcher, daemon, FTS, embeddings, API, UI, MCP, AI of any kind, sync, multi-device,
-//! multi-writer, permissions, semantic layer, Project Reality.
+//! multi-writer (for the observer), permissions, semantic layer, Project Reality.
 //!
 //! # The epistemic contract
 //!

@@ -19,8 +19,8 @@
 //! - `workspaces`     — which workspaces exist on this machine
 //! - `check <root>`   — verify the log: references, stored values, no derived state
 //!
-//! Task continuity, `umbral-continuity/1` (UD-040), JSON on stdout. The only commands that
-//! write inside the project, and only under `<root>/.umbral/`:
+//! Task continuity, `umbral-continuity/1` (UD-040), JSON on stdout. `task save` is the only
+//! command that writes inside the project, and only under `<root>/.umbral/`:
 //!
 //! - `task save <root>` — save a revision; the input is one JSON object on stdin
 //! - `task resume <root> <task-id> [--revision <id>]` — read a revision and evaluate its sources

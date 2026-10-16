@@ -3,8 +3,8 @@
 //! # Where state lives
 //!
 //! `$XDG_DATA_HOME/umbral/ws-<id>/`, falling back to `~/.local/share/umbral/ws-<id>/`.
-//! Never inside the observed tree. The state directory is the only thing this program ever
-//! writes to.
+//! Never inside the observed tree. The state directory is the only thing the observer ever
+//! writes to (task continuity writes under `<root>/.umbral/`, see `continuity`).
 //!
 //! # How the identifier is derived, exactly
 //!
