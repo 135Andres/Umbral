@@ -492,41 +492,65 @@ fn t1_10_unsupported_sources_are_rejected_and_nothing_is_written() {
     saved(root, &input("t", Value::Null, &[".env"]));
 }
 
-/// T1.10: after a save, absence, a denied read and a change are three distinct results.
+/// T1.10: after a save, absence, a denied read and a change are three distinct results. A
+/// source that is only absent is not `all-match`, and a check depending on it needs review
+/// (A M-1: mutants M14, M17). Only the denied read needs file modes to be enforced (A M-6).
 #[test]
 fn t1_10_absent_denied_and_differing_sources_are_distinct_at_resume() {
     use std::os::unix::fs::PermissionsExt;
     let dir = repo();
     let root = dir.path();
-    saved(
-        root,
-        &input("t", Value::Null, &["a.txt", "b.txt", "src/c.rs"]),
-    );
+    let check = |id: &str, on: &str| {
+        json!({ "id": id, "kind": "check", "claimed_origin": "agent", "text": "t",
+                "command": null, "claimed_result": "passed", "evidence": null,
+                "depends_on": [on] })
+    };
+    let mut v = input("t", Value::Null, &["a.txt", "b.txt", "src/c.rs"]);
+    v["declarations"] = json!([check("on-a", "a.txt"), check("on-c", "src/c.rs")]);
+    saved(root, &v);
+    let states = |doc: &Value| -> Vec<(Value, Value)> {
+        doc["sources"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| (s["state"].clone(), s["reason"].clone()))
+            .collect()
+    };
+
     std::fs::remove_file(root.join("a.txt")).unwrap();
+    let (code, resumed) = run(&["resume", "t"], root);
+    assert_eq!(code, Some(0), "{resumed}");
+    assert_eq!(resumed["summary"], "not-all-match");
+    assert_eq!(
+        resumed["counts"]["states"],
+        json!({ "absent": 1, "differs": 0, "match": 2, "unknown": 0 })
+    );
+    assert_eq!(resumed["checks_needing_review"], json!(["on-a"]));
+
     std::fs::write(root.join("b.txt"), "changed").unwrap();
     let c = root.join("src/c.rs");
     std::fs::set_permissions(&c, std::fs::Permissions::from_mode(0o000)).unwrap();
     if std::fs::read(&c).is_ok() {
-        eprintln!("skipped: running with privileges that ignore file modes");
+        std::fs::set_permissions(&c, std::fs::Permissions::from_mode(0o644)).unwrap();
+        eprintln!("skipped the denied read: running with privileges that ignore file modes");
         return;
     }
     let (code, resumed) = run(&["resume", "t"], root);
     std::fs::set_permissions(&c, std::fs::Permissions::from_mode(0o644)).unwrap();
     assert_eq!(code, Some(0), "{resumed}");
-    let got: Vec<(&Value, &Value)> = resumed["sources"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|s| (&s["state"], &s["reason"]))
-        .collect();
     assert_eq!(
-        got,
+        states(&resumed),
         [
-            (&json!("absent"), &Value::Null),
-            (&json!("differs"), &Value::Null),
-            (&json!("unknown"), &json!("permission-denied")),
+            (json!("absent"), Value::Null),
+            (json!("differs"), Value::Null),
+            (json!("unknown"), json!("permission-denied")),
         ]
     );
+    assert_eq!(
+        resumed["counts"]["unknown_reasons"],
+        json!({ "permission-denied": 1 })
+    );
+    assert_eq!(resumed["checks_needing_review"], json!(["on-a", "on-c"]));
 
     // At save, a denied read is recorded as uncheckable, not rejected.
     std::fs::set_permissions(&c, std::fs::Permissions::from_mode(0o000)).unwrap();
@@ -539,6 +563,7 @@ fn t1_10_absent_denied_and_differing_sources_are_distinct_at_resume() {
     );
     let (_, resumed) = run(&["resume", "u"], root);
     assert_eq!(resumed["sources"][0]["reason"], "no-recorded-hash");
+    assert_eq!(resumed["summary"], "not-all-match");
 }
 
 /// T1.11: `.umbral/` (or a directory under it) that is a symlink or not a directory is
