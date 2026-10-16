@@ -1058,3 +1058,41 @@ fn b08_an_existing_state_directory_gets_its_git_files_and_the_warning() {
     let (_, doc) = save(root, &input("u", Value::Null, &["a.txt"]));
     assert!(doc.get("privacy_warning").is_none(), "{doc}");
 }
+
+/// A-1: closing a fork of more than 8 heads would write a record with more parents than the
+/// contract allows. It is refused before writing; 8 heads close.
+#[test]
+fn a1_closing_a_fork_of_more_than_8_heads_writes_nothing() {
+    let dir = repo();
+    let root = dir.path();
+    let base = saved(root, &input("t", Value::Null, &["a.txt"]));
+    let first = saved(root, &input("t", json!(base), &["a.txt"]));
+    let record =
+        std::fs::read_to_string(task_dir(root, "t").join(format!("{first}.json"))).unwrap();
+    let mut heads = vec![first];
+    let mut planted = Vec::new();
+    for i in 1..9 {
+        let p = plant(
+            root,
+            "t",
+            record.replace("goal of t", &format!("goal {i}")).as_bytes(),
+        );
+        heads.push(p.file_stem().unwrap().to_str().unwrap().to_string());
+        planted.push(p);
+    }
+    let (code, err) = save(root, &input("t", json!(heads), &["a.txt"]));
+    assert_eq!(code, Some(2), "{err}");
+    assert_eq!(err["error"], "limite-excedido");
+    assert_eq!(
+        (&err["field"], &err["limit"], &err["actual"]),
+        (&json!("parents"), &json!(8), &json!(9))
+    );
+    assert_eq!(files(&task_dir(root, "t")).len(), 10);
+
+    std::fs::remove_file(planted.pop().unwrap()).unwrap();
+    heads.pop();
+    saved(root, &input("t", json!(heads), &["a.txt"]));
+    let (code, doc) = run(&["resume", "t"], root);
+    assert_eq!(code, Some(0), "{doc}");
+    assert_eq!(doc["parents"].as_array().unwrap().len(), 8);
+}

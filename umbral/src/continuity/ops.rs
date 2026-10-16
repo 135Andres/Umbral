@@ -267,6 +267,8 @@ pub fn save(root: &Path, input: SaveInput, channel: Channel) -> Result<Value, Er
         None if heads.is_empty() => Vec::new(),
         Some(Expected::One(id)) if heads == [id.clone()] => vec![id],
         Some(Expected::Many(mut ids)) if ids.len() >= 2 => {
+            // The contract's 0-8 parents, checked before writing (A-1).
+            check_count("parents", ids.len(), 8)?;
             ids.sort();
             if ids != heads {
                 return Err(conflict());
