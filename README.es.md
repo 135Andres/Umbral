@@ -18,48 +18,18 @@
 ---
 
 Deberías poder dejar una tarea, volver después o cambiar de herramienta de IA sin tener
-que explicar otra vez todo tu proyecto.
+que explicar otra vez todo tu proyecto. **Ese es el objetivo de Umbral; todavía no está
+construido.** Esta página separa lo que puedes usar hoy de lo que hará al terminar el desarrollo.
 
-**Umbral está evolucionando hacia una herramienta local de continuidad para proyectos
-desarrollados con IA.** Su objetivo es llevar entre sesiones el objetivo, las decisiones,
-la evidencia y el siguiente paso, haciendo visibles las fuentes que cambiaron antes de
-que un agente se apoye en ellas.
+## Hoy: el observador v0.2
 
-> **Nueva etapa en `next`.** Esta dirección está aceptada en
-> [UD-039](docs/decisions/DECISIONS.md). El diseño detallado está en revisión.
-> Las herramientas de continuidad y la integración MCP todavía no están implementadas.
+Lo único disponible es una herramienta de línea de comandos que observa una carpeta:
 
-## Trabaja. Deja contexto. Continúa.
-
-<p align="center">
-  <img src="assets/brand/continuity-es.svg" alt="Recorrido propuesto: trabajar en tu herramienta de IA, conservar contexto con referencias a sus fuentes y continuar con el mismo agente o con otro." width="960">
-</p>
-
-La experiencia buscada es sencilla: conectas una vez, trabajas en tu herramienta habitual
-y después pides continuar. Umbral debería entregar el contexto relevante y señalar las
-fuentes registradas que necesitan revisión. Que una fuente cambie significa **revísala**;
-no demuestra por sí mismo que la conclusión anterior sea falsa.
-
-## Un producto, tres piezas
-
-| Pieza | Función | Estado |
-|---|---|---|
-| Programa local | Conservar la continuidad y contrastar las fuentes registradas con los archivos actuales | Diseño en revisión |
-| Acceso MCP | Permitir que los agentes guarden y recuperen ese estado mediante el mismo núcleo | Planeado |
-| Integración con un agente | Incorporar la recuperación y el registro de avances al flujo de un cliente real | Planeada; hay que demostrar la invocación automática |
-
-Git aporta el historial y las revisiones del repositorio. La función propuesta de Umbral
-es relacionarlos con la tarea que continúa el agente. No prueba que una IA comprendió un
-archivo ni puede comprobar dependencias que nunca quedaron registradas.
-
-## Lo que funciona hoy
-
-El **instrumento de observación v0.2** registra una carpeta, calcula huellas del contenido,
-informa de cambios y distingue lecturas nuevas de evidencia reutilizada. Se conservan su
-[guía](umbral/README.md), su [contrato de salida](umbral/CONTRACT.md) y la
-[evidencia de la versión](docs/versions/v0.2.md).
-
-Para colaboradores que quieran probar el instrumento existente desde esta copia:
+- registra la carpeta sin escribir dentro de ella (`init`);
+- toma una observación con la huella del contenido de cada archivo (`observe`);
+- dice qué cambió entre las dos últimas observaciones (`changes`), el estado actual (`status`)
+  y la historia de un archivo (`show`);
+- distingue lo leído de nuevo de lo reutilizado, y dice «desconocido» cuando no pudo leer algo.
 
 ```sh
 cargo run --locked -p umbral -- init /ruta/al/proyecto
@@ -69,18 +39,41 @@ cargo run --locked -p umbral -- observe /ruta/al/proyecto
 cargo run --locked -p umbral -- changes /ruta/al/proyecto
 ```
 
-Esto es el observador, no la experiencia de continuidad propuesta. Los criterios de
-lectura humana independiente de las versiones anteriores siguen pendientes.
+Detalles en la [guía del observador](umbral/README.md) (en inglés), su
+[contrato de salida](umbral/CONTRACT.md) y la [evidencia de la versión](docs/versions/v0.2.md).
 
-## La primera versión útil
+**Lo que hoy no hace:** no guarda tareas, objetivos ni decisiones; no tiene MCP; no se conecta
+a ningún agente; no ayuda a continuar una sesión. La v0.2 tampoco está cerrada: sus criterios
+de aceptación siguen pendientes ([evidencia](docs/versions/v0.2.md)).
 
-Construir primero el núcleo local, exponerlo por MCP y comprobar una integración real.
-Usar el desarrollo de Umbral como primer caso, comparándolo contra Git y un buen archivo
-de continuidad. Medir corrección, esfuerzo total, contexto e interrupciones innecesarias.
+## Al terminar el desarrollo: continuidad entre agentes
 
-El [alcance del piloto](docs/candidates/CONTINUITY-PILOT.md) define los límites propuestos.
-El código, los experimentos y la investigación existentes se conservan. Todavía no se
-asigna un nuevo número de versión.
+<p align="center">
+  <img src="assets/brand/continuity-es.svg" alt="Recorrido propuesto: trabajar en tu herramienta de IA, conservar contexto con referencias a sus fuentes y continuar con el mismo agente o con otro." width="960">
+</p>
+
+Lo que buscamos, aceptado en [UD-039](docs/decisions/DECISIONS.md) y **sin implementar**:
+
+1. Conectas tu herramienta de IA a un repositorio Git una vez.
+2. Trabajas como siempre; el agente guarda el objetivo, las decisiones, el siguiente paso
+   y los archivos en los que se apoya.
+3. En otra sesión, o con otro agente, pides continuar. Umbral entrega ese registro y marca
+   qué archivos cambiaron desde que se guardó.
+
+Que un archivo cambie significa **revísalo**; no demuestra que la conclusión anterior sea
+falsa. Umbral no prueba que una IA entendió un archivo ni comprueba dependencias que nadie
+registró.
+
+| Pieza | Función | Estado |
+|---|---|---|
+| Programa local | Guardar y recuperar tareas; contrastar sus archivos con la copia actual | Diseño en revisión |
+| Acceso MCP | Que los agentes usen el programa local | Planeado |
+| Integración con un agente | Que pedir «continúa» llegue a Umbral en un cliente real | Planeada; hay que demostrar la invocación |
+
+El orden es ese: programa local, MCP, integración. Al final se compara con Git más un buen
+archivo de continuidad en una tarea real de Umbral (corrección, esfuerzo, contexto e
+interrupciones innecesarias). No se promete ahorro de tiempo ni de tokens antes de medirlo.
+Límites del piloto: [alcance](docs/candidates/CONTINUITY-PILOT.md) (en inglés).
 
 ## Encuentra lo que necesitas
 
@@ -94,7 +87,6 @@ asigna un nuevo número de versión.
 | Explorar la investigación | [Documentación](docs/README.md) · [Índice de investigación](research/RESEARCH-INDEX.md) |
 | Informar de una vulnerabilidad | [Seguridad](SECURITY.md) |
 
-Local. Código abierto. Tus archivos siguen en tus herramientas; las decisiones aceptadas
-siguen siendo tuyas. El logo es provisional.
+Local. Código abierto. Tus archivos se quedan en tus herramientas.
 
 [GPL-3.0-or-later](LICENSE) · [Decisión de licencia](docs/decisions/DECISIONS.md)
