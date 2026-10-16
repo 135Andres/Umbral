@@ -14,7 +14,7 @@ use crate::content::{self, ContentError, Stability};
 /// Reading the index runs `core.fsmonitor`, a program the observed repository names: it is
 /// switched off on the command line, which outranks every config file (B-01).
 fn git(root: &Path, args: &[&str], input: &[u8]) -> Result<std::process::Output, Error> {
-    let mut child = Command::new("git")
+    let mut child = Command::new(git_program()?)
         .args(["-c", "core.fsmonitor=false"])
         .args(args)
         .current_dir(root)
@@ -37,6 +37,21 @@ fn git(root: &Path, args: &[&str], input: &[u8]) -> Result<std::process::Output,
         child.wait_with_output()
     })
     .map_err(|e| Error::NoGit(format!("cannot run git: {e}")))
+}
+
+/// `git` from the absolute entries of `PATH`. A bare name would be looked up after the
+/// change to the root, so an empty or relative entry would find a `git` planted there (B-02).
+fn git_program() -> Result<PathBuf, Error> {
+    use std::os::unix::fs::PermissionsExt;
+    std::env::var_os("PATH")
+        .iter()
+        .flat_map(std::env::split_paths)
+        .filter(|d| d.is_absolute())
+        .map(|d| d.join("git"))
+        .find(|p| {
+            std::fs::metadata(p).is_ok_and(|m| m.is_file() && m.permissions().mode() & 0o111 != 0)
+        })
+        .ok_or_else(|| Error::NoGit("cannot run git: not found on an absolute PATH entry".into()))
 }
 
 /// The canonical root, which must be the toplevel of a git worktree.

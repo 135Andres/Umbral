@@ -50,9 +50,18 @@ fn repo() -> TempDir {
 }
 
 fn umbral(args: &[&str], stdin: Option<&Value>) -> (Output, Value) {
+    umbral_env(args, stdin, &[])
+}
+
+fn umbral_env(
+    args: &[&str],
+    stdin: Option<&Value>,
+    env: &[(&str, &std::ffi::OsStr)],
+) -> (Output, Value) {
     let mut child = Command::new(BIN)
         .args(args)
         .env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .envs(env.iter().copied())
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -902,4 +911,32 @@ fn b01_the_repository_fsmonitor_is_never_run() {
         assert_eq!(code, Some(0), "{doc}");
     }
     assert!(!witness.exists(), "core.fsmonitor was run");
+}
+
+/// B-02: a `git` planted in the repository is never run, even when `PATH` has an empty or a
+/// relative entry (which would resolve inside the repository once git runs there).
+#[test]
+fn b02_a_git_planted_in_the_repository_is_never_run() {
+    let dir = repo();
+    let root = dir.path();
+    let r = root.to_str().unwrap();
+    let bin = TempDir::new().unwrap();
+    let witness = bin.path().join("witness");
+    witness_script(&root.join("git"), &witness);
+    let path = std::env::var_os("PATH").unwrap();
+    for prefix in [":", ".:", "./:"] {
+        let mut p = std::ffi::OsString::from(prefix);
+        p.push(&path);
+        let env = [("PATH", p.as_os_str())];
+        let (out, doc) = umbral_env(&["task", "list", r], None, &env);
+        assert_eq!(out.status.code(), Some(0), "{prefix}: {doc}");
+        let (out, doc) = umbral_env(
+            &["task", "save", r],
+            Some(&input("t", Value::Null, &["a.txt"])),
+            &env,
+        );
+        assert_eq!(out.status.code(), Some(0), "{prefix}: {doc}");
+        std::fs::remove_dir_all(root.join(".umbral")).unwrap();
+    }
+    assert!(!witness.exists(), "a planted git was run");
 }
