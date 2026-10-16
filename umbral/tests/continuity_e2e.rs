@@ -1114,6 +1114,22 @@ fn a1_closing_a_fork_of_more_than_8_heads_writes_nothing() {
     );
     assert_eq!(files(&task_dir(root, "t")).len(), 10);
 
+    // On disk, a record with 9 parents is invalid (mutant M19).
+    let mut big: Value = serde_json::from_str(&record).unwrap();
+    big["task"] = json!("big");
+    big["parents"] = json!(heads);
+    plant(
+        root,
+        "big",
+        serde_json::to_string_pretty(&big).unwrap().as_bytes(),
+    );
+    let (code, err) = run(&["resume", "big"], root);
+    assert_eq!(
+        (code, &err["error"]),
+        (Some(5), &json!("registro-invalido")),
+        "{err}"
+    );
+
     std::fs::remove_file(planted.pop().unwrap()).unwrap();
     heads.pop();
     saved(root, &input("t", json!(heads), &["a.txt"]));
@@ -1325,4 +1341,74 @@ fn m7_a_malformed_expected_revision_is_invalid_input() {
         );
     }
     assert!(!root.join(".umbral").exists());
+}
+
+/// A M-1: rules that no test watched. Forbidden characters (M8) and a `depends_on` outside
+/// `sources` (M9) are invalid input; the file is the canonical serialization (M10); `list`
+/// cuts a long goal at 120 characters and says so (M7).
+#[test]
+fn m1_forbidden_text_foreign_dependencies_canonical_bytes_and_goal_cut() {
+    let dir = repo();
+    let root = dir.path();
+    for (field, bad) in [
+        ("goal", "a\u{202E}b"),
+        ("next_step", "a\u{1}b"),
+        ("goal", "a\u{200B}b"),
+        ("goal", "a\rb"),
+    ] {
+        let mut v = input("t", Value::Null, &["a.txt"]);
+        v[field] = json!(bad);
+        let (code, err) = save(root, &v);
+        assert_eq!(
+            (code, &err["error"]),
+            (Some(2), &json!("entrada-invalida")),
+            "{bad:?}: {err}"
+        );
+    }
+    let mut v = input("t", Value::Null, &["a.txt"]);
+    v["declarations"] = json!([{ "id": "d", "kind": "decision", "claimed_origin": "agent",
+                                 "text": "t", "depends_on": ["b.txt"] }]);
+    let (code, err) = save(root, &v);
+    assert_eq!(
+        (code, &err["error"]),
+        (Some(2), &json!("entrada-invalida")),
+        "{err}"
+    );
+    assert!(!root.join(".umbral").exists());
+
+    // Canonical: two-space indent, the contract's key order, non-ASCII literal, final LF.
+    let mut v = input("t", Value::Null, &["a.txt"]);
+    v["goal"] = json!(format!("é{}", "x".repeat(120)));
+    let id = saved(root, &v);
+    let text = std::fs::read_to_string(task_dir(root, "t").join(format!("{id}.json"))).unwrap();
+    assert!(
+        text.starts_with(
+            "{\n  \"format\": \"umbral-continuity/1\",\n  \"task\": \"t\",\n  \"parents\": [],\n  \"saved_at\": \""
+        ),
+        "{text}"
+    );
+    assert!(text.ends_with("\n  ]\n}\n"), "{text}");
+    let keys: Vec<usize> = [
+        "\n  \"emitter\": {\n    \"channel\": \"cli\"\n  },\n",
+        &format!("\n  \"goal\": \"é{}\",\n", "x".repeat(120)),
+        "\n  \"next_step\": ",
+        "\n  \"blockers\": [],\n",
+        "\n  \"declarations\": [],\n",
+        "\n  \"git\": {\n    \"head_state\": \"present\",\n    \"head\": \"",
+        "\n  \"sources\": [\n    {\n      \"path\": \"a.txt\",\n      \"capture\": \"captured\",\n      \"hash\": \"blake3:",
+    ]
+    .iter()
+    .map(|k| text.find(k).unwrap_or_else(|| panic!("{k:?} in {text}")))
+    .collect();
+    assert!(keys.windows(2).all(|w| w[0] < w[1]), "{text}");
+
+    let (_, listed) = run(&["list"], root);
+    let head = &listed["tasks"][0]["heads"][0];
+    assert_eq!(head["goal"], format!("é{}", "x".repeat(119)));
+    assert_eq!(head["goal_truncated"], true);
+    let mut v = input("u", Value::Null, &["a.txt"]);
+    v["goal"] = json!(format!("é{}", "x".repeat(119)));
+    saved(root, &v);
+    let (_, listed) = run(&["list", "--cursor", "t"], root);
+    assert_eq!(listed["tasks"][0]["heads"][0]["goal_truncated"], false);
 }

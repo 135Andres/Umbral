@@ -331,3 +331,33 @@ pub(super) fn heads(task: &str, revs: &[(String, Revision)]) -> Result<Vec<Strin
         .map(str::to_string)
         .collect())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Contract §5.3 (A M-1, mutant M13): writing a revision that is already there with the
+    /// same bytes is the same revision; other bytes under its name are an altered record.
+    #[test]
+    fn writing_the_same_revision_twice_is_idempotent() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let store = Store::new(std::fs::canonicalize(dir.path()).unwrap());
+        let (id, created) = store.write("t", b"{}\n").unwrap();
+        assert!(created);
+        assert_eq!(store.write("t", b"{}\n").unwrap(), (id.clone(), false));
+        let file = dir
+            .path()
+            .join(format!(".umbral/continuity/tasks/t/{id}.json"));
+        std::fs::remove_file(&file).unwrap();
+        std::fs::write(&file, b"other\n").unwrap();
+        let err = store.write("t", b"{}\n").unwrap_err();
+        assert_eq!(err.token(), "registro-alterado");
+        assert_eq!(std::fs::read(&file).unwrap(), b"other\n");
+        assert_eq!(
+            std::fs::read_dir(dir.path().join(".umbral/continuity/tmp"))
+                .unwrap()
+                .count(),
+            0
+        );
+    }
+}
