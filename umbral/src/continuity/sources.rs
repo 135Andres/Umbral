@@ -68,8 +68,9 @@ pub(super) fn git_root(root: &Path) -> Result<PathBuf, Error> {
     let out = git(&canonical, &["rev-parse", "--show-toplevel"], b"")?;
     if !out.status.success() {
         return Err(Error::NoGit(format!(
-            "{} is not inside a git repository",
-            canonical.display()
+            "{} is not inside a git repository ({})",
+            canonical.display(),
+            String::from_utf8_lossy(&out.stderr).trim()
         )));
     }
     let top = out.stdout.strip_suffix(b"\n").unwrap_or(&out.stdout);

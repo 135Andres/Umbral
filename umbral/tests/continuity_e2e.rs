@@ -613,6 +613,11 @@ fn t1_12_unborn_head_is_accepted_and_no_git_is_refused() {
     assert_eq!(out.status.code(), Some(1), "{err}");
     assert_eq!(err["error"], "sin-git");
     assert!(String::from_utf8_lossy(&out.stderr).contains("no git repository"));
+    // B-09: git's own reason is kept (it is the only clue for `safe.directory`).
+    assert!(
+        err["message"].as_str().unwrap().contains("fatal: "),
+        "{err}"
+    );
 
     git(root, &["init", "-q"]);
     let (code, doc) = save(root, &input("t", Value::Null, &["a.txt"]));
