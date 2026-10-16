@@ -10,7 +10,7 @@ use super::{io_err, Error, GitState, HeadState, Reason};
 use crate::content::{self, ContentError, Stability};
 
 /// Run git with separate arguments, no shell, no optional locks and no prompt. No
-/// subcommand used here (`rev-parse`, `check-ignore`) runs hooks or touches the network.
+/// subcommand used here (`rev-parse`, `symbolic-ref`, `show-ref`, `check-ignore`) runs hooks or touches the network.
 /// Reading the index runs `core.fsmonitor`, a program the observed repository names: it is
 /// switched off on the command line, which outranks every config file (B-01).
 fn git(root: &Path, args: &[&str], input: &[u8]) -> Result<std::process::Output, Error> {
@@ -85,11 +85,25 @@ pub(super) fn git_root(root: &Path) -> Result<PathBuf, Error> {
 }
 
 pub(super) fn git_head(root: &Path) -> Result<GitState, Error> {
-    let out = git(root, &["rev-parse", "--verify", "-q", "HEAD"], b"")?;
+    let out = git(root, &["rev-parse", "--verify", "-q", "HEAD^{commit}"], b"")?;
     if !out.status.success() {
-        // The root is already known to be a repository: a HEAD that does not resolve is unborn.
+        // A missing symbolic branch is unborn. Detached HEADs and refs whose objects
+        // cannot be read are unknown; rev-parse of HEAD alone accepts dangling hashes.
+        let symbolic = git(root, &["symbolic-ref", "-q", "HEAD"], b"")?;
+        let mut state = HeadState::Unknown;
+        if symbolic.status.success() {
+            if let Ok(reference) = std::str::from_utf8(&symbolic.stdout) {
+                let reference = reference.trim();
+                if reference.starts_with("refs/heads/") {
+                    let exists = git(root, &["show-ref", "--verify", "--quiet", reference], b"")?;
+                    if exists.status.code() == Some(1) {
+                        state = HeadState::Unborn;
+                    }
+                }
+            }
+        }
         return Ok(GitState {
-            head_state: HeadState::Unborn,
+            head_state: state,
             head: None,
         });
     }
@@ -192,7 +206,7 @@ pub(super) fn inspect(root: &Path, rel: &[u8]) -> Seen {
             Ok(m) if !m.is_dir() => return Seen::Absent,
             // Another repository (a submodule): outside what this one versions (A M-4).
             Ok(_) if std::fs::symlink_metadata(path.join(".git")).is_ok() => {
-                return Seen::Refused(Reason::OutsideRoot)
+                return Seen::Refused(Reason::InSubmodule)
             }
             Ok(_) => {}
             Err(e) => return from_error(&content::content_error_from(&e)),

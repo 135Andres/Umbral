@@ -1097,7 +1097,6 @@ fn a1_closing_a_fork_of_more_than_8_heads_writes_nothing() {
     let record =
         std::fs::read_to_string(task_dir(root, "t").join(format!("{first}.json"))).unwrap();
     let mut heads = vec![first];
-    let mut planted = Vec::new();
     for i in 1..9 {
         let p = plant(
             root,
@@ -1105,7 +1104,6 @@ fn a1_closing_a_fork_of_more_than_8_heads_writes_nothing() {
             record.replace("goal of t", &format!("goal {i}")).as_bytes(),
         );
         heads.push(p.file_stem().unwrap().to_str().unwrap().to_string());
-        planted.push(p);
     }
     let (code, err) = save(root, &input("t", json!(heads), &["a.txt"]));
     assert_eq!(code, Some(2), "{err}");
@@ -1114,6 +1112,10 @@ fn a1_closing_a_fork_of_more_than_8_heads_writes_nothing() {
         (&err["field"], &err["limit"], &err["actual"]),
         (&json!("parents"), &json!(8), &json!(9))
     );
+    assert!(err["message"]
+        .as_str()
+        .unwrap()
+        .contains("steps of up to 8"));
     assert_eq!(files(&task_dir(root, "t")).len(), 10);
 
     // On disk, a record with 9 parents is invalid (mutant M19).
@@ -1132,12 +1134,25 @@ fn a1_closing_a_fork_of_more_than_8_heads_writes_nothing() {
         "{err}"
     );
 
-    std::fs::remove_file(planted.pop().unwrap()).unwrap();
-    heads.pop();
-    saved(root, &input("t", json!(heads), &["a.txt"]));
+    // Closing eight of nine heads writes a valid revision and leaves a visible fork.
+    let (code, partial) = save(root, &input("t", json!(&heads[..8]), &["a.txt"]));
+    assert_eq!(code, Some(4), "{partial}");
+    assert_eq!(partial["error"], "bifurcacion");
+    let remaining: Vec<Value> = partial["heads"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|h| h["revision"].clone())
+        .collect();
+    assert_eq!(remaining.len(), 2);
+    // A stale parent is still refused, even when another parent is a current head.
+    let (code, stale) = save(root, &input("t", json!([base, remaining[0]]), &["a.txt"]));
+    assert_eq!(code, Some(4), "{stale}");
+    assert_eq!(stale["error"], "conflicto-revision");
+    saved(root, &input("t", json!(remaining), &["a.txt"]));
     let (code, doc) = run(&["resume", "t"], root);
     assert_eq!(code, Some(0), "{doc}");
-    assert_eq!(doc["parents"].as_array().unwrap().len(), 8);
+    assert_eq!(doc["parents"].as_array().unwrap().len(), 2);
 }
 
 /// B-05: a directory on a source's path swapped with a symlink to elsewhere while saves and
@@ -1184,7 +1199,7 @@ fn b05_a_symlink_swapped_in_during_reads_never_reads_outside() {
 }
 
 /// B-06, A M-4, A M-5: a nested repository's `.git` (any case) is invalid input; a source
-/// inside a submodule is rejected as outside this repository instead of failing the save
+/// inside a submodule is rejected as in-submodule instead of failing the save
 /// with `io`; a symlinked directory that stays inside the root is reported as `symlink`.
 #[test]
 fn b06_m4_m5_nested_repositories_and_inner_symlinks_are_rejected_with_a_true_reason() {
@@ -1211,7 +1226,7 @@ fn b06_m4_m5_nested_repositories_and_inner_symlinks_are_rejected_with_a_true_rea
     assert_eq!(
         err["sources"],
         json!([
-            { "path": "sub/f", "reason": "outside-root" },
+            { "path": "sub/f", "reason": "in-submodule" },
             { "path": "alias/c.rs", "reason": "symlink" },
         ])
     );
@@ -1474,4 +1489,78 @@ fn b07_a_first_save_that_forks_still_gives_the_privacy_warning() {
     expected.push(format!("{other}.json"));
     expected.sort();
     assert_eq!(files(&tasks), expected);
+}
+
+/// B-10: dangling objects, malformed refs and detached broken HEADs are not empty repos.
+#[test]
+fn b10_broken_heads_are_unknown_and_survive_resume_and_export() {
+    for case in [
+        "missing-object",
+        "invalid-ref",
+        "detached",
+        "missing-branch",
+    ] {
+        let dir = repo();
+        let root = dir.path();
+        let branch = std::fs::read_to_string(root.join(".git/HEAD")).unwrap();
+        let reference = root
+            .join(".git")
+            .join(branch.trim().strip_prefix("ref: ").unwrap());
+        match case {
+            "missing-object" => std::fs::write(reference, format!("{}\n", "1".repeat(40))).unwrap(),
+            "invalid-ref" => std::fs::write(reference, "broken\n").unwrap(),
+            "detached" => {
+                std::fs::write(root.join(".git/HEAD"), format!("{}\n", "1".repeat(40))).unwrap()
+            }
+            "missing-branch" => std::fs::remove_file(reference).unwrap(),
+            _ => unreachable!(),
+        }
+        let (code, doc) = save(root, &input("t", Value::Null, &[]));
+        assert_eq!(code, Some(0), "{case}: {doc}");
+        // An absent symbolic branch is Git's unborn state; it is indistinguishable from
+        // deleting the sole branch ref. Other broken states must remain unknown.
+        let expected = if case == "missing-branch" {
+            "unborn"
+        } else {
+            "unknown"
+        };
+        assert_eq!(
+            doc["git"],
+            json!({"head_state": expected, "head": null}),
+            "{case}"
+        );
+        let (code, resumed) = run(&["resume", "t"], root);
+        assert_eq!(code, Some(0), "{resumed}");
+        assert_eq!(resumed["git"], doc["git"]);
+        let (code, exported) = run(&["export", "t"], root);
+        assert_eq!(code, Some(0), "{exported}");
+    }
+}
+
+/// A directory that becomes a submodule (a .git file, rather than a directory) is
+/// uncheckable on resume, and is refused on the next save.
+#[test]
+fn in_submodule_is_reported_on_resume_and_save_with_a_git_file() {
+    let dir = repo();
+    let root = dir.path();
+    let sub = root.join("src");
+    saved(root, &input("t", Value::Null, &["src/c.rs"]));
+    let metadata = TempDir::new().unwrap();
+    git(
+        &sub,
+        &[
+            "init",
+            "-q",
+            "--separate-git-dir",
+            metadata.path().join("git").to_str().unwrap(),
+        ],
+    );
+    assert!(sub.join(".git").is_file());
+    let (code, resumed) = run(&["resume", "t"], root);
+    assert_eq!(code, Some(0), "{resumed}");
+    assert_eq!(resumed["sources"][0]["state"], "unknown");
+    assert_eq!(resumed["sources"][0]["reason"], "in-submodule");
+    let (code, err) = save(root, &input("u", Value::Null, &["src/c.rs"]));
+    assert_eq!(code, Some(2), "{err}");
+    assert_eq!(err["sources"][0]["reason"], "in-submodule");
 }

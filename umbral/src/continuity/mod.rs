@@ -110,6 +110,7 @@ fn present<'de, D: Deserializer<'de>, T: Deserialize<'de>>(d: D) -> Result<Optio
 pub enum HeadState {
     Present,
     Unborn,
+    Unknown,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -135,6 +136,7 @@ pub enum Reason {
     NotARegularFile,
     Symlink,
     OutsideRoot,
+    InSubmodule,
     ReadError,
     NoRecordedHash,
 }
@@ -147,6 +149,7 @@ impl Reason {
             Reason::NotARegularFile => "not-a-regular-file",
             Reason::Symlink => "symlink",
             Reason::OutsideRoot => "outside-root",
+            Reason::InSubmodule => "in-submodule",
             Reason::ReadError => "read-error",
             Reason::NoRecordedHash => "no-recorded-hash",
         }
@@ -277,7 +280,13 @@ impl std::fmt::Display for Error {
                 field,
                 limit,
                 actual,
-            } => write!(f, "{field} exceeds its limit: {actual} > {limit}"),
+            } => {
+                write!(f, "{field} exceeds its limit: {actual} > {limit}")?;
+                if *field == "parents" {
+                    write!(f, "; close the fork in steps of up to 8 current heads")?;
+                }
+                Ok(())
+            }
             Error::SourceRejected(list) => {
                 write!(f, "source(s) rejected:")?;
                 for (p, r) in list {
@@ -350,6 +359,7 @@ mod tests {
             NotARegularFile,
             Symlink,
             OutsideRoot,
+            InSubmodule,
             ReadError,
             NoRecordedHash,
         ];
@@ -357,7 +367,7 @@ mod tests {
             // Exhaustive: a new reason fails to compile here until it is listed above.
             match r {
                 PermissionDenied | UnstableRead | NotARegularFile | Symlink | OutsideRoot
-                | ReadError | NoRecordedHash => {}
+                | InSubmodule | ReadError | NoRecordedHash => {}
             }
             assert_eq!(serde_json::to_value(r).unwrap(), r.as_str());
         }

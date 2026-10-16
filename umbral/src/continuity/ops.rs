@@ -287,7 +287,7 @@ pub fn save(root: &Path, input: SaveInput, channel: Channel) -> Result<Value, Er
             // The contract's 0-8 parents, checked before writing (A-1).
             check_count("parents", ids.len(), 8)?;
             ids.sort();
-            if ids != heads {
+            if !ids.iter().all(|id| heads.contains(id)) {
                 return Err(conflict());
             }
             ids
