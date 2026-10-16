@@ -335,3 +335,31 @@ pub fn is_revision_id(s: &str) -> bool {
         && s.bytes()
             .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Reason;
+
+    /// C-M2: `as_str` (counts, rejections) and serde (disk) must spell each reason the same.
+    #[test]
+    fn each_reason_token_is_the_serialized_one() {
+        use Reason::*;
+        let all = [
+            PermissionDenied,
+            UnstableRead,
+            NotARegularFile,
+            Symlink,
+            OutsideRoot,
+            ReadError,
+            NoRecordedHash,
+        ];
+        for r in all {
+            // Exhaustive: a new reason fails to compile here until it is listed above.
+            match r {
+                PermissionDenied | UnstableRead | NotARegularFile | Symlink | OutsideRoot
+                | ReadError | NoRecordedHash => {}
+            }
+            assert_eq!(serde_json::to_value(r).unwrap(), r.as_str());
+        }
+    }
+}
