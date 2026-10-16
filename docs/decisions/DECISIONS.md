@@ -1167,6 +1167,31 @@ decision naming the evidence that failed.
 Status: DECIDED.
 
 ================================================================================
+UD-039 — Agent-first continuity is the next product focus
+Authority: USER (owner instructions, private, 2026-10-16).
+Statement: develop Umbral around continuing a project across agent sessions and tools,
+without requiring the person to reconstruct all context or silently reuse outdated
+evidence. The primary consumer is the agent; the person's normal workflow is to ask it
+to continue, with minimal setup and no routine Umbral-specific commands to learn.
+The owner accepted this component order: a local program, access through MCP, then an
+integration that guides an agent's use of it. Begin with Git and the Umbral project as
+the first intended use case. A skill may assist integration; it is not the durable core.
+Consequences: create `next` from the existing presentation branch as the development
+line for this work, preserving the existing code, research and version records. Reorient
+the entry pages around continuity. Review the older UX plans against this focus rather
+than treating them as the implementation roadmap. The public roadmap describes intent,
+not working functionality.
+Scope guard: this accepts product direction and component boundaries, not a storage
+schema, SDK, protocol revision, client compatibility claim or detailed implementation
+design. It does not declare v0.3 or V1, close A1/A2-V13, change the v0.2 output contract,
+select Scion, guarantee automatic tool invocation, or prove agent comprehension. Existing
+decisions remain in force outside this scope. The v0.2 observer remains usable;
+`fsp-check/` remains frozen. No existing branch or history is deleted or rewritten.
+Evidence: owner commitment; product benefit is not yet measured.
+Reversibility: high for the pilot; extending or narrowing it requires an explicit record.
+Status: DECIDED (intent; scoped to the continuity pilot).
+
+================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
   DECIDED              — the user has committed; the record stands.

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="312" viewBox="0 0 1120 312" role="img" aria-labelledby="title desc">
+  <title id="title">Agent continuity — proposed workflow</title>
+  <desc id="desc">Work in your AI tool, leave context with source references, and resume with the same or another agent. Proposed design, not yet implemented.</desc>
+  <rect width="1120" height="312" rx="12" fill="#eee8f8"/>
+  <g font-family="sans-serif">
+    <text x="36" y="38" fill="#6d28d9" font-size="12" font-weight="700" letter-spacing="2">PROPOSED WORKFLOW</text>
+    <text x="36" y="69" fill="#21152e" font-size="23" font-weight="600">One project. Continuity across sessions.</text>
+    <rect x="36" y="98" width="316" height="136" fill="#faf8fe" stroke="#b9a8ce"/>
+    <rect x="402" y="98" width="316" height="136" fill="#faf8fe" stroke="#b9a8ce"/>
+    <rect x="768" y="98" width="316" height="136" fill="#5920b0"/>
+    <g fill="none" stroke="#6d28d9" stroke-width="2">
+      <path d="M364 166h26m-7-6 7 6-7 6"/>
+      <path d="M730 166h26m-7-6 7 6-7 6"/>
+    </g>
+    <g fill="#6d28d9" font-size="12" font-family="monospace" font-weight="700">
+      <text x="56" y="125">01</text>
+      <text x="422" y="125">02</text>
+    </g>
+    <text x="788" y="125" fill="#ded0f6" font-size="12" font-family="monospace" font-weight="700">03</text>
+    <g fill="#21152e" font-size="28" font-weight="650">
+      <text x="56" y="168">Work</text>
+      <text x="422" y="168">Leave context</text>
+    </g>
+    <text x="788" y="168" fill="#ffffff" font-size="28" font-weight="650">Continue</text>
+    <g fill="#51425f" font-size="15">
+      <text x="56" y="204">In your usual AI tool.</text>
+      <text x="422" y="204">Goal, sources and next action.</text>
+    </g>
+    <text x="788" y="204" fill="#eee6fb" font-size="15">With the same or another agent.</text>
+    <path d="M36 261h1048" stroke="#c7b9db"/>
+    <circle cx="42" cy="285" r="4" fill="#6d28d9"/>
+    <text x="56" y="290" fill="#51425f" font-size="14">Changed sources are surfaced for review.</text>
+  </g>
+</svg>

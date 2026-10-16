@@ -10,7 +10,7 @@
 # that class of defect is found. Assertions must hold on all three.
 #
 # Branches: `main` holds integrated state, and a version is developed on its own branch
-# (`v0.2`). Both are listed so a version's development is actually verified while it happens
+# (`v0.2`, and the continuity pilot on `next`). They are listed so development is verified
 # rather than only once it is merged — a branch with no CI would make the ext4 signal
 # unavailable for exactly the commits that need it. Add each new version branch explicitly;
 # there is no glob here on purpose.
@@ -19,7 +19,7 @@ name: umbral
 
 on:
   push:
-    branches: [main, v0.2]
+    branches: [main, v0.2, next]
   pull_request:
     paths:
       - 'umbral/**'

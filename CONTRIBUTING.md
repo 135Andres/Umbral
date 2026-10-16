@@ -209,6 +209,13 @@ first.
 
 `main` holds **integrated, completed** state. A version is developed on its own branch:
 
+**Current development (2026-10-16, UD-039):** `next` is the continuity pilot's active
+development line, created from `docs/presentation` at `ee00e11` to retain the existing
+presentation work. `main`, `v0.2` and their history are preserved. No numeric version is
+assigned to the pilot yet. GitHub's default branch is a separate setting; inspect the
+repository rather than inferring it from this workflow. Product implementation follows
+review of the detailed design; the older v0.2 slices below are historical examples.
+
 ```
 main     integrated versions only
 v0.2     development of v0.2

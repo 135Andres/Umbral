@@ -2,6 +2,14 @@
 
 Status: CURRENT (living) — canonical knowledge (T2).
 
+**Current product focus (2026-10-16, UD-039):** continue work across agents and sessions,
+with evidence whose recorded sources can be checked for change. A local program,
+MCP access and a first agent integration are the accepted sequence. The human uses
+their normal AI tool; a filesystem-manager interface is not the first surface being
+built. The detailed design is under review. The broader vision below is preserved
+as context, not a commitment to build all of it in this pilot. See
+[project direction](PROJECT-DIRECTION.md) and [pilot scope](../candidates/CONTINUITY-PILOT.md).
+
 Category B. Status rule for this file: USER INTENT where the Master Context (MC) states
 the item; STRONG HYPOTHESIS where it is a convergent research position. MC is the owner's
 founding charter — a private document that is not part of this repository, so its `MC §n`

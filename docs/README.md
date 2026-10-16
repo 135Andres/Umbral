@@ -19,9 +19,10 @@ claims live in [Reading this repository](READING-THIS-REPOSITORY.md).
 
 | I want to… | Read |
 |---|---|
+| understand the new continuity work | [Continuity pilot](candidates/CONTINUITY-PILOT.md) — intent accepted, detailed design under review |
 | know where the project stands, in one screen | [`PROJECT-DIRECTION`](canonical/PROJECT-DIRECTION.md) |
 | understand what Umbral is meant to become | [`VISION`](canonical/VISION.md) |
-| see what has actually been decided | [`DECISIONS`](decisions/DECISIONS.md) — the only place decisions live |
+| see what has actually been decided | [`DECISIONS`](decisions/DECISIONS.md) — including the continuity focus, UD-039 |
 | see what each version did, and its evidence | [Version records](versions/README.md) · latest: [`v0.2`](versions/v0.2.md) |
 | see what is still open | [`OPEN-QUESTIONS`](candidates/OPEN-QUESTIONS.md) · [`ARCHITECTURE-HYPOTHESES`](candidates/ARCHITECTURE-HYPOTHESES.md) |
 | find where an identifier (`UD-031`, `A2-V3`, …) is defined | [`IDENTIFIERS`](IDENTIFIERS.md) |
@@ -30,6 +31,7 @@ claims live in [Reading this repository](READING-THIS-REPOSITORY.md).
 
 | Category | Files | For |
 |---|---|---|
+| [Continuity pilot](candidates/CONTINUITY-PILOT.md) | [`CONTINUITY-PILOT`](candidates/CONTINUITY-PILOT.md) | new work on `next`; proposed behavior and acceptance, separate from existing capabilities |
 | [Where the project stands](canonical/) | [`PROJECT-DIRECTION`](canonical/PROJECT-DIRECTION.md) · [`VISION`](canonical/VISION.md) | the one-screen compass; what Umbral is meant to become and what it refuses to be |
 | [Rules and bounds](canonical/) | [`PRINCIPLES`](canonical/PRINCIPLES.md) · [`INVARIANTS`](canonical/INVARIANTS.md) · [`REQUIREMENTS`](canonical/REQUIREMENTS.md) · [`CONSTRAINTS`](canonical/CONSTRAINTS.md) | how decisions are made; what must hold; what it must do; what bounds every candidate |
 | [Commitments](decisions/) | [`DECISIONS`](decisions/DECISIONS.md) | **the only place decisions live** (`UD-nnn`, immutable records) |
@@ -52,6 +54,7 @@ Elsewhere in the repository:
 - [`DOCUMENTATION-ARCHITECTURE.md`](DOCUMENTATION-ARCHITECTURE.md) — how this repository
   itself is organized, and the routing rule for new information (proposed)
 
-Nothing in this directory is a decision except
-[`decisions/DECISIONS.md`](decisions/DECISIONS.md). Hypotheses are not selected; research
-is not validation; V0 is not the architecture.
+Owner commitments live in [`decisions/DECISIONS.md`](decisions/DECISIONS.md).
+UD-039 accepts the continuity direction and component sequence; the detailed design is
+under review. Earlier hypotheses are not selected by implication; research is not
+validation; V0 is not the architecture.

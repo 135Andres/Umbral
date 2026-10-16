@@ -1,130 +1,98 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/brand/logo-dark.svg">
-    <img src="assets/brand/logo-light.svg" alt="Umbral" width="300">
+    <img src="assets/brand/logo-light.svg" alt="Umbral" width="220">
   </picture>
 </p>
 
-<h3 align="center">Your files, your project — humans and AI working together<br>without mistaking a guess for a fact.</h3>
+<h2 align="center">Your project continues.<br>Even when your agent changes.</h2>
+
+<p align="center"><b>English</b> · <a href="README.es.md">Español</a></p>
 
 <p align="center">
-  <b>English</b> · <a href="README.es.md">Español</a>
-</p>
-
-<p align="center">
-  <a href="LICENSE"><img alt="Licence: GPL-3.0-or-later" src="https://img.shields.io/badge/licence-GPL--3.0--or--later-1d1f24"></a>
-  <a href="https://github.com/135Andres/Umbral/actions/workflows/umbral.yml"><img alt="CI" src="https://github.com/135Andres/Umbral/actions/workflows/umbral.yml/badge.svg"></a>
-  <a href="docs/versions/v0.2.md"><img alt="Version 0.2.0" src="https://img.shields.io/badge/version-0.2.0-d98c1c"></a>
-  <img alt="Status: early research" src="https://img.shields.io/badge/status-early%20research-5d6068">
+  <a href="docs/candidates/CONTINUITY-PILOT.md"><img alt="Continuity: in design" src="https://img.shields.io/badge/continuity-in_design-6d28d9"></a>
+  <a href="docs/versions/v0.2.md"><img alt="Available instrument: v0.2" src="https://img.shields.io/badge/observer-v0.2-52525b"></a>
+  <a href="LICENSE"><img alt="GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-52525b"></a>
 </p>
 
 ---
 
-## The problem
+You should be able to leave a task, return later, or switch AI tools without explaining
+your whole project again.
 
-You ask an AI assistant whether the contract changed since yesterday. It says *no*, with full
-confidence. It never read the file; it only looked at the date. Nothing in its answer tells
-you that.
+**Umbral is becoming a local continuity tool for AI-assisted projects.** It is designed to
+carry the goal, decisions, evidence and next action between sessions, while making changed
+sources visible before an agent relies on them.
 
-A new person joins your project. The folder is full of notes, drafts and summaries. Which of
-them were checked, and which are someone's guess? The files can't say.
+> **Building on `next`.** This is the new product direction, accepted in
+> [UD-039](docs/decisions/DECISIONS.md). The detailed design is under review.
+> The continuity tools and MCP integration are not implemented yet.
 
-As more of the work is shared between people and AI, the gap between *"I read this"* and
-*"this looks unchanged"* is where mistakes hide.
-
-## The idea
-
-Umbral leaves your files exactly where they are and keeps an honest record of them on your
-machine.
+## Work. Leave context. Continue.
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/how-it-works-dark.svg">
-    <img src="assets/brand/how-it-works-light.svg" alt="Your folder → Observe → Record → Answers that say how they know" width="860">
-  </picture>
+  <img src="assets/brand/continuity.svg" alt="Proposed workflow: work in your AI tool, preserve task context with source references, and resume with the same or another agent." width="960">
 </p>
 
-- **Your files stay yours.** Umbral never writes inside the folder it observes, never stores
-  your content (only fingerprints of it), and has no network, daemon or account.
-- **Every statement says where it came from:** `observed` (the filesystem reported it),
-  `derived` (Umbral computed it), `ambiguous` (the evidence allows more than one reading,
-  and the reason is named) or `unknown` (it can't be determined from what was seen).
-- **It reads only what changed, and says so.** When nothing about a file changed, Umbral
-  reuses its earlier reading and tells you which observation actually read the bytes.
+The intended experience is simple: connect once, work in your usual AI tool, then ask it
+to continue. Umbral should supply the relevant task context and identify recorded sources
+that need checking. A changed source means **review it**, not that the earlier conclusion
+is automatically false.
 
-## Try it
+## One product, three parts
 
-You need [Rust](https://rustup.rs). Then:
+| Part | Job | Status |
+|---|---|---|
+| Local program | Keep task continuity and check recorded sources against the working copy | Design under review |
+| MCP access | Let agents save and retrieve that state through the same core | Planned |
+| Agent integration | Make retrieval and progress capture part of a real client's workflow | Planned; automatic invocation must be demonstrated |
+
+Git provides repository history and revisions. Umbral's proposed role is to connect that
+history to the work an agent is continuing. It will not prove that an agent understood a
+file, and it cannot check dependencies that were never recorded.
+
+## What works today
+
+The existing **v0.2 observation instrument** records a folder, fingerprints file content,
+reports changes and distinguishes fresh readings from reused evidence. Its
+[tool guide](umbral/README.md), [output contract](umbral/CONTRACT.md) and
+[version evidence](docs/versions/v0.2.md) are preserved.
+
+For contributors who want to try the existing instrument from this checkout:
 
 ```sh
-git clone https://github.com/135Andres/Umbral.git
-cd Umbral
-cargo install --path umbral
-
-umbral init ~/my-project      # register the folder
-umbral observe ~/my-project   # record what is there
-# ...work for a while...
-umbral observe ~/my-project   # record again
-umbral changes ~/my-project   # what changed, and on what evidence
+cargo run --locked -p umbral -- init /path/to/project
+cargo run --locked -p umbral -- observe /path/to/project
+# Work in the project, then observe it again.
+cargo run --locked -p umbral -- observe /path/to/project
+cargo run --locked -p umbral -- changes /path/to/project
 ```
 
-A file that did not change, observed twice. The second time it was not read again, and the
-output says so — and where the reading it reused came from:
+This is the observer, not the proposed continuity experience. The independent-human
+reader criteria of earlier versions remain open.
 
-```
-derived   observation=1:docs/overview.md  hash=139e3fda7011  stability=stable  metadata=fresh  content=fresh
-derived   observation=2:docs/overview.md  hash=139e3fda7011  stability=stable  metadata=fresh  content=reused  content-source=1:docs/overview.md
-```
+## The first useful version
 
-The [tool guide](umbral/README.md) walks through every command and shows how to read the output.
+Build the local core first, expose it through MCP, then verify one agent integration.
+Use Umbral's own development as the first case, comparing against Git plus a good handoff
+file. Measure correctness, total effort, context size and unnecessary interruptions.
 
-## Where it stands
+The [pilot scope](docs/candidates/CONTINUITY-PILOT.md) defines the proposed boundaries.
+Existing code, experiments and research stay in place. No new version number is assigned.
 
-> [!NOTE]
-> **Umbral is early research.** There is no product to install yet, and no architecture has
-> been chosen. There *is* a small tool that works, and every claim about it comes with its
-> evidence.
+## Find your way
 
-| | |
+| Need | Go to |
 |---|---|
-| **Done** | **v0.2** — a command-line tool that observes a folder, reads only what changed, and states how every value was obtained ([record](docs/versions/v0.2.md)). Before it, **V0**, a frozen first experiment ([summary](docs/versions/README.md#before-the-versions-v0-the-first-experiment)). |
-| **Now** | Making Umbral easy for people to read and use — starting with this page. |
-| **Not yet** | A product, a graphical interface, integrations with AI tools. |
+| Current direction and next work | [Project direction](docs/canonical/PROJECT-DIRECTION.md) |
+| New continuity pilot | [Scope and build order](docs/candidates/CONTINUITY-PILOT.md) |
+| Existing tool | [Observer guide](umbral/README.md) |
+| Decisions and evidence | [Decisions](docs/decisions/DECISIONS.md) · [Versions](docs/versions/README.md) · [Experiments](experiments/) |
+| Contribute or work as an agent | [Contributing](CONTRIBUTING.md) · [AGENTS.md](AGENTS.md) |
+| Explore the research | [Documentation](docs/README.md) · [Research index](research/RESEARCH-INDEX.md) |
+| Report a vulnerability | [Security](SECURITY.md) |
 
-## Where it's going
+Local-first. Open source. Your files stay in your tools; accepted decisions remain yours.
+The logo is provisional.
 
-Umbral is meant to become a local-first, open-source environment where your project lives
-as *your files and folders*, and where people and several AI systems — from different
-vendors, including ones that don't exist yet — can work on the same project without anyone
-reorganizing it around one AI's assumptions. Four commitments shape it:
-
-- **Your filesystem is the source of truth.** Any index is a disposable projection of it.
-- **No mandatory taxonomy.** Your existing, messy structure has to keep working.
-- **AI is a participant, not a feature.** Umbral makes the shared project readable to
-  everyone in it; it doesn't think on your behalf.
-- **You stay in charge.** Umbral records and reports — including what is unknown or
-  disputed. It doesn't decide what is true.
-
-None of this is built yet. [Where the project stands](docs/canonical/PROJECT-DIRECTION.md)
-and the [vision](docs/canonical/VISION.md) say what is decided and what is still open.
-
-## Learn more
-
-| If you want to… | Start here |
-|---|---|
-| use the tool | [Tool guide](umbral/README.md) |
-| understand the project | [Where it stands](docs/canonical/PROJECT-DIRECTION.md) · [Vision](docs/canonical/VISION.md) · [All documentation](docs/README.md) |
-| check the evidence | [Version records](docs/versions/README.md) · [Experiments](experiments/) · [Decisions](docs/decisions/DECISIONS.md) |
-| rely on what this repository says | [Reading this repository](docs/READING-THIS-REPOSITORY.md) — how claims are ranked, how sources are named, how it is developed |
-| contribute | [Contributing](CONTRIBUTING.md) |
-| work on it as an AI agent | [AGENTS.md](AGENTS.md) |
-| report a vulnerability | [Security](SECURITY.md) — please don't open a public issue |
-
-Umbral is developed by its owner together with AI agents, and its rules exist because of
-that: agent output is never authority, and only the owner records a decision.
-
-## Licence
-
-[GPL-3.0-or-later](LICENSE) ([`UD-028`](docs/decisions/DECISIONS.md)). Anything built on
-Umbral and distributed stays open source under the same terms. Earlier copies obtained under
-the Apache License 2.0 keep that licence.
+[GPL-3.0-or-later](LICENSE) · [Licence decision](docs/decisions/DECISIONS.md)

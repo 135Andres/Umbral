@@ -21,6 +21,7 @@ hypotheses > your own inference. **Never promote a lower level into a higher one
 | Need | File |
 |---|---|
 | where the project stands | [`PROJECT-DIRECTION.md`](docs/canonical/PROJECT-DIRECTION.md) |
+| the continuity pilot on `next` | [`CONTINUITY-PILOT.md`](docs/candidates/CONTINUITY-PILOT.md) — intent accepted in UD-039; detailed design under review |
 | what has been committed to | [`DECISIONS.md`](docs/decisions/DECISIONS.md) |
 | what must stay true | [`INVARIANTS.md`](docs/canonical/INVARIANTS.md) · [`PRINCIPLES.md`](docs/canonical/PRINCIPLES.md) · [`CONSTRAINTS.md`](docs/canonical/CONSTRAINTS.md) |
 | what is only a candidate | [`ARCHITECTURE-HYPOTHESES.md`](docs/candidates/ARCHITECTURE-HYPOTHESES.md) — **nothing here is selected** |
@@ -42,8 +43,10 @@ hypotheses > your own inference. **Never promote a lower level into a higher one
 - **One home per fact.** Before adding a file, check whether the fact already has one.
 - **Never rewrite history.** Decision records and frozen records in
   [`research/history/`](research/history) are immutable; supersede with a pointer.
-- **No architecture selection**, no schema, no protocol, no technology choice presented as
-  settled. The V0 prototype's stack is scoped, provisional and reversible
+- **Do not select architecture by inference.** UD-039 accepts the continuity pilot's local
+  program → MCP → agent integration direction. Its detailed design, schema, SDK and
+  compatibility still require owner review. Earlier hypotheses remain unselected outside
+  this scope. The V0 prototype's stack is scoped, provisional and reversible
   (`UD-012`, `UD-013`), and **V0 is not Umbral's architecture**.
 - **Preserve the public/private boundary.** The owner keeps a private record outside this
   repository: deliberations, the reasoning behind decisions, working reports, full audits and

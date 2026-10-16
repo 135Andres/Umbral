@@ -7,6 +7,34 @@ project-intelligence audit recovered the Project Master Context (MC) from sessio
 history. Update this file when decisions land — it should stay under one screen per
 section.
 
+## Active focus — continuity pilot (2026-10-16, UD-039)
+
+The next product work is agent-first continuity: resume a task or move it to another
+agent with its goal, decisions, evidence and outstanding work, while making changed
+sources visible. The user should work through their existing AI tool, with minimal
+setup and no routine Umbral commands to learn.
+
+The accepted component order is a local program, MCP access, then a first agent
+integration. Git and this repository are the first intended use case. Development is
+on `next`, based on `docs/presentation` at `ee00e11`; existing code and records are
+preserved. No new version number is assigned. The detailed design is under owner review;
+the continuity program and MCP integration are not implemented.
+
+Current implementation remains the v0.2 observation instrument. Its version branch was
+merged into `main` in commit `86a6a48`; the old merge-pending language below is historical.
+A1 (v0.1) and A2-V13 (v0.2) remain unsatisfied. The new focus does not close them.
+
+The [pilot scope](../candidates/CONTINUITY-PILOT.md) separates accepted intent, proposed
+behavior and verification. Earlier UX plans are inputs to reassess, not an automatically
+accepted feature sequence. UD-039 narrows the next work; it does not adopt every earlier
+semantic or coexistence hypothesis or cancel the longer-term vision.
+
+## Earlier strategic context — preserved from 2026-10-03
+
+The dated current/next-step descriptions below explain the previous stage. For what to
+work on now, use the active focus above and UD-039. The broader constraints and unresolved
+research remain relevant; their candidate mechanisms are not pilot commitments.
+
 WHAT WE ARE BUILDING
 An open-source, local-first, AI-native workspace whose human mental model is "my files
 and folders" (MC §4), with projects, tasks, decisions, questions, knowledge, AI sessions
