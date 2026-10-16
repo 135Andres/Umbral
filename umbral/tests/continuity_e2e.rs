@@ -1342,6 +1342,15 @@ fn m7_a_malformed_expected_revision_is_invalid_input() {
             "{expected}: {err}"
         );
     }
+    // Required even though it may be null.
+    let mut v = input("t", Value::Null, &["a.txt"]);
+    v.as_object_mut().unwrap().remove("expected_revision");
+    let (code, err) = save(root, &v);
+    assert_eq!(
+        (code, &err["error"]),
+        (Some(2), &json!("entrada-invalida")),
+        "{err}"
+    );
     assert!(!root.join(".umbral").exists());
 }
 

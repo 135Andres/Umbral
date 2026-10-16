@@ -3,7 +3,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
-use serde::{Deserialize, Deserializer};
+use serde::Deserialize;
 use serde_json::{json, Value};
 
 use super::sources::{self, Seen};
@@ -25,7 +25,7 @@ pub(super) const MAX_FILE: usize = 512 * KIB;
 pub struct SaveInput {
     pub task: String,
     /// Required, and may be `null`.
-    #[serde(deserialize_with = "nullable")]
+    #[serde(deserialize_with = "Option::deserialize")]
     pub expected_revision: Option<Expected>,
     #[serde(default)]
     pub emitter: DeclaredEmitter,
@@ -49,10 +49,6 @@ pub struct DeclaredEmitter {
 pub enum Expected {
     One(String),
     Many(Vec<String>),
-}
-
-fn nullable<'de, D: Deserializer<'de>>(d: D) -> Result<Option<Expected>, D::Error> {
-    Option::<Expected>::deserialize(d)
 }
 
 fn invalid(m: impl Into<String>) -> Error {
