@@ -136,6 +136,26 @@ Exit codes: `0` success (an `ambiguous` result or "nothing to report" is still a
 error, `2` a usage mistake, `3` `observe` recorded an incomplete observation because part of the
 folder could not be read.
 
+### Task continuity (pilot)
+
+A pilot (UD-040), separate from the observer above. It writes **inside** the repository, under
+`<root>/.umbral/`, and nowhere else. `<root>` must be the toplevel of a Git repository.
+
+| Command | What it does | Changes anything? |
+|---|---|---|
+| `umbral task save <root>` | saves a task revision; the input is one JSON object on stdin | adds a file under `<root>/.umbral/` |
+| `umbral task resume <root> <task-id> [--revision <id>]` | reads a revision and compares its sources with the files now | no |
+| `umbral task list <root> [--limit <n>] [--cursor <task-id>]` | lists tasks | no |
+| `umbral task export <root> <task-id> [--revision <id>]` | one revision as a portable document | no |
+
+Output is one JSON document on stdout (edition `umbral-continuity/1`), errors included. Exit
+codes as above, plus `4` a revision conflict or a forked task, and `5` an altered, invalid or
+unknown-format record, or a revision that does not exist.
+
+**Privacy:** records in `.umbral/` are meant to be versioned with Git and may be published with
+the repository. Do not write secrets or personal data in them. Umbral stores source paths and
+hashes, never file contents; but a hash of a small or guessable file can confirm its content.
+
 ## Reading the output
 
 Every line starts with a **label** saying who stands behind it:
@@ -326,7 +346,8 @@ keeping fields it does not know. Standard error is not part of the contract.
 
 ## Your data and privacy
 
-No writes to the observed tree; no network code and no sockets; no AI; no daemon; no
+No writes to the observed tree by the observer (`umbral task save` writes under
+`<root>/.umbral/` only, see [Task continuity](#task-continuity-pilot)); no network code and no sockets; no AI; no daemon; no
 watcher; no telemetry; no credential access; no file content stored. Every effect is the
 result of a command the user typed.
 
@@ -334,7 +355,7 @@ result of a command the user typed.
 
 `$XDG_DATA_HOME/umbral/ws-<id>/`, falling back to `~/.local/share/umbral/ws-<id>/`.
 
-**Nothing is ever written inside the root you point it at** — not even a marker file to
+**The observer never writes inside the root you point it at** — not even a marker file to
 identify it. That restriction is why the identifier is derived from the canonical path
 instead:
 
