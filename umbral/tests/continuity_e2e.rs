@@ -1174,3 +1174,66 @@ fn b06_m4_m5_nested_repositories_and_inner_symlinks_are_rejected_with_a_true_rea
     );
     assert!(!root.join(".umbral").exists());
 }
+
+/// Contract §5.2 (A M-1, mutant M6) and B-07: processes that save the same task at once
+/// fork it. Every revision reported written is on disk, a save that forked says so with
+/// exit 4, and the privacy warning reaches whoever created `.umbral/`, fork or not.
+#[test]
+fn b07_concurrent_saves_fork_visibly_and_keep_the_privacy_warning() {
+    const PROCS: usize = 6;
+    let mut forks = 0;
+    for _round in 0..10 {
+        let dir = repo();
+        let root = dir.path().to_str().unwrap();
+        let body = input("t", Value::Null, &["a.txt"]).to_string();
+        let children: Vec<_> = (0..PROCS)
+            .map(|_| {
+                Command::new(BIN)
+                    .args(["task", "save", root])
+                    .stdin(Stdio::piped())
+                    .stdout(Stdio::piped())
+                    .stderr(Stdio::piped())
+                    .spawn()
+                    .unwrap()
+            })
+            .collect();
+        let mut children = children;
+        for c in &mut children {
+            c.stdin.take().unwrap().write_all(body.as_bytes()).unwrap();
+        }
+        let docs: Vec<(Option<i32>, Value)> = children
+            .into_iter()
+            .map(|c| {
+                let out = c.wait_with_output().unwrap();
+                (
+                    out.status.code(),
+                    serde_json::from_slice(&out.stdout).unwrap(),
+                )
+            })
+            .collect();
+        let mut written = Vec::new();
+        for (code, doc) in &docs {
+            match (code, doc["error"].as_str()) {
+                (Some(0), None) => written.push(doc["revision"].as_str().unwrap()),
+                (Some(4), Some("bifurcacion")) => {
+                    forks += 1;
+                    written.push(doc["revision"].as_str().unwrap());
+                }
+                (Some(4), Some("conflicto-revision")) => {}
+                _ => panic!("{code:?}: {doc}"),
+            }
+        }
+        let mut on_disk = files(&task_dir(dir.path(), "t"));
+        on_disk.iter_mut().for_each(|f| f.truncate(32));
+        // Two saves in the same millisecond can write the same bytes: the same revision.
+        written.sort();
+        written.dedup();
+        assert_eq!(on_disk, written);
+        let warned = docs
+            .iter()
+            .filter(|(_, d)| d["privacy_warning"].is_string())
+            .count();
+        assert!(warned >= 1, "{docs:?}");
+    }
+    assert!(forks > 0, "no save forked the task in 10 rounds of {PROCS}");
+}

@@ -184,6 +184,8 @@ pub enum Error {
     Fork {
         revision: Option<String>,
         heads: Vec<(String, String)>,
+        /// The save that forked also created the state: the warning is still owed (B-07).
+        privacy_warning: bool,
     },
     Unsafe(String),
     NoGit(String),
@@ -238,13 +240,23 @@ impl Error {
                 .map(|(p, r)| json!({ "path": p, "reason": r }))
                 .collect::<Vec<_>>() }),
             Error::RevisionConflict { heads } => json!({ "heads": heads }),
-            Error::Fork { revision, heads } => json!({
-                "revision": revision,
-                "heads": heads
-                    .iter()
-                    .map(|(r, t)| json!({ "revision": r, "saved_at": t }))
-                    .collect::<Vec<_>>(),
-            }),
+            Error::Fork {
+                revision,
+                heads,
+                privacy_warning,
+            } => {
+                let mut v = json!({
+                    "revision": revision,
+                    "heads": heads
+                        .iter()
+                        .map(|(r, t)| json!({ "revision": r, "saved_at": t }))
+                        .collect::<Vec<_>>(),
+                });
+                if *privacy_warning {
+                    v["privacy_warning"] = json!(store::PRIVACY_WARNING);
+                }
+                v
+            }
             Error::Record {
                 task, file, reason, ..
             } => json!({ "task": task, "file": file, "reason": reason }),
@@ -278,7 +290,9 @@ impl std::fmt::Display for Error {
                 "expected revision is not the current head; head(s): {}",
                 heads.join(", ")
             ),
-            Error::Fork { revision, heads } => {
+            Error::Fork {
+                revision, heads, ..
+            } => {
                 if let Some(r) = revision {
                     write!(f, "revision {r} was written, but ")?;
                 }

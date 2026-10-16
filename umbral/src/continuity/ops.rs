@@ -214,8 +214,14 @@ fn decode(p: &str) -> Vec<u8> {
     contract::read_value(p).unwrap_or_default()
 }
 
-fn fork(revision: Option<String>, heads: &[String], revs: &[(String, Revision)]) -> Error {
+fn fork(
+    revision: Option<String>,
+    privacy_warning: bool,
+    heads: &[String],
+    revs: &[(String, Revision)],
+) -> Error {
     Error::Fork {
+        privacy_warning,
         revision,
         heads: heads
             .iter()
@@ -326,7 +332,7 @@ pub fn save(root: &Path, input: SaveInput, channel: Channel) -> Result<Value, Er
     let after = store.load_task(&rev.task)?.unwrap_or_default();
     let now_heads = store::heads(&rev.task, &after)?;
     if now_heads.len() > 1 {
-        return Err(fork(Some(id), &now_heads, &after));
+        return Err(fork(Some(id), created, &now_heads, &after));
     }
 
     let mut out = json!({
@@ -361,7 +367,7 @@ fn select(store: &Store, task: &str, revision: Option<&str>) -> Result<Option<Se
         Some(r) => r.to_string(),
         None if heads.len() == 1 => heads[0].clone(),
         None if heads.is_empty() => return Ok(None),
-        None => return Err(fork(None, &heads, &revs)),
+        None => return Err(fork(None, false, &heads, &revs)),
     };
     if !revs.iter().any(|(r, _)| *r == id) {
         return Err(Error::NoSuchRevision(id));

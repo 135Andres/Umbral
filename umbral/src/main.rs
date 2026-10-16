@@ -371,17 +371,15 @@ fn task(args: &[OsString]) -> u8 {
     };
 
     let (doc, code) = match result {
-        Ok(doc) => {
-            if let Some(w) = doc.get("privacy_warning").and_then(|w| w.as_str()) {
-                eprintln!("note: {w}");
-            }
-            (doc, 0)
-        }
+        Ok(doc) => (doc, 0),
         Err(e) => {
             eprintln!("error: {e}");
             (e.to_json(), e.exit_code())
         }
     };
+    if let Some(w) = doc.get("privacy_warning").and_then(|w| w.as_str()) {
+        eprintln!("note: {w}");
+    }
     match serde_json::to_string_pretty(&doc) {
         Ok(s) => println!("{s}"),
         Err(e) => return runtime_error(&e),
