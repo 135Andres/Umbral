@@ -1,8 +1,11 @@
 //! Task continuity end to end (T1.7): one process saves, another resumes, through the real
-//! binary and a real git repository.
+//! binary and a real git repository. Then the required edges of phase 1 (T1.8-T1.16).
+
+mod common;
 
 use std::io::Write;
-use std::path::Path;
+use std::os::unix::ffi::OsStrExt;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
 use serde_json::{json, Value};
@@ -191,4 +194,679 @@ fn a_stale_expected_revision_is_a_conflict_and_writes_nothing() {
         .unwrap()
         .count();
     assert_eq!(n, 1);
+}
+
+// ---- Edges (T1.8-T1.16) ----
+
+fn input(task: &str, expected: Value, sources: &[&str]) -> Value {
+    json!({
+        "task": task,
+        "expected_revision": expected,
+        "goal": format!("goal of {task}"),
+        "next_step": "next",
+        "blockers": [],
+        "declarations": [],
+        "sources": sources,
+    })
+}
+
+fn save(root: &Path, v: &Value) -> (Option<i32>, Value) {
+    let (out, doc) = umbral(&["task", "save", root.to_str().unwrap()], Some(v));
+    (out.status.code(), doc)
+}
+
+fn run(args: &[&str], root: &Path) -> (Option<i32>, Value) {
+    let mut a = vec!["task", args[0], root.to_str().unwrap()];
+    a.extend(&args[1..]);
+    let (out, doc) = umbral(&a, None);
+    (out.status.code(), doc)
+}
+
+fn task_dir(root: &Path, task: &str) -> PathBuf {
+    root.join(".umbral/continuity/tasks").join(task)
+}
+
+fn files(dir: &Path) -> Vec<String> {
+    let mut v: Vec<String> = std::fs::read_dir(dir)
+        .map(|r| {
+            r.map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+                .collect()
+        })
+        .unwrap_or_default();
+    v.sort();
+    v
+}
+
+/// Save one revision and return its id.
+fn saved(root: &Path, v: &Value) -> String {
+    let (code, doc) = save(root, v);
+    assert_eq!(code, Some(0), "{doc}");
+    doc["revision"].as_str().unwrap().to_string()
+}
+
+/// Write a record file named by its own hash, as Umbral would name it.
+fn plant(root: &Path, task: &str, bytes: &[u8]) -> PathBuf {
+    let dir = task_dir(root, task);
+    std::fs::create_dir_all(&dir).unwrap();
+    let p = dir.join(format!("{}.json", &blake3::hash(bytes).to_hex()[..32]));
+    std::fs::write(&p, bytes).unwrap();
+    p
+}
+
+/// T1.8: a stale single id, a wrong list and a create over an existing task all conflict;
+/// nothing is written.
+#[test]
+fn t1_8_stale_expected_revisions_conflict_without_writing() {
+    let dir = repo();
+    let root = dir.path();
+    let first = saved(root, &input("t", Value::Null, &["a.txt"]));
+    let second = saved(root, &input("t", json!(first), &["a.txt"]));
+    for expected in [
+        json!(first),
+        Value::Null,
+        json!([first, second]),
+        json!("0".repeat(32)),
+    ] {
+        let (code, err) = save(root, &input("t", expected, &["a.txt"]));
+        assert_eq!(code, Some(4), "{err}");
+        assert_eq!(err["error"], "conflicto-revision");
+        assert_eq!(err["heads"], json!([second]));
+    }
+    assert_eq!(files(&task_dir(root, "t")).len(), 2);
+}
+
+/// T1.8 / contract §5.2: two branches advance the same task and merge. The task forks;
+/// resume and export refuse to choose; a save naming both heads closes the fork.
+#[test]
+fn t1_8_a_merge_forks_the_task_and_a_save_naming_both_heads_closes_it() {
+    let dir = repo();
+    let root = dir.path();
+    let base = saved(root, &input("t", Value::Null, &["a.txt"]));
+    git(root, &["add", "-A"]);
+    git(root, &["commit", "-q", "-m", "base"]);
+    git(root, &["checkout", "-q", "-b", "side"]);
+    let mut v = input("t", json!(base), &["a.txt"]);
+    v["goal"] = json!("side");
+    let side = saved(root, &v);
+    git(root, &["add", "-A"]);
+    git(root, &["commit", "-q", "-m", "side"]);
+    git(root, &["checkout", "-q", "-"]);
+    let main = saved(root, &input("t", json!(base), &["a.txt"]));
+    git(root, &["add", "-A"]);
+    git(root, &["commit", "-q", "-m", "main"]);
+    git(root, &["merge", "-q", "--no-edit", "side"]);
+
+    let mut heads = vec![side.clone(), main.clone()];
+    heads.sort();
+    for op in ["resume", "export"] {
+        let (code, err) = run(&[op, "t"], root);
+        assert_eq!(code, Some(4), "{err}");
+        assert_eq!(err["error"], "bifurcacion");
+        let got: Vec<&str> = err["heads"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|h| h["revision"].as_str().unwrap())
+            .collect();
+        assert_eq!(got, heads);
+    }
+    let (code, one) = run(&["resume", "t", "--revision", &side], root);
+    assert_eq!(code, Some(0));
+    assert_eq!(one["declared"]["goal"], "side");
+    let (_, listed) = run(&["list"], root);
+    assert_eq!(listed["tasks"][0]["heads"].as_array().unwrap().len(), 2);
+
+    // One head alone is not the current state.
+    let (code, _) = save(root, &input("t", json!(main), &["a.txt"]));
+    assert_eq!(code, Some(4));
+    let closed = saved(root, &input("t", json!([main, side]), &["a.txt"]));
+    let (code, resumed) = run(&["resume", "t"], root);
+    assert_eq!(code, Some(0), "{resumed}");
+    assert_eq!(resumed["revision"], closed.as_str());
+    assert_eq!(resumed["parents"], json!(heads));
+}
+
+/// T1.9: an interrupted save leaves at most a temporary in `tmp/`, which no read sees and
+/// Git ignores.
+#[test]
+fn t1_9_a_leftover_temporary_is_invisible_to_reads_and_to_git() {
+    let dir = repo();
+    let root = dir.path();
+    let id = saved(root, &input("t", Value::Null, &["a.txt"]));
+    std::fs::write(
+        root.join(".umbral/continuity/tmp/123-456-0"),
+        b"{\"format\": \"umbral-contin",
+    )
+    .unwrap();
+    let (code, resumed) = run(&["resume", "t"], root);
+    assert_eq!(code, Some(0));
+    assert_eq!(resumed["revision"], id.as_str());
+    let (_, listed) = run(&["list"], root);
+    assert_eq!(listed["tasks"][0]["integrity"], "ok");
+    let out = Command::new("git")
+        .args(["status", "--porcelain", "--untracked-files=all"])
+        .current_dir(root)
+        .output()
+        .unwrap();
+    let status = String::from_utf8(out.stdout).unwrap();
+    assert!(!status.contains("tmp"), "{status}");
+    assert!(status.contains(&format!("{id}.json")), "{status}");
+}
+
+/// T1.9 / contract §5.4: a record changed by hand or by Git is reported, never repaired;
+/// the other tasks still list.
+#[test]
+fn t1_9_an_altered_record_is_detected_and_left_as_it_is() {
+    let dir = repo();
+    let root = dir.path();
+    saved(root, &input("ok", Value::Null, &["a.txt"]));
+    let id = saved(root, &input("t", Value::Null, &["a.txt"]));
+    let file = task_dir(root, "t").join(format!("{id}.json"));
+    let original = std::fs::read_to_string(&file).unwrap();
+
+    let edited = original.replace("goal of t", "goal of u");
+    let conflicted = format!("<<<<<<< HEAD\n{original}=======\n{edited}>>>>>>> side\n");
+    for (bytes, reason) in [(edited, "hash-mismatch"), (conflicted, "conflict-markers")] {
+        std::fs::write(&file, &bytes).unwrap();
+        for op in ["resume", "export"] {
+            let (code, err) = run(&[op, "t"], root);
+            assert_eq!(code, Some(5), "{err}");
+            assert_eq!(err["error"], "registro-alterado");
+            assert_eq!(err["reason"], reason);
+        }
+        let (code, err) = save(root, &input("t", json!(id), &["a.txt"]));
+        assert_eq!((code, &err["reason"]), (Some(5), &json!(reason)));
+        let (code, listed) = run(&["list"], root);
+        assert_eq!(code, Some(0));
+        assert_eq!(listed["tasks"][0]["integrity"], "ok");
+        assert_eq!(listed["tasks"][1]["integrity"], "registro-alterado");
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), bytes);
+        assert_eq!(files(&task_dir(root, "t")).len(), 1);
+    }
+}
+
+/// Contract §5.4: a parent removed (a revert, a deletion) is an altered record.
+#[test]
+fn t1_9_a_missing_parent_is_an_altered_record() {
+    let dir = repo();
+    let root = dir.path();
+    let first = saved(root, &input("t", Value::Null, &["a.txt"]));
+    saved(root, &input("t", json!(first), &["a.txt"]));
+    std::fs::remove_file(task_dir(root, "t").join(format!("{first}.json"))).unwrap();
+    let (code, err) = run(&["resume", "t"], root);
+    assert_eq!(code, Some(5), "{err}");
+    assert_eq!(err["error"], "registro-alterado");
+    assert_eq!(err["reason"], "missing-parent");
+}
+
+/// Contract §5.4 / P4: a file whose name matches its bytes but whose content is not a
+/// record of this edition is invalid, and is not rewritten.
+#[test]
+fn t1_9_an_invalid_record_is_reported() {
+    let dir = repo();
+    let root = dir.path();
+    let id = saved(root, &input("t", Value::Null, &["a.txt"]));
+    let good: Value = serde_json::from_slice(
+        &std::fs::read(task_dir(root, "t").join(format!("{id}.json"))).unwrap(),
+    )
+    .unwrap();
+    let mut extra = good.clone();
+    extra["unknown_field"] = json!(1);
+    let mut wrong_task = good.clone();
+    wrong_task["task"] = json!("other");
+    for (i, bytes) in [
+        b"not json\n".to_vec(),
+        serde_json::to_vec_pretty(&extra).unwrap(),
+        serde_json::to_vec_pretty(&wrong_task).unwrap(),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let task = format!("bad-{i}");
+        let p = plant(root, &task, &bytes);
+        let (code, err) = run(&["resume", &task], root);
+        assert_eq!(code, Some(5), "{err}");
+        assert_eq!(err["error"], "registro-invalido", "{err}");
+        assert_eq!(std::fs::read(&p).unwrap(), bytes);
+    }
+}
+
+/// T1.10: escapes, links, directories, absences and ignored files are rejected and nothing is
+/// written; a malformed path is invalid input.
+#[test]
+fn t1_10_unsupported_sources_are_rejected_and_nothing_is_written() {
+    let dir = repo();
+    let root = dir.path();
+    let outside = TempDir::new().unwrap();
+    std::fs::write(outside.path().join("x"), "x").unwrap();
+    std::os::unix::fs::symlink("a.txt", root.join("link")).unwrap();
+    std::os::unix::fs::symlink(outside.path(), root.join("out")).unwrap();
+    std::fs::write(root.join(".gitignore"), ".env\n").unwrap();
+    std::fs::write(root.join(".env"), "TOKEN=1").unwrap();
+
+    let (code, err) = save(
+        root,
+        &input(
+            "t",
+            Value::Null,
+            &["a.txt", "link", "src", "missing", "out/x", ".env"],
+        ),
+    );
+    assert_eq!(code, Some(2), "{err}");
+    assert_eq!(err["error"], "fuente-rechazada");
+    assert_eq!(
+        err["sources"],
+        json!([
+            { "path": "link", "reason": "symlink" },
+            { "path": "src", "reason": "not-a-regular-file" },
+            { "path": "missing", "reason": "absent" },
+            { "path": "out/x", "reason": "outside-root" },
+            { "path": ".env", "reason": "git-ignored" },
+        ])
+    );
+    for bad in [
+        "../a.txt",
+        "/etc/passwd",
+        "./a.txt",
+        "src//c.rs",
+        ".git/config",
+        ".umbral/x",
+    ] {
+        let (code, err) = save(root, &input("t", Value::Null, &[bad]));
+        assert_eq!(code, Some(2), "{bad}: {err}");
+        assert_eq!(err["error"], "entrada-invalida", "{bad}");
+    }
+    assert!(!root.join(".umbral").exists());
+
+    // A tracked file that matches an ignore rule is versioned already: accepted.
+    git(root, &["add", "-f", ".env"]);
+    saved(root, &input("t", Value::Null, &[".env"]));
+}
+
+/// T1.10: after a save, absence, a denied read and a change are three distinct results.
+#[test]
+fn t1_10_absent_denied_and_differing_sources_are_distinct_at_resume() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = repo();
+    let root = dir.path();
+    saved(
+        root,
+        &input("t", Value::Null, &["a.txt", "b.txt", "src/c.rs"]),
+    );
+    std::fs::remove_file(root.join("a.txt")).unwrap();
+    std::fs::write(root.join("b.txt"), "changed").unwrap();
+    let c = root.join("src/c.rs");
+    std::fs::set_permissions(&c, std::fs::Permissions::from_mode(0o000)).unwrap();
+    if std::fs::read(&c).is_ok() {
+        eprintln!("skipped: running with privileges that ignore file modes");
+        return;
+    }
+    let (code, resumed) = run(&["resume", "t"], root);
+    std::fs::set_permissions(&c, std::fs::Permissions::from_mode(0o644)).unwrap();
+    assert_eq!(code, Some(0), "{resumed}");
+    let got: Vec<(&Value, &Value)> = resumed["sources"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| (&s["state"], &s["reason"]))
+        .collect();
+    assert_eq!(
+        got,
+        [
+            (&json!("absent"), &Value::Null),
+            (&json!("differs"), &Value::Null),
+            (&json!("unknown"), &json!("permission-denied")),
+        ]
+    );
+
+    // At save, a denied read is recorded as uncheckable, not rejected.
+    std::fs::set_permissions(&c, std::fs::Permissions::from_mode(0o000)).unwrap();
+    let (code, doc) = save(root, &input("u", Value::Null, &["src/c.rs"]));
+    std::fs::set_permissions(&c, std::fs::Permissions::from_mode(0o644)).unwrap();
+    assert_eq!(code, Some(0), "{doc}");
+    assert_eq!(
+        doc["uncheckable"],
+        json!([{ "path": "src/c.rs", "reason": "permission-denied" }])
+    );
+    let (_, resumed) = run(&["resume", "u"], root);
+    assert_eq!(resumed["sources"][0]["reason"], "no-recorded-hash");
+}
+
+/// T1.11: `.umbral/` (or a directory under it) that is a symlink or not a directory is
+/// unsafe for writes and for reads, and nothing is written through it.
+#[test]
+fn t1_11_an_unsafe_state_directory_is_refused() {
+    let outside = TempDir::new().unwrap();
+    let cases: [fn(&Path, &Path); 3] = [
+        |root, out| std::os::unix::fs::symlink(out, root.join(".umbral")).unwrap(),
+        |root, out| {
+            std::fs::create_dir(root.join(".umbral")).unwrap();
+            std::os::unix::fs::symlink(out, root.join(".umbral/continuity")).unwrap();
+        },
+        |root, _| std::fs::write(root.join(".umbral"), "").unwrap(),
+    ];
+    for make in cases {
+        let dir = repo();
+        let root = dir.path();
+        make(root, outside.path());
+        let (code, err) = save(root, &input("t", Value::Null, &["a.txt"]));
+        assert_eq!(code, Some(1), "{err}");
+        assert_eq!(err["error"], "estado-inseguro");
+        for args in [&["resume", "t"][..], &["list"], &["export", "t"]] {
+            let (code, err) = run(args, root);
+            assert_eq!(code, Some(1), "{args:?}: {err}");
+            assert_eq!(err["error"], "estado-inseguro");
+        }
+    }
+    assert!(files(outside.path()).is_empty());
+}
+
+/// T1.11: a record of an unknown edition fails, naming the edition, and is not rewritten,
+/// not even by a save.
+#[test]
+fn t1_11_an_unknown_format_fails_without_rewriting() {
+    let dir = repo();
+    let root = dir.path();
+    let bytes = b"{\n  \"format\": \"umbral-continuity/2\"\n}\n";
+    let p = plant(root, "t", bytes);
+    for op in ["resume", "export"] {
+        let (code, err) = run(&[op, "t"], root);
+        assert_eq!(code, Some(5), "{err}");
+        assert_eq!(err["error"], "formato-desconocido");
+        assert_eq!(err["reason"], "umbral-continuity/2");
+    }
+    let id = p.file_stem().unwrap().to_str().unwrap();
+    let (code, err) = save(root, &input("t", json!(id), &["a.txt"]));
+    assert_eq!(
+        (code, &err["error"]),
+        (Some(5), &json!("formato-desconocido"))
+    );
+    let (_, listed) = run(&["list"], root);
+    assert_eq!(listed["tasks"][0]["integrity"], "formato-desconocido");
+    assert_eq!(std::fs::read(&p).unwrap(), bytes);
+    assert_eq!(files(&task_dir(root, "t")).len(), 1);
+}
+
+/// T1.12: a repository without commits is accepted with an unborn HEAD; a folder without
+/// Git and a subdirectory of a repository are refused, and nothing is written.
+#[test]
+fn t1_12_unborn_head_is_accepted_and_no_git_is_refused() {
+    let dir = TempDir::new().unwrap();
+    let root = dir.path();
+    std::fs::write(root.join("a.txt"), "alpha").unwrap();
+
+    let out = Command::new(BIN)
+        .args(["task", "list", root.to_str().unwrap()])
+        .env("GIT_CEILING_DIRECTORIES", root.parent().unwrap())
+        .output()
+        .unwrap();
+    let err: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(out.status.code(), Some(1), "{err}");
+    assert_eq!(err["error"], "sin-git");
+    assert!(String::from_utf8_lossy(&out.stderr).contains("no git repository"));
+
+    git(root, &["init", "-q"]);
+    let (code, doc) = save(root, &input("t", Value::Null, &["a.txt"]));
+    assert_eq!(code, Some(0), "{doc}");
+    assert_eq!(doc["git"], json!({ "head_state": "unborn", "head": null }));
+    assert_eq!(doc["parents"], json!([]));
+
+    let sub = root.join("sub");
+    std::fs::create_dir(&sub).unwrap();
+    let (code, err) = save(&sub, &input("t", Value::Null, &["a.txt"]));
+    assert_eq!((code, &err["error"]), (Some(2), &json!("entrada-invalida")));
+    assert!(!sub.join(".umbral").exists());
+}
+
+/// T1.12: a folder without Git is refused on save, without writing.
+#[test]
+fn t1_12_save_in_a_folder_without_git_writes_nothing() {
+    let dir = TempDir::new().unwrap();
+    let root = dir.path();
+    std::fs::write(root.join("a.txt"), "alpha").unwrap();
+    let mut child = Command::new(BIN)
+        .args(["task", "save", root.to_str().unwrap()])
+        .env("GIT_CEILING_DIRECTORIES", root.parent().unwrap())
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let v = input("t", Value::Null, &["a.txt"]);
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(v.to_string().as_bytes())
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let err: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(out.status.code(), Some(1), "{err}");
+    assert_eq!(err["error"], "sin-git");
+    assert_eq!(files(root), ["a.txt"]);
+}
+
+/// T1.13: exceeding a limit is an error naming the field, the limit and the size; a value at
+/// the limit is kept whole.
+#[test]
+fn t1_13_limits_are_errors_and_nothing_is_truncated() {
+    let dir = repo();
+    let root = dir.path();
+    let long = "x".repeat(250);
+    std::fs::write(root.join(&long), "x").unwrap();
+
+    let at_limit = "é".repeat(1024); // 2048 bytes
+    let mut over = Vec::new();
+    let mut v = input("t", Value::Null, &["a.txt"]);
+    v["goal"] = json!(format!("{at_limit}x"));
+    over.push((v, "goal", 2048, 2049));
+    let mut v = input("t", Value::Null, &["a.txt"]);
+    v["blockers"] = json!(vec!["b"; 21]);
+    over.push((v, "blockers", 20, 21));
+    let many: Vec<String> = (0..201).map(|i| format!("f{i}")).collect();
+    let refs: Vec<&str> = many.iter().map(String::as_str).collect();
+    over.push((input("t", Value::Null, &refs), "sources", 200, 201));
+    let mut v = input("t", Value::Null, &[long.as_str()]);
+    v["declarations"] = json!((0..100)
+        .map(
+            |i| json!({ "id": format!("d{i}"), "kind": "decision", "claimed_origin": "agent",
+            "text": "t".repeat(2048), "depends_on": vec![long.as_str(); 50] })
+        )
+        .collect::<Vec<_>>());
+    over.push((v, "revision file", 512 * 1024, 0));
+
+    for (v, field, limit, actual) in over {
+        let (code, err) = save(root, &v);
+        assert_eq!(code, Some(2), "{field}: {err}");
+        assert_eq!(err["error"], "limite-excedido");
+        assert_eq!(err["field"], field);
+        assert_eq!(err["limit"], limit);
+        if actual > 0 {
+            assert_eq!(err["actual"], actual);
+        } else {
+            assert!(err["actual"].as_u64().unwrap() > limit as u64);
+        }
+    }
+    assert!(!root.join(".umbral").exists());
+
+    let mut v = input("t", Value::Null, &["a.txt"]);
+    v["goal"] = json!(at_limit);
+    saved(root, &v);
+    let (_, resumed) = run(&["resume", "t"], root);
+    assert_eq!(resumed["declared"]["goal"], at_limit.as_str());
+}
+
+/// T1.5 / contract §6.1: list pages by task id with a cursor; bad limits are input errors.
+#[test]
+fn list_pages_with_a_cursor() {
+    let dir = repo();
+    let root = dir.path();
+    for t in ["t-c", "t-a", "t-b"] {
+        saved(root, &input(t, Value::Null, &["a.txt"]));
+    }
+    let names = |doc: &Value| -> Vec<String> {
+        doc["tasks"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|t| t["task"].as_str().unwrap().to_string())
+            .collect()
+    };
+    let (_, page) = run(&["list", "--limit", "2"], root);
+    assert_eq!(names(&page), ["t-a", "t-b"]);
+    assert_eq!(page["next_cursor"], "t-b");
+    let (_, page) = run(&["list", "--limit", "2", "--cursor", "t-b"], root);
+    assert_eq!(names(&page), ["t-c"]);
+    assert_eq!(page["next_cursor"], Value::Null);
+    for bad in [
+        &["list", "--limit", "0"][..],
+        &["list", "--limit", "501"],
+        &["list", "--cursor", "A"],
+    ] {
+        let (code, err) = run(bad, root);
+        assert_eq!((code, &err["error"]), (Some(2), &json!("entrada-invalida")));
+    }
+}
+
+/// T1.14: export is the record file's bytes plus provenance, readable without Umbral.
+#[test]
+fn t1_14_export_is_the_record_as_it_is() {
+    let dir = repo();
+    let root = dir.path();
+    let first = saved(root, &save_input(Value::Null));
+    let second = saved(root, &save_input(json!(first)));
+    for (args, id) in [
+        (vec!["export", "fase1-nucleo"], &second),
+        (vec!["export", "fase1-nucleo", "--revision", &first], &first),
+    ] {
+        let (code, doc) = run(&args, root);
+        assert_eq!(code, Some(0), "{doc}");
+        assert_eq!(doc["format"], "umbral-continuity/1");
+        assert_eq!(doc["task"], "fase1-nucleo");
+        assert_eq!(doc["revision"], id.as_str());
+        assert_eq!(doc["integrity"], "ok");
+        let record = doc["record"].as_str().unwrap();
+        let file = task_dir(root, "fase1-nucleo").join(format!("{id}.json"));
+        assert_eq!(record.as_bytes(), std::fs::read(file).unwrap());
+        assert_eq!(&blake3::hash(record.as_bytes()).to_hex()[..32], id.as_str());
+        let parsed: Value = serde_json::from_str(record).unwrap();
+        assert_eq!(parsed["goal"], "Prove continuity across processes");
+    }
+    let (code, err) = run(
+        &["export", "fase1-nucleo", "--revision", &"0".repeat(32)],
+        root,
+    );
+    assert_eq!(
+        (code, &err["error"]),
+        (Some(5), &json!("revision-inexistente"))
+    );
+    let (code, err) = run(&["export", "nothing"], root);
+    assert_eq!(
+        (code, &err["error"]),
+        (Some(5), &json!("revision-inexistente"))
+    );
+}
+
+/// T1.15: a source path that is not UTF-8 is stored reversibly and found again.
+#[test]
+fn t1_15_a_non_utf8_path_round_trips() {
+    let dir = repo();
+    let root = dir.path();
+    let name = std::ffi::OsStr::from_bytes(b"src/\xFF\xFEname.rs");
+    std::fs::write(root.join(name), "bytes").unwrap();
+    let written = "src/\\xFF\\xFEname.rs";
+    let (code, doc) = save(root, &input("t", Value::Null, &[written]));
+    assert_eq!(code, Some(0), "{doc}");
+    assert_eq!(doc["sources"][0]["path"], written);
+    assert_eq!(doc["sources"][0]["capture"], "captured");
+    let (_, resumed) = run(&["resume", "t"], root);
+    assert_eq!(resumed["sources"][0]["path"], written);
+    assert_eq!(resumed["sources"][0]["state"], "match");
+    std::fs::write(root.join(name), "other bytes").unwrap();
+    let (_, resumed) = run(&["resume", "t"], root);
+    assert_eq!(resumed["sources"][0]["state"], "differs");
+}
+
+/// T1.16: save, resume, list and export change nothing outside `.umbral/` (`.git/` included),
+/// and run no git subcommand but `rev-parse` and `check-ignore`, neither of which uses the
+/// network.
+#[test]
+fn t1_16_nothing_outside_umbral_changes_and_git_stays_local() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = repo();
+    let root = dir.path();
+    std::fs::write(root.join(".gitignore"), "ignored\n").unwrap();
+
+    // A `git` on PATH that logs its subcommand and runs the real one.
+    let real = std::env::split_paths(&std::env::var_os("PATH").unwrap())
+        .map(|d| d.join("git"))
+        .find(|p| p.is_file())
+        .unwrap();
+    let bin = TempDir::new().unwrap();
+    let log = bin.path().join("log");
+    let wrapper = bin.path().join("git");
+    std::fs::write(
+        &wrapper,
+        format!(
+            "#!/bin/sh\nprintf '%s\\n' \"$1\" >> '{}'\nexec '{}' \"$@\"\n",
+            log.display(),
+            real.display()
+        ),
+    )
+    .unwrap();
+    std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let path = std::env::join_paths(
+        std::iter::once(bin.path().to_path_buf())
+            .chain(std::env::split_paths(&std::env::var_os("PATH").unwrap())),
+    )
+    .unwrap();
+    let r = root.to_str().unwrap();
+    let call = |args: &[&str], stdin: Option<&Value>| {
+        let mut child = Command::new(BIN)
+            .args(args)
+            .env("PATH", &path)
+            .env("GIT_CONFIG_GLOBAL", "/dev/null")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let mut pipe = child.stdin.take().unwrap();
+        if let Some(v) = stdin {
+            pipe.write_all(v.to_string().as_bytes()).unwrap();
+        }
+        drop(pipe);
+        let out = child.wait_with_output().unwrap();
+        assert_eq!(out.status.code(), Some(0), "{args:?}: {out:?}");
+        serde_json::from_slice::<Value>(&out.stdout).unwrap()
+    };
+
+    let outside = |s: common::TreeSnapshot| -> std::collections::BTreeMap<_, _> {
+        s.0.into_iter()
+            .filter(|(k, _)| k != ".umbral" && !k.starts_with(".umbral/"))
+            .collect()
+    };
+    let before = outside(common::snapshot(root));
+    let first = call(&["task", "save", r], Some(&save_input(Value::Null)));
+    call(
+        &["task", "save", r],
+        Some(&save_input(first["revision"].clone())),
+    );
+    call(&["task", "resume", r, "fase1-nucleo"], None);
+    call(&["task", "list", r], None);
+    call(&["task", "export", r, "fase1-nucleo"], None);
+    let after = outside(common::snapshot(root));
+    assert_eq!(before, after, "a task command wrote outside .umbral/");
+    assert!(root.join(".umbral/continuity/tasks/fase1-nucleo").is_dir());
+
+    // The comparison can fail: a write outside .umbral/ is seen.
+    std::fs::write(root.join("a.txt"), "changed").unwrap();
+    assert_ne!(before, outside(common::snapshot(root)));
+
+    let used: std::collections::BTreeSet<String> = std::fs::read_to_string(&log)
+        .unwrap()
+        .lines()
+        .map(str::to_string)
+        .collect();
+    assert_eq!(used, ["check-ignore", "rev-parse"].map(String::from).into());
 }
