@@ -147,7 +147,11 @@ pub(super) fn check_path(bytes: &[u8]) -> Result<(), String> {
     {
         return Err("empty, '.' or '..' component".into());
     }
-    if parts[0] == b".git" || parts[0] == b".umbral" {
+    // Any `.git`, a nested repository's included (B-06), and without regard to case, which
+    // some filesystems ignore.
+    if parts.iter().any(|p| p.eq_ignore_ascii_case(b".git"))
+        || parts[0].eq_ignore_ascii_case(b".umbral")
+    {
         return Err("under .git/ or .umbral/".into());
     }
     Ok(())
@@ -178,8 +182,18 @@ pub(super) fn inspect(root: &Path, rel: &[u8]) -> Seen {
             break;
         }
         match std::fs::symlink_metadata(&path) {
-            Ok(m) if m.file_type().is_symlink() => return Seen::Refused(Reason::OutsideRoot),
+            // Refused either way; the reason says whether it leads out of the root (A M-5).
+            Ok(m) if m.file_type().is_symlink() => {
+                return match std::fs::canonicalize(&path) {
+                    Ok(c) if !c.starts_with(root) => Seen::Refused(Reason::OutsideRoot),
+                    _ => Seen::Refused(Reason::Symlink),
+                }
+            }
             Ok(m) if !m.is_dir() => return Seen::Absent,
+            // Another repository (a submodule): outside what this one versions (A M-4).
+            Ok(_) if std::fs::symlink_metadata(path.join(".git")).is_ok() => {
+                return Seen::Refused(Reason::OutsideRoot)
+            }
             Ok(_) => {}
             Err(e) => return from_error(&content::content_error_from(&e)),
         }

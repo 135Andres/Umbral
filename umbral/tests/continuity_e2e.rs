@@ -1139,3 +1139,38 @@ fn b05_a_symlink_swapped_in_during_reads_never_reads_outside() {
     );
     assert!(seen.contains(&json!(7)));
 }
+
+/// B-06, A M-4, A M-5: a nested repository's `.git` (any case) is invalid input; a source
+/// inside a submodule is rejected as outside this repository instead of failing the save
+/// with `io`; a symlinked directory that stays inside the root is reported as `symlink`.
+#[test]
+fn b06_m4_m5_nested_repositories_and_inner_symlinks_are_rejected_with_a_true_reason() {
+    let dir = repo();
+    let root = dir.path();
+    for bad in ["src/.git/config", ".GIT/config", "src/.Git/x", ".UMBRAL/x"] {
+        let (code, err) = save(root, &input("t", Value::Null, &[bad]));
+        assert_eq!(
+            (code, &err["error"]),
+            (Some(2), &json!("entrada-invalida")),
+            "{bad}: {err}"
+        );
+    }
+    let sub = root.join("sub");
+    std::fs::create_dir(&sub).unwrap();
+    git(&sub, &["init", "-q"]);
+    std::fs::write(sub.join("f"), "f").unwrap();
+    git(&sub, &["add", "f"]);
+    git(&sub, &["commit", "-q", "-m", "sub"]);
+    git(root, &["add", "sub"]);
+    std::os::unix::fs::symlink("src", root.join("alias")).unwrap();
+    let (code, err) = save(root, &input("t", Value::Null, &["sub/f", "alias/c.rs"]));
+    assert_eq!(code, Some(2), "{err}");
+    assert_eq!(
+        err["sources"],
+        json!([
+            { "path": "sub/f", "reason": "outside-root" },
+            { "path": "alias/c.rs", "reason": "symlink" },
+        ])
+    );
+    assert!(!root.join(".umbral").exists());
+}
