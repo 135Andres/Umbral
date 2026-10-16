@@ -11,8 +11,11 @@ use crate::content::{self, ContentError, Stability};
 
 /// Run git with separate arguments, no shell, no optional locks and no prompt. No
 /// subcommand used here (`rev-parse`, `check-ignore`) runs hooks or touches the network.
+/// Reading the index runs `core.fsmonitor`, a program the observed repository names: it is
+/// switched off on the command line, which outranks every config file (B-01).
 fn git(root: &Path, args: &[&str], input: &[u8]) -> Result<std::process::Output, Error> {
     let mut child = Command::new("git")
+        .args(["-c", "core.fsmonitor=false"])
         .args(args)
         .current_dir(root)
         .env("GIT_OPTIONAL_LOCKS", "0")

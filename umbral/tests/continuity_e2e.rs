@@ -808,7 +808,8 @@ fn t1_16_nothing_outside_umbral_changes_and_git_stays_local() {
     std::fs::write(
         &wrapper,
         format!(
-            "#!/bin/sh\nprintf '%s\\n' \"$1\" >> '{}'\nexec '{}' \"$@\"\n",
+            // The first argument that is neither `-c` nor a `-c` value is the subcommand.
+            "#!/bin/sh\nfor a in \"$@\"; do case \"$a\" in -c|*=*) ;; *) printf '%s\\n' \"$a\" >> '{}'; break;; esac; done\nexec '{}' \"$@\"\n",
             log.display(),
             real.display()
         ),
@@ -869,4 +870,36 @@ fn t1_16_nothing_outside_umbral_changes_and_git_stays_local() {
         .map(str::to_string)
         .collect();
     assert_eq!(used, ["check-ignore", "rev-parse"].map(String::from).into());
+}
+
+// ---- Phase 1 audit fixes ----
+
+/// An executable script at `path` that appends a line to `witness` and fails.
+fn witness_script(path: &Path, witness: &Path) {
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::write(
+        path,
+        format!("#!/bin/sh\necho ran >> '{}'\nexit 1\n", witness.display()),
+    )
+    .unwrap();
+    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755)).unwrap();
+}
+
+/// B-01: the observed repository's `core.fsmonitor` is a program; no task command runs it.
+#[test]
+fn b01_the_repository_fsmonitor_is_never_run() {
+    let dir = repo();
+    let root = dir.path();
+    let bin = TempDir::new().unwrap();
+    let witness = bin.path().join("witness");
+    let evil = bin.path().join("fsmonitor");
+    witness_script(&evil, &witness);
+    git(root, &["config", "core.fsmonitor", evil.to_str().unwrap()]);
+    let id = saved(root, &input("t", Value::Null, &["a.txt"]));
+    saved(root, &input("t", json!(id), &["a.txt"]));
+    for args in [&["resume", "t"][..], &["list"], &["export", "t"]] {
+        let (code, doc) = run(args, root);
+        assert_eq!(code, Some(0), "{doc}");
+    }
+    assert!(!witness.exists(), "core.fsmonitor was run");
 }
