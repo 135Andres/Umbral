@@ -165,7 +165,7 @@ impl ContentObservation {
     }
 }
 
-fn content_error_from(e: &std::io::Error) -> ContentError {
+pub(crate) fn content_error_from(e: &std::io::Error) -> ContentError {
     match e.kind() {
         std::io::ErrorKind::NotFound => ContentError::NotFound,
         std::io::ErrorKind::PermissionDenied => ContentError::PermissionDenied,
@@ -175,13 +175,23 @@ fn content_error_from(e: &std::io::Error) -> ContentError {
 
 /// Observe the content of a regular file, guarded against concurrent modification.
 pub fn observe_content(path: &Path) -> ContentObservation {
-    observe_content_guarded(path, |_attempt| {}).0
+    observe_content_guarded(path, || std::fs::File::open(path), |_attempt| {}).0
+}
+
+/// [`observe_content`], with the file opened by `open` instead of by path: a caller can open
+/// it without following symlinks. The guard also checks that the file opened is the one
+/// `stat` saw.
+pub(crate) fn observe_content_opened(
+    path: &Path,
+    open: impl Fn() -> std::io::Result<std::fs::File>,
+) -> ContentObservation {
+    observe_content_guarded(path, open, |_attempt| {}).0
 }
 
 /// [`observe_content`], also returning every byte passed to the hasher — retries included.
 /// That is the work a skip avoids, and what `content-read-bytes` counts (A2-V1).
 pub fn observe_content_counted(path: &Path) -> (ContentObservation, u64) {
-    observe_content_guarded(path, |_attempt| {})
+    observe_content_guarded(path, || std::fs::File::open(path), |_attempt| {})
 }
 
 /// The guarded read, with a hook called after each read and before the "after" `stat`.
@@ -189,6 +199,7 @@ pub fn observe_content_counted(path: &Path) -> (ContentObservation, u64) {
 /// window deterministically instead of racing a thread against the read.
 fn observe_content_guarded(
     path: &Path,
+    open: impl Fn() -> std::io::Result<std::fs::File>,
     mut after_read: impl FnMut(u32),
 ) -> (ContentObservation, u64) {
     let mut last_deltas: Vec<GuardDelta> = Vec::new();
@@ -214,9 +225,13 @@ fn observe_content_guarded(
         let mut hasher = blake3::Hasher::new();
         let mut read_total: u64 = 0;
         let mut read_error: Option<std::io::Error> = None;
+        let mut opened_id = before_id;
 
-        match std::fs::File::open(path) {
+        match open() {
             Ok(mut f) => {
+                if let Ok(m) = f.metadata() {
+                    opened_id = physical_id_of(&m);
+                }
                 let mut buf = vec![0u8; READ_BUF];
                 loop {
                     match f.read(&mut buf) {
@@ -246,7 +261,7 @@ fn observe_content_guarded(
         };
 
         let mut deltas: Vec<GuardDelta> = Vec::new();
-        if physical_id_of(&after) != before_id {
+        if physical_id_of(&after) != before_id || opened_id != before_id {
             deltas.push(GuardDelta::IdentityChanged);
         }
         if after.len() != before_size {
@@ -313,11 +328,15 @@ mod tests {
         let path = dir.path().join("f.txt");
         std::fs::write(&path, b"aaaa").unwrap();
 
-        let (obs, bytes) = observe_content_guarded(&path, |attempt| {
-            if attempt == 0 {
-                append(&path, b"bb");
-            }
-        });
+        let (obs, bytes) = observe_content_guarded(
+            &path,
+            || std::fs::File::open(&path),
+            |attempt| {
+                if attempt == 0 {
+                    append(&path, b"bb");
+                }
+            },
+        );
 
         assert_eq!(obs.stability, Some(Stability::Stable), "got {obs:?}");
         assert_eq!(obs.hash, Some(*blake3::hash(b"aaaabb").as_bytes()));
@@ -335,7 +354,11 @@ mod tests {
         let path = dir.path().join("f.txt");
         std::fs::write(&path, b"aaaa").unwrap();
 
-        let (obs, _) = observe_content_guarded(&path, |_attempt| append(&path, b"b"));
+        let (obs, _) = observe_content_guarded(
+            &path,
+            || std::fs::File::open(&path),
+            |_attempt| append(&path, b"b"),
+        );
 
         assert_eq!(obs.stability, Some(Stability::Unstable));
         assert_eq!(obs.hash, None);

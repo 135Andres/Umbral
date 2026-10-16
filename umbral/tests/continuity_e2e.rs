@@ -1096,3 +1096,46 @@ fn a1_closing_a_fork_of_more_than_8_heads_writes_nothing() {
     assert_eq!(code, Some(0), "{doc}");
     assert_eq!(doc["parents"].as_array().unwrap().len(), 8);
 }
+
+/// B-05: a directory on a source's path swapped with a symlink to elsewhere while saves and
+/// resumes read it never yields the fingerprint of the file outside the root.
+#[cfg(target_os = "linux")]
+#[test]
+fn b05_a_symlink_swapped_in_during_reads_never_reads_outside() {
+    use rustix::fs::{renameat_with, RenameFlags, CWD};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    const READS: usize = 200;
+    let dir = repo();
+    let root = dir.path().to_path_buf();
+    std::fs::create_dir(root.join("sub")).unwrap();
+    std::fs::write(root.join("sub/f"), "inside\n").unwrap();
+    saved(&root, &input("r", Value::Null, &["sub/f"]));
+    let outside = TempDir::new().unwrap();
+    std::fs::write(outside.path().join("f"), "OUTSIDE-SECRET\n").unwrap();
+    let side = TempDir::new().unwrap();
+    let link = side.path().join("link");
+    std::os::unix::fs::symlink(outside.path(), &link).unwrap();
+    let sub = root.join("sub");
+
+    let stop = AtomicBool::new(false);
+    let mut seen = Vec::new();
+    std::thread::scope(|s| {
+        s.spawn(|| {
+            while !stop.load(Ordering::Relaxed) {
+                let _ = renameat_with(CWD, &sub, CWD, &link, RenameFlags::EXCHANGE);
+            }
+        });
+        for i in 0..READS {
+            let (_, doc) = save(&root, &input(&format!("s{i}"), Value::Null, &["sub/f"]));
+            seen.push(doc["sources"][0]["size"].clone());
+            let (_, doc) = run(&["resume", "r"], &root);
+            seen.push(doc["sources"][0]["current"]["size"].clone());
+        }
+        stop.store(true, Ordering::Relaxed);
+    });
+    assert!(
+        !seen.contains(&json!(15)),
+        "a file outside the root was read"
+    );
+    assert!(seen.contains(&json!(7)));
+}

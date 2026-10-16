@@ -181,16 +181,16 @@ pub(super) fn inspect(root: &Path, rel: &[u8]) -> Seen {
             Ok(m) if m.file_type().is_symlink() => return Seen::Refused(Reason::OutsideRoot),
             Ok(m) if !m.is_dir() => return Seen::Absent,
             Ok(_) => {}
-            Err(e) => return from_error(&content_error(&e)),
+            Err(e) => return from_error(&content::content_error_from(&e)),
         }
     }
     match std::fs::symlink_metadata(&path) {
         Ok(m) if m.file_type().is_symlink() => return Seen::Refused(Reason::Symlink),
         Ok(m) if !m.is_file() => return Seen::Refused(Reason::NotARegularFile),
         Ok(_) => {}
-        Err(e) => return from_error(&content_error(&e)),
+        Err(e) => return from_error(&content::content_error_from(&e)),
     }
-    let obs = content::observe_content(&path);
+    let obs = content::observe_content_opened(&path, || open_beneath(root, &parts));
     if let (Some(h), Some(size)) = (obs.valid_hash(), obs.hashed_len) {
         return Seen::Hash {
             hash: format!("blake3:{}", content::hex(h)),
@@ -214,12 +214,29 @@ pub(super) fn inspect(root: &Path, rel: &[u8]) -> Seen {
     }
 }
 
-fn content_error(e: &std::io::Error) -> ContentError {
-    match e.kind() {
-        std::io::ErrorKind::NotFound => ContentError::NotFound,
-        std::io::ErrorKind::PermissionDenied => ContentError::PermissionDenied,
-        _ => ContentError::ReadError(e.to_string()),
+/// Open `root/parts...` one component at a time, never following a symlink, so a directory
+/// swapped for a link after the checks above cannot lead outside the root (B-05). The file
+/// is opened non-blocking: a FIFO swapped in cannot hang the read.
+fn open_beneath(root: &Path, parts: &[&[u8]]) -> std::io::Result<std::fs::File> {
+    use rustix::fs::{openat, Mode, OFlags, CWD};
+    let flags = OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC;
+    let mut dir = openat(CWD, root, flags | OFlags::DIRECTORY, Mode::empty())?;
+    let (last, dirs) = parts.split_last().expect("a checked path has a component");
+    for part in dirs {
+        dir = openat(
+            &dir,
+            OsStr::from_bytes(part),
+            flags | OFlags::DIRECTORY,
+            Mode::empty(),
+        )?;
     }
+    let file = openat(
+        &dir,
+        OsStr::from_bytes(last),
+        flags | OFlags::NONBLOCK,
+        Mode::empty(),
+    )?;
+    Ok(file.into())
 }
 
 fn from_error(e: &ContentError) -> Seen {
