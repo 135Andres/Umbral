@@ -152,6 +152,16 @@ Output is one JSON document on stdout (edition `umbral-continuity/1`), errors in
 codes as above, plus `4` a revision conflict or a forked task, and `5` an altered, invalid or
 unknown-format record, or a revision that does not exist.
 
+A fork is closed by saving with `expected_revision` set to a list of current heads.
+For more than eight heads, close it in steps of up to eight: each partial save returns
+`bifurcacion` (exit 4) with the remaining heads, including the revision just written.
+Repeat with those heads until only one remains. Stale parents are rejected.
+
+Git capture distinguishes `present` (a readable commit), `unborn` (a missing symbolic branch),
+and `unknown` (a broken HEAD), with `head: null` for the latter two. Deleting the sole branch
+reference is indistinguishable from an unborn branch. Sources inside a nested repository or
+submodule are refused with `in-submodule`.
+
 **Privacy:** records in `.umbral/` are meant to be versioned with Git and may be published with
 the repository. Do not write secrets or personal data in them. Umbral stores source paths and
 hashes, never file contents; but a hash of a small or guessable file can confirm its content.
