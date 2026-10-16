@@ -17,7 +17,9 @@ and the version records.
 
 ## 1. Scope
 
-- Covered: everything `umbral` writes to **standard output**, for every command.
+- Covered: everything `umbral` writes to **standard output** for the v0.2 commands (`init`,
+  `observe`, `status`, `changes`, `show`, `check`, `workspaces`). Continuity commands use their
+  own contract, `umbral-continuity/1` ([UD-040](../docs/decisions/DECISIONS.md)).
 - Not covered: standard error (`error: …`, usage text). It is free text for humans, carries no
   label and no header, and must never be parsed.
 - Not covered: exit codes. They are documented in [`README.md`](README.md) and unchanged.

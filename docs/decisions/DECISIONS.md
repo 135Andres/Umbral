@@ -1191,6 +1191,26 @@ Evidence: owner commitment; product benefit is not yet measured.
 Reversibility: high for the pilot; extending or narrowing it requires an explicit record.
 Status: DECIDED (intent; scoped to the continuity pilot).
 
+UD-040 — Continuity records live in the repository; continuity output has its own contract
+Authority: USER (owner instructions, private, 2026-10-16).
+Statement: within the continuity pilot (UD-039), task records are text files stored inside
+the project repository under `.umbral/`, versioned by Git. Umbral writes only inside
+`.umbral/` and never stores file contents there. The first client is Claude Code.
+`umbral-output/1` is limited to the v0.2 commands; the continuity commands and MCP tools
+use a separate contract, `umbral-continuity/1` (JSON). Dependencies accepted for the pilot:
+`serde`, `serde_json`, and the official Rust MCP SDK `rmcp` pinned at `=3.5.1` with `tokio`.
+Consequences: the continuity design replaces the proposed out-of-tree SQLite store; the v0.2
+observer keeps its out-of-tree state and its output unchanged. `umbral/CONTRACT.md` §1 is
+narrowed accordingly. Records may be published with the repository: what an agent saves is
+its author's responsibility to review.
+Scope guard: this does NOT change any v0.2 command, verdict or stored row, select an
+architecture beyond the pilot, claim compatibility with other MCP clients or protocol
+revisions, or approve the exact `umbral-continuity/1` schema beyond its draft.
+Evidence: owner commitment; an rmcp 3.5.1 stdio probe was called end to end by Claude Code
+2.1.301 (private working report, 2026-10-16).
+Reversibility: high while no records exist outside the pilot.
+Status: DECIDED (scoped to the continuity pilot).
+
 ================================================================================
 STATUS VOCABULARY (so no reader has to infer a record's state)
 ================================================================================
