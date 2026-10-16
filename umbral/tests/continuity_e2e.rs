@@ -427,6 +427,8 @@ fn t1_9_an_invalid_record_is_reported() {
         b"not json\n".to_vec(),
         serde_json::to_vec_pretty(&extra).unwrap(),
         serde_json::to_vec_pretty(&wrong_task).unwrap(),
+        // B-12: larger than any valid record; refused without being read whole.
+        vec![b' '; 512 * 1024 + 1],
     ]
     .into_iter()
     .enumerate()

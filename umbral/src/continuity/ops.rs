@@ -17,7 +17,7 @@ const LIMITS: &str = "the evaluation compares the content of the declared source
 observe configuration, environment, undeclared files, or whether the declarations are true";
 
 const KIB: usize = 1024;
-const MAX_FILE: usize = 512 * KIB;
+pub(super) const MAX_FILE: usize = 512 * KIB;
 
 /// The save input (contract §6.1), the same object on stdin and over MCP.
 #[derive(Debug, Deserialize)]

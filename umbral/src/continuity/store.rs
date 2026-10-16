@@ -122,6 +122,10 @@ impl Store {
             };
             let path = dir.join(&name);
             match std::fs::symlink_metadata(&path) {
+                // Not read at all: no valid record is that large (B-12).
+                Ok(m) if m.is_file() && m.len() > super::ops::MAX_FILE as u64 => {
+                    return Err(bad("registro-invalido", "larger than 512 KiB".into()));
+                }
                 Ok(m) if m.is_file() => {}
                 Ok(_) => {
                     return Err(Error::Unsafe(format!(
