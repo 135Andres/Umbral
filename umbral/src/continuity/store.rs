@@ -4,10 +4,13 @@
 //! which fails rather than overwrite. Reads never create anything.
 
 use std::collections::BTreeSet;
-use std::io::Write;
+use std::io::{Read, Write};
+use std::os::fd::OwnedFd;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 
+use rustix::fs::{fsync, linkat, mkdirat, openat, unlinkat, AtFlags, Mode, OFlags, CWD};
+use rustix::io::Errno;
 use serde_json::Value;
 
 use super::{io_err, Error, Revision, EDITION};
@@ -169,60 +172,104 @@ impl Store {
         Ok(bytes)
     }
 
-    /// Create the directories a save needs. `true` when `.umbral/` itself was created.
-    fn ensure(&self, task: &str) -> Result<(PathBuf, PathBuf, bool), Error> {
-        let [state, cont, tasks] = self.chain();
-        let task_dir = tasks.join(task);
-        let tmp = cont.join("tmp");
+    /// Create the directories a save needs, each opened relative to its parent with
+    /// O_NOFOLLOW, so a symlink swapped in after a check cannot redirect a write (B-03).
+    /// `true` when this call created `.umbral/`, `continuity/` or one of the two Git files.
+    fn ensure(&self, task: &str) -> Result<(OwnedFd, OwnedFd, bool), Error> {
+        let root = openat(CWD, &self.root, OFlags::RDONLY | DIR, Mode::empty())
+            .map_err(|e| errno("root", e))?;
         let mut created = false;
-        for d in [&state, &cont, &tasks, &task_dir, &tmp] {
-            if !real_dir(d)? {
-                match std::fs::create_dir(d) {
-                    Ok(()) => created |= *d == state,
-                    Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
-                        real_dir(d)?;
-                    }
-                    Err(e) => return Err(io_err(&d.display().to_string(), &e)),
-                }
+        let state = make_dir(&root, &self.root, STATE_DIR, &mut created)?;
+        let state_path = self.root.join(STATE_DIR);
+        // Written whenever missing, not only with `.umbral/` (B-08).
+        for (name, body) in [(".gitattributes", GITATTRIBUTES), (".gitignore", GITIGNORE)] {
+            match write_new(&state, name, body) {
+                Ok(()) => created = true,
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {}
+                Err(e) => return Err(io_err(name, &e)),
             }
         }
-        if created {
-            write_new(&state.join(".gitattributes"), GITATTRIBUTES)?;
-            write_new(&state.join(".gitignore"), GITIGNORE)?;
-        }
+        let cont = make_dir(&state, &state_path, "continuity", &mut created)?;
+        let cont_path = state_path.join("continuity");
+        let mut ignored = false;
+        let tasks = make_dir(&cont, &cont_path, "tasks", &mut ignored)?;
+        let task_dir = make_dir(&tasks, &cont_path.join("tasks"), task, &mut ignored)?;
+        let tmp = make_dir(&cont, &cont_path, "tmp", &mut ignored)?;
         Ok((task_dir, tmp, created))
     }
 
-    /// Write one revision atomically. Returns its id and whether `.umbral/` was created.
+    /// Write one revision atomically. Returns its id and whether the state was created.
     pub fn write(&self, task: &str, bytes: &[u8]) -> Result<(String, bool), Error> {
         let (task_dir, tmp_dir, created) = self.ensure(task)?;
         let id = revision_id(bytes);
-        let tmp = temp_path(&tmp_dir);
-        write_new(&tmp, bytes)?;
-        let target = task_dir.join(format!("{id}.json"));
-        let linked = std::fs::hard_link(&tmp, &target);
+        let tmp = temp_name();
+        write_new(&tmp_dir, &tmp, bytes).map_err(|e| io_err(&tmp, &e))?;
+        let target = format!("{id}.json");
+        let linked = linkat(&tmp_dir, &tmp, &task_dir, &target, AtFlags::empty());
         // A leftover temporary is only clutter in an ignored directory; the outcome is decided
         // by the link.
-        let _ = std::fs::remove_file(&tmp);
+        let _ = unlinkat(&tmp_dir, &tmp, AtFlags::empty());
         match linked {
             Ok(()) => {}
-            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
-                let existing = std::fs::read(&target).map_err(|e| io_err(&id, &e))?;
+            Err(Errno::EXIST) => {
+                let mut existing = Vec::new();
+                openat(
+                    &task_dir,
+                    &target,
+                    OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                    Mode::empty(),
+                )
+                .map(std::fs::File::from)
+                .map_err(std::io::Error::from)
+                .and_then(|mut f| f.read_to_end(&mut existing))
+                .map_err(|e| io_err(&id, &e))?;
                 if existing != bytes {
                     return Err(Error::Record {
                         token: "registro-alterado",
                         task: task.to_string(),
-                        file: format!("{id}.json"),
+                        file: target,
                         reason: "hash-mismatch".into(),
                     });
                 }
             }
-            Err(e) => return Err(io_err("link revision", &e)),
+            Err(e) => return Err(errno("link revision", e)),
         }
-        std::fs::File::open(&task_dir)
-            .and_then(|d| d.sync_all())
-            .map_err(|e| io_err("sync task directory", &e))?;
+        fsync(&task_dir).map_err(|e| errno("sync task directory", e))?;
         Ok((id, created))
+    }
+}
+
+/// A directory of the store opened for writing: never through a symlink.
+const DIR: OFlags = OFlags::DIRECTORY.union(OFlags::CLOEXEC);
+
+fn errno(what: &str, e: Errno) -> Error {
+    io_err(what, &e.into())
+}
+
+/// Create `name` under `parent` if missing, then open it, refusing a symlink or a
+/// non-directory. A directory created here is made durable in its parent.
+fn make_dir(parent: &OwnedFd, at: &Path, name: &str, created: &mut bool) -> Result<OwnedFd, Error> {
+    let path = at.join(name);
+    match mkdirat(parent, name, Mode::from_raw_mode(0o777)) {
+        Ok(()) => {
+            *created = true;
+            fsync(parent).map_err(|e| errno(&at.display().to_string(), e))?;
+        }
+        Err(Errno::EXIST) => {}
+        Err(e) => return Err(errno(&path.display().to_string(), e)),
+    }
+    match openat(
+        parent,
+        name,
+        OFlags::RDONLY | DIR | OFlags::NOFOLLOW,
+        Mode::empty(),
+    ) {
+        Ok(fd) => Ok(fd),
+        Err(Errno::LOOP | Errno::NOTDIR) => Err(Error::Unsafe(format!(
+            "{} is not a directory (or is a symlink)",
+            path.display()
+        ))),
+        Err(e) => Err(errno(&path.display().to_string(), e)),
     }
 }
 
@@ -239,28 +286,25 @@ fn altered(bytes: &[u8]) -> &'static str {
     }
 }
 
-fn write_new(path: &Path, bytes: &[u8]) -> Result<(), Error> {
-    let mut f = std::fs::OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(path)
-        .map_err(|e| io_err(&path.display().to_string(), &e))?;
-    f.write_all(bytes)
-        .and_then(|()| f.sync_all())
-        .map_err(|e| io_err(&path.display().to_string(), &e))
+/// Create `name` under `dir`, failing if anything (a symlink included) is already there.
+fn write_new(dir: &OwnedFd, name: &str, bytes: &[u8]) -> std::io::Result<()> {
+    let flags = OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::NOFOLLOW | OFlags::CLOEXEC;
+    let mut f = std::fs::File::from(openat(dir, name, flags, Mode::from_raw_mode(0o666))?);
+    f.write_all(bytes)?;
+    f.sync_all()
 }
 
-fn temp_path(dir: &Path) -> PathBuf {
+fn temp_name() -> String {
     static COUNTER: AtomicU64 = AtomicU64::new(0);
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_nanos())
         .unwrap_or(0);
-    dir.join(format!(
+    format!(
         "{}-{nanos}-{}",
         std::process::id(),
         COUNTER.fetch_add(1, Ordering::Relaxed)
-    ))
+    )
 }
 
 /// Revisions no other revision names as a parent, sorted. A named parent that is not

@@ -998,3 +998,63 @@ fn b04_inherited_git_variables_are_ignored() {
         "core.fsmonitor from the environment was run"
     );
 }
+
+/// B-03: a process that keeps swapping a directory of the store with a symlink to elsewhere
+/// (an atomic exchange, so the check and the write can see different things) never gets a
+/// save to create anything outside `.umbral/`.
+#[cfg(target_os = "linux")]
+#[test]
+fn b03_a_symlink_swapped_in_during_saves_never_redirects_a_write() {
+    use rustix::fs::{renameat_with, RenameFlags, CWD};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    const SAVES: usize = 200;
+    let dir = repo();
+    let root = dir.path().to_path_buf();
+    saved(&root, &input("t0", Value::Null, &["a.txt"]));
+    let outside = TempDir::new().unwrap();
+    let side = TempDir::new().unwrap();
+    let link = side.path().join("link");
+    std::os::unix::fs::symlink(outside.path(), &link).unwrap();
+    let tasks = root.join(".umbral/continuity/tasks");
+
+    let stop = AtomicBool::new(false);
+    std::thread::scope(|s| {
+        s.spawn(|| {
+            while !stop.load(Ordering::Relaxed) {
+                let _ = renameat_with(CWD, &tasks, CWD, &link, RenameFlags::EXCHANGE);
+            }
+        });
+        for i in 1..=SAVES {
+            // Any outcome but a write elsewhere is acceptable: refusing is the safe answer.
+            save(&root, &input(&format!("t{i}"), Value::Null, &["a.txt"]));
+        }
+        stop.store(true, Ordering::Relaxed);
+    });
+    if std::fs::symlink_metadata(&tasks).unwrap().is_symlink() {
+        renameat_with(CWD, &tasks, CWD, &link, RenameFlags::EXCHANGE).unwrap();
+    }
+    assert_eq!(files(outside.path()), Vec::<String>::new());
+    assert!(!files(&tasks).is_empty());
+}
+
+/// B-08 / A M-2: a `.umbral/` made by someone else still gets its `.gitattributes` and
+/// `.gitignore`, and the privacy warning is given; a later save does not repeat it.
+#[test]
+fn b08_an_existing_state_directory_gets_its_git_files_and_the_warning() {
+    let dir = repo();
+    let root = dir.path();
+    std::fs::create_dir(root.join(".umbral")).unwrap();
+    let (code, doc) = save(root, &input("t", Value::Null, &["a.txt"]));
+    assert_eq!(code, Some(0), "{doc}");
+    assert!(doc["privacy_warning"].is_string(), "{doc}");
+    assert_eq!(
+        std::fs::read(root.join(".umbral/.gitattributes")).unwrap(),
+        b"* -text\n"
+    );
+    assert_eq!(
+        std::fs::read(root.join(".umbral/.gitignore")).unwrap(),
+        b"continuity/tmp/\n"
+    );
+    let (_, doc) = save(root, &input("u", Value::Null, &["a.txt"]));
+    assert!(doc.get("privacy_warning").is_none(), "{doc}");
+}
