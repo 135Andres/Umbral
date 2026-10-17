@@ -1564,3 +1564,75 @@ fn in_submodule_is_reported_on_resume_and_save_with_a_git_file() {
     assert_eq!(code, Some(2), "{err}");
     assert_eq!(err["sources"][0]["reason"], "in-submodule");
 }
+
+/// Rehashing an invalid record must not bypass the schema checks on disk.
+#[test]
+fn rehashed_records_reject_duplicate_keys_and_invalid_captured_metadata() {
+    let dir = repo();
+    let root = dir.path();
+    let id = saved(root, &input("t", Value::Null, &["a.txt"]));
+    let good = std::fs::read_to_string(task_dir(root, "t").join(format!("{id}.json"))).unwrap();
+    let value: Value = serde_json::from_str(&good).unwrap();
+    let mut cases = vec![
+        good.replace("\"goal\":", "\"goal\": \"shadowed\", \"goal\":"),
+        good.replace("\"channel\":", "\"channel\": \"mcp\", \"channel\":"),
+    ];
+    for (field, bad) in [
+        ("saved_at", json!("INVALID")),
+        ("saved_at", json!("2026-02-29T12:00:00.000Z")),
+        ("saved_at", json!("1900-02-29T12:00:00.000Z")),
+        ("saved_at", json!("2026-13-01T12:00:00.000Z")),
+        ("saved_at", json!("2026-01-01T24:00:00.000Z")),
+        ("saved_at", json!("2026-01-01T00:00:00Z")),
+        ("git", json!({"head_state": "present", "head": null})),
+        (
+            "git",
+            json!({"head_state": "present", "head": "g".repeat(40)}),
+        ),
+        (
+            "git",
+            json!({"head_state": "unknown", "head": "a".repeat(40)}),
+        ),
+    ] {
+        let mut v = value.clone();
+        v[field] = bad;
+        cases.push(v.to_string());
+    }
+    let mut v = value.clone();
+    v["sources"][0]["captured_at"] = json!("2026-04-31T00:00:00.000Z");
+    cases.push(v.to_string());
+    for bad in cases {
+        let file = task_dir(root, "t").join(format!("{id}.json"));
+        std::fs::remove_file(&file).unwrap();
+        let planted = plant(root, "t", bad.as_bytes());
+        for operation in ["resume", "export"] {
+            let (code, err) = run(&[operation, "t"], root);
+            assert_eq!(code, Some(5), "{operation}: {err}; input: {bad}");
+            assert_eq!(err["error"], "registro-invalido", "{err}");
+        }
+        assert_eq!(std::fs::read_to_string(&planted).unwrap(), bad);
+        std::fs::remove_file(planted).unwrap();
+        std::fs::write(file, &good).unwrap();
+    }
+    // Valid boundary dates and both Git object formats remain readable.
+    for (stamp, state, head) in [
+        ("2000-02-29T23:59:59.999Z", "present", json!("a".repeat(40))),
+        ("2024-02-29T00:00:00.000Z", "present", json!("b".repeat(64))),
+        ("2026-12-31T00:00:00.000Z", "unknown", Value::Null),
+        ("2026-01-01T00:00:00.000Z", "unborn", Value::Null),
+    ] {
+        let file = task_dir(root, "t").join(format!("{id}.json"));
+        std::fs::remove_file(&file).unwrap();
+        let mut v = value.clone();
+        v["saved_at"] = json!(stamp);
+        v["sources"][0]["captured_at"] = json!(stamp);
+        v["git"] = json!({"head_state":state,"head":head});
+        let planted = plant(root, "t", v.to_string().as_bytes());
+        let (code, doc) = run(&["resume", "t"], root);
+        assert_eq!(code, Some(0), "{doc}");
+        assert_eq!(doc["saved_at"], stamp);
+        std::fs::remove_file(planted).unwrap();
+        std::fs::write(file, &good).unwrap();
+    }
+}
+

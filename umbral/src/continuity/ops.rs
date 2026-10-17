@@ -167,11 +167,68 @@ fn check_declared(r: &Revision, paths: &[String]) -> Result<(), Error> {
     Ok(())
 }
 
+/// The UTC millisecond form produced by `format_unix_ns`, with a real calendar date.
+fn valid_timestamp(s: &str) -> bool {
+    let b = s.as_bytes();
+    if b.len() != 24
+        || b[4] != b'-'
+        || b[7] != b'-'
+        || b[10] != b'T'
+        || b[13] != b':'
+        || b[16] != b':'
+        || b[19] != b'.'
+        || b[23] != b'Z'
+    {
+        return false;
+    }
+    if !(0..24)
+        .filter(|i| ![4, 7, 10, 13, 16, 19, 23].contains(i))
+        .all(|i| b[i].is_ascii_digit())
+    {
+        return false;
+    }
+    let number = |start: usize, end: usize| {
+        b[start..end]
+            .iter()
+            .fold(0u32, |n, c| n * 10 + (c - b'0') as u32)
+    };
+    let year = number(0, 4);
+    let month = number(5, 7);
+    let days = match month {
+        4 | 6 | 9 | 11 => 30,
+        2 if year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) => 29,
+        2 => 28,
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        _ => return false,
+    };
+    (1..=days).contains(&number(8, 10))
+        && number(11, 13) < 24
+        && number(14, 16) < 60
+        && number(17, 19) < 60
+}
+
 /// A revision read from disk: the declared part, and that each capture is well formed.
 pub(super) fn check_record(r: &Revision) -> Result<(), Error> {
+    if !valid_timestamp(&r.saved_at) {
+        return Err(invalid("saved_at is not a UTC millisecond timestamp"));
+    }
+    let valid_head = match r.git.head_state {
+        super::HeadState::Present => r.git.head.as_deref().is_some_and(|h| {
+            matches!(h.len(), 40 | 64) && h.bytes().all(|c| matches!(c, b'0'..=b'9' | b'a'..=b'f'))
+        }),
+        super::HeadState::Unborn | super::HeadState::Unknown => r.git.head.is_none(),
+    };
+    if !valid_head {
+        return Err(invalid("git.head does not match git.head_state"));
+    }
     let paths: Vec<String> = r.sources.iter().map(|s| s.path.clone()).collect();
     check_declared(r, &paths)?;
     for s in &r.sources {
+        if !valid_timestamp(&s.captured_at) {
+            return Err(invalid(
+                "sources[].captured_at is not a UTC millisecond timestamp",
+            ));
+        }
         let ok = match s.capture {
             Capture::Captured => {
                 s.reason.is_none()
