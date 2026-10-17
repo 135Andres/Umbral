@@ -595,9 +595,6 @@ pub fn list(root: &Path, limit: Option<usize>, cursor: Option<&str>) -> Result<V
     if !(1..=500).contains(&limit) {
         return Err(invalid("limit must be between 1 and 500"));
     }
-    if let Some(c) = cursor.filter(|c| !super::is_task_id(c)) {
-        return Err(invalid(format!("cursor {c:?} is not a task id")));
-    }
     let root = sources::git_root(root)?;
     let store = Store::new(root);
     let names: Vec<String> = store
@@ -607,7 +604,9 @@ pub fn list(root: &Path, limit: Option<usize>, cursor: Option<&str>) -> Result<V
         .collect();
 
     let mut tasks = Vec::new();
-    for name in names.iter().take(limit) {
+    let mut valid = 0usize;
+    let mut next_cursor = None;
+    for (i, name) in names.iter().enumerate() {
         let loaded = if super::is_task_id(name) {
             store.load_task(name).and_then(|revs| {
                 let revs = revs.unwrap_or_default();
@@ -645,7 +644,18 @@ pub fn list(root: &Path, limit: Option<usize>, cursor: Option<&str>) -> Result<V
             Err(e) => return Err(e),
         };
         tasks.push(entry);
+        // Owner decision (2026-10-17): an invalid name is listed with its error but does
+        // not count for `limit`; the cursor is the last valid task id emitted, or null
+        // when nothing follows.
+        if super::is_task_id(name) {
+            valid += 1;
+            if valid == limit {
+                if i + 1 < names.len() {
+                    next_cursor = Some(name.clone());
+                }
+                break;
+            }
+        }
     }
-    let next_cursor = (names.len() > limit).then(|| names[limit - 1].clone());
     Ok(json!({ "contract": EDITION, "tasks": tasks, "next_cursor": next_cursor }))
 }

@@ -759,14 +759,107 @@ fn list_pages_with_a_cursor() {
     let (_, page) = run(&["list", "--limit", "2", "--cursor", "t-b"], root);
     assert_eq!(names(&page), ["t-c"]);
     assert_eq!(page["next_cursor"], Value::Null);
-    for bad in [
-        &["list", "--limit", "0"][..],
-        &["list", "--limit", "501"],
-        &["list", "--cursor", "A"],
-    ] {
+    // Owner decision (2026-10-17): an invalid cursor is no longer an input error, so the
+    // input errors here are only the limits. A valid id past every task is an empty page.
+    for bad in [&["list", "--limit", "0"][..], &["list", "--limit", "501"]] {
         let (code, err) = run(bad, root);
         assert_eq!((code, &err["error"]), (Some(2), &json!("entrada-invalida")));
     }
+    let (_, page) = run(&["list", "--cursor", "zzz-none"], root);
+    assert_eq!(names(&page), Vec::<String>::new());
+    assert_eq!(page["next_cursor"], Value::Null);
+}
+
+/// Owner decision (2026-10-17, contract §6.1): the cursor is never an invalid name. An
+/// entry whose directory name is not a task id is listed with its error, does not count
+/// for `limit`, and pagination reaches the end without an input error.
+#[test]
+fn list_pages_past_invalid_names_without_an_invalid_cursor() {
+    let dir = repo();
+    let root = dir.path();
+    std::fs::create_dir_all(task_dir(root, "!invalid")).unwrap();
+    saved(root, &input("t-a", Value::Null, &["a.txt"]));
+    let mut cursor: Option<String> = None;
+    let mut seen = Vec::new();
+    loop {
+        let mut a = vec!["list", "--limit", "1"];
+        if let Some(c) = &cursor {
+            a.push("--cursor");
+            a.push(c);
+        }
+        let (code, page) = run(&a, root);
+        assert_eq!(code, Some(0), "{page}");
+        seen.extend(
+            page["tasks"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|t| t["task"].as_str().unwrap().to_string()),
+        );
+        match page["next_cursor"].as_str() {
+            Some(c) => cursor = Some(c.to_string()),
+            None => break,
+        }
+    }
+    assert_eq!(seen, ["!invalid", "t-a"]);
+}
+
+/// Owner decision (2026-10-17): invalid names, interleaved or trailing, appear exactly
+/// once across the whole traversal and never consume the page's limit.
+#[test]
+fn invalid_names_appear_once_and_do_not_consume_the_limit() {
+    let dir = repo();
+    let root = dir.path();
+    for bad in ["!bad", "t-x!", "~~trailing"] {
+        std::fs::create_dir_all(task_dir(root, bad)).unwrap();
+    }
+    for t in ["t-a", "t-b", "t-c"] {
+        saved(root, &input(t, Value::Null, &["a.txt"]));
+    }
+    let mut cursor: Option<String> = None;
+    let mut seen = Vec::new();
+    loop {
+        let mut a = vec!["list", "--limit", "1"];
+        if let Some(c) = &cursor {
+            a.push("--cursor");
+            a.push(c);
+        }
+        let (code, page) = run(&a, root);
+        assert_eq!(code, Some(0), "{page}");
+        seen.extend(
+            page["tasks"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|t| t["task"].as_str().unwrap().to_string()),
+        );
+        match page["next_cursor"].as_str() {
+            Some(c) => cursor = Some(c.to_string()),
+            None => break,
+        }
+    }
+    assert_eq!(seen, ["!bad", "t-a", "t-b", "t-c", "t-x!", "~~trailing"]);
+}
+
+/// Owner decision (2026-10-17): with only invalid names, one page lists them all and the
+/// cursor ends at null; they do not count for `limit`.
+#[test]
+fn only_invalid_names_list_in_one_page_with_a_null_cursor() {
+    let dir = repo();
+    let root = dir.path();
+    for bad in ["!a", "!b"] {
+        std::fs::create_dir_all(task_dir(root, bad)).unwrap();
+    }
+    let (code, page) = run(&["list", "--limit", "1"], root);
+    assert_eq!(code, Some(0), "{page}");
+    let tasks: Vec<&str> = page["tasks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|t| t["task"].as_str().unwrap())
+        .collect();
+    assert_eq!(tasks, ["!a", "!b"]);
+    assert_eq!(page["next_cursor"], Value::Null);
 }
 
 /// T1.14: export is the record file's bytes plus provenance, readable without Umbral.
