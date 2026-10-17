@@ -4,12 +4,16 @@
 //! which fails rather than overwrite. Reads never create anything.
 
 use std::collections::BTreeSet;
+use std::ffi::OsString;
 use std::io::{Read, Write};
 use std::os::fd::OwnedFd;
+use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use rustix::fs::{fsync, linkat, mkdirat, openat, unlinkat, AtFlags, Mode, OFlags, CWD};
+use rustix::fs::{
+    fsync, linkat, mkdirat, openat, statat, unlinkat, AtFlags, Dir, FileType, Mode, OFlags, CWD,
+};
 use rustix::io::Errno;
 use serde_json::Value;
 
@@ -35,20 +39,6 @@ pub(super) fn serialize(r: &Revision) -> Result<Vec<u8>, Error> {
     Ok(bytes)
 }
 
-/// `Ok(true)` for a real directory, `Ok(false)` when absent. A symlink or anything else at
-/// a state path is unsafe.
-fn real_dir(p: &Path) -> Result<bool, Error> {
-    match std::fs::symlink_metadata(p) {
-        Ok(m) if m.is_dir() => Ok(true),
-        Ok(_) => Err(Error::Unsafe(format!(
-            "{} is not a directory (or is a symlink)",
-            p.display()
-        ))),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
-        Err(e) => Err(io_err(&p.display().to_string(), &e)),
-    }
-}
-
 pub(super) struct Store {
     root: PathBuf,
 }
@@ -59,51 +49,51 @@ impl Store {
         Store { root }
     }
 
-    fn chain(&self) -> [PathBuf; 3] {
-        let state = self.root.join(STATE_DIR);
-        let cont = state.join("continuity");
-        let tasks = cont.join("tasks");
-        [state, cont, tasks]
-    }
-
-    /// The tasks directory, if the whole chain exists.
-    fn tasks_dir(&self) -> Result<Option<PathBuf>, Error> {
-        for d in self.chain() {
-            if !real_dir(&d)? {
+    /// Open every component relative to its parent; a replaced pathname cannot redirect
+    /// later reads through a symlink. Reads never create missing directories.
+    fn tasks_dir(&self) -> Result<Option<OwnedFd>, Error> {
+        let mut dir = openat(
+            CWD,
+            &self.root,
+            OFlags::RDONLY | DIR | OFlags::NOFOLLOW,
+            Mode::empty(),
+        )
+        .map_err(|e| errno("root", e))?;
+        for name in [STATE_DIR, "continuity", "tasks"] {
+            let Some(next) = read_dir_at(&dir, name)? else {
                 return Ok(None);
-            }
+            };
+            dir = next;
         }
-        Ok(Some(self.chain()[2].clone()))
+        Ok(Some(dir))
     }
 
-    /// Every directory name under `tasks/`, sorted.
+    fn task_dir(&self, task: &str) -> Result<Option<OwnedFd>, Error> {
+        let Some(tasks) = self.tasks_dir()? else {
+            return Ok(None);
+        };
+        read_dir_at(&tasks, task)
+    }
+
+    /// Every name under `tasks/`, sorted (including damaged entries for list integrity).
     pub fn task_names(&self) -> Result<Vec<String>, Error> {
         let Some(tasks) = self.tasks_dir()? else {
             return Ok(Vec::new());
         };
-        let mut names = Vec::new();
-        for entry in std::fs::read_dir(&tasks).map_err(|e| io_err("tasks", &e))? {
-            let entry = entry.map_err(|e| io_err("tasks", &e))?;
-            let name = entry.file_name();
-            names.push(crate::contract::write_value(name.as_encoded_bytes()).text);
-        }
+        let mut names: Vec<_> = directory_names(&tasks)?
+            .into_iter()
+            .map(|name| crate::contract::write_value(name.as_encoded_bytes()).text)
+            .collect();
         names.sort();
         Ok(names)
     }
 
     /// All revisions of a task, by id. `None` when the task has no directory.
     pub fn load_task(&self, task: &str) -> Result<Option<Vec<(String, Revision)>>, Error> {
-        let Some(tasks) = self.tasks_dir()? else {
+        let Some(dir) = self.task_dir(task)? else {
             return Ok(None);
         };
-        let dir = tasks.join(task);
-        if !real_dir(&dir)? {
-            return Ok(None);
-        }
-        let mut names = Vec::new();
-        for entry in std::fs::read_dir(&dir).map_err(|e| io_err(task, &e))? {
-            names.push(entry.map_err(|e| io_err(task, &e))?.file_name());
-        }
+        let mut names = directory_names(&dir)?;
         names.sort();
         let mut revs = Vec::new();
         for name in names {
@@ -120,22 +110,7 @@ impl Store {
             else {
                 return Err(bad("registro-invalido", "not a revision file name".into()));
             };
-            let path = dir.join(&name);
-            match std::fs::symlink_metadata(&path) {
-                // Not read at all: no valid record is that large (B-12).
-                Ok(m) if m.is_file() && m.len() > super::ops::MAX_FILE as u64 => {
-                    return Err(bad("registro-invalido", "larger than 512 KiB".into()));
-                }
-                Ok(m) if m.is_file() => {}
-                Ok(_) => {
-                    return Err(Error::Unsafe(format!(
-                        "{} is not a regular file",
-                        path.display()
-                    )))
-                }
-                Err(e) => return Err(io_err(&file, &e)),
-            }
-            let bytes = std::fs::read(&path).map_err(|e| io_err(&file, &e))?;
+            let bytes = read_record(&dir, &name, task)?;
             if revision_id(&bytes) != id {
                 return Err(bad("registro-alterado", altered(&bytes).into()));
             }
@@ -146,7 +121,7 @@ impl Store {
                 Some(other) => return Err(bad("formato-desconocido", other.to_string())),
                 None => return Err(bad("registro-invalido", "no format".into())),
             }
-            let rev: Revision = serde_json::from_value(value)
+            let rev: Revision = serde_json::from_slice(&bytes)
                 .map_err(|e| bad("registro-invalido", e.to_string()))?;
             super::ops::check_record(&rev).map_err(|e| bad("registro-invalido", e.to_string()))?;
             if rev.task != task {
@@ -163,8 +138,10 @@ impl Store {
     /// The bytes of one revision file, checked against its name again: the file may have
     /// changed since the task was loaded.
     pub fn raw(&self, task: &str, id: &str) -> Result<Vec<u8>, Error> {
-        let path = self.chain()[2].join(task).join(format!("{id}.json"));
-        let bytes = std::fs::read(&path).map_err(|e| io_err(id, &e))?;
+        let dir = self
+            .task_dir(task)?
+            .ok_or_else(|| Error::NoSuchRevision(id.into()))?;
+        let bytes = read_record(&dir, std::ffi::OsStr::new(&format!("{id}.json")), task)?;
         if revision_id(&bytes) != id {
             return Err(Error::Record {
                 token: "registro-alterado",
@@ -216,17 +193,7 @@ impl Store {
         match linked {
             Ok(()) => {}
             Err(Errno::EXIST) => {
-                let mut existing = Vec::new();
-                openat(
-                    &task_dir,
-                    &target,
-                    OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
-                    Mode::empty(),
-                )
-                .map(std::fs::File::from)
-                .map_err(std::io::Error::from)
-                .and_then(|mut f| f.read_to_end(&mut existing))
-                .map_err(|e| io_err(&id, &e))?;
+                let existing = read_record(&task_dir, std::ffi::OsStr::new(&target), task)?;
                 if existing != bytes {
                     return Err(Error::Record {
                         token: "registro-alterado",
@@ -241,6 +208,88 @@ impl Store {
         fsync(&task_dir).map_err(|e| errno("sync task directory", e))?;
         Ok((id, created))
     }
+}
+
+/// Missing is an empty state; symlinks and non-directories are unsafe.
+fn read_dir_at(parent: &OwnedFd, name: &str) -> Result<Option<OwnedFd>, Error> {
+    match openat(
+        parent,
+        name,
+        OFlags::RDONLY | DIR | OFlags::NOFOLLOW,
+        Mode::empty(),
+    ) {
+        Ok(fd) => Ok(Some(fd)),
+        Err(Errno::NOENT) => Ok(None),
+        Err(Errno::LOOP | Errno::NOTDIR) => Err(Error::Unsafe(format!(
+            "{name} is not a directory (or is a symlink)"
+        ))),
+        Err(e) => Err(errno(name, e)),
+    }
+}
+
+fn directory_names(dir: &OwnedFd) -> Result<Vec<OsString>, Error> {
+    let entries = Dir::read_from(dir).map_err(|e| errno("read directory", e))?;
+    let mut names = Vec::new();
+    for entry in entries {
+        let entry = entry.map_err(|e| errno("read directory entry", e))?;
+        let name = entry.file_name().to_bytes();
+        if name != b"." && name != b".." {
+            names.push(std::ffi::OsStr::from_bytes(name).to_owned());
+        }
+    }
+    Ok(names)
+}
+
+/// Bound actual bytes read, including growth after fstat. The extra byte detects excess;
+/// it is never parsed or exported as a truncated record.
+fn bounded_bytes(reader: impl Read) -> std::io::Result<Vec<u8>> {
+    let mut bytes = Vec::new();
+    reader
+        .take(super::ops::MAX_FILE as u64 + 1)
+        .read_to_end(&mut bytes)?;
+    Ok(bytes)
+}
+
+fn read_record(dir: &OwnedFd, name: &std::ffi::OsStr, task: &str) -> Result<Vec<u8>, Error> {
+    let file_name = crate::contract::write_value(name.as_bytes()).text;
+    // Avoid opening known special files (devices may have effects on open). This is
+    // only an early rejection: the opened descriptor is still checked after the race.
+    let before = statat(dir, name, AtFlags::SYMLINK_NOFOLLOW).map_err(|e| errno(&file_name, e))?;
+    if FileType::from_raw_mode(before.st_mode) != FileType::RegularFile {
+        return Err(Error::Unsafe(format!("{file_name} is not a regular file")));
+    }
+    // NONBLOCK prevents a hostile FIFO from blocking before we can check its type.
+    let fd = openat(
+        dir,
+        name,
+        OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC | OFlags::NONBLOCK,
+        Mode::empty(),
+    )
+    .map_err(|e| match e {
+        Errno::LOOP | Errno::NXIO => {
+            Error::Unsafe(format!("{file_name} cannot be opened as a regular file"))
+        }
+        _ => errno(&file_name, e),
+    })?;
+    let file = std::fs::File::from(fd);
+    let metadata = file.metadata().map_err(|e| io_err(&file_name, &e))?;
+    if !metadata.is_file() {
+        return Err(Error::Unsafe(format!("{file_name} is not a regular file")));
+    }
+    let too_large = || Error::Record {
+        token: "registro-invalido",
+        task: task.into(),
+        file: file_name.clone(),
+        reason: "larger than 512 KiB".into(),
+    };
+    if metadata.len() > super::ops::MAX_FILE as u64 {
+        return Err(too_large());
+    }
+    let bytes = bounded_bytes(file).map_err(|e| io_err(&file_name, &e))?;
+    if bytes.len() > super::ops::MAX_FILE {
+        return Err(too_large());
+    }
+    Ok(bytes)
 }
 
 /// A directory of the store opened for writing: never through a symlink.
@@ -339,6 +388,86 @@ pub(super) fn heads(task: &str, revs: &[(String, Revision)]) -> Result<Vec<Strin
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn record_reads_are_bounded_even_if_a_reader_outgrows_its_initial_size() {
+        let limit = super::super::ops::MAX_FILE;
+        let exact = vec![b'x'; limit];
+        assert_eq!(bounded_bytes(exact.as_slice()).unwrap(), exact);
+        let mut endless = std::io::repeat(b'x');
+        assert_eq!(bounded_bytes(&mut endless).unwrap().len(), limit + 1);
+    }
+
+    #[test]
+    fn an_open_directory_cannot_be_redirected_by_replacing_its_name() {
+        let root = tempfile::TempDir::new().unwrap();
+        let store = Store::new(root.path().to_owned());
+        let (id, _) = store.write("t", b"{}\n").unwrap();
+        let dir = store.task_dir("t").unwrap().unwrap();
+        let path = root.path().join(".umbral/continuity/tasks/t");
+        let parked = path.with_file_name("parked");
+        std::fs::rename(&path, &parked).unwrap();
+        let outside = tempfile::TempDir::new().unwrap();
+        let name = format!("{id}.json");
+        std::fs::write(outside.path().join(&name), b"outside").unwrap();
+        std::os::unix::fs::symlink(outside.path(), &path).unwrap();
+        assert_eq!(
+            read_record(&dir, std::ffi::OsStr::new(&name), "t").unwrap(),
+            b"{}\n"
+        );
+        assert_eq!(store.raw("t", &id).unwrap_err().token(), "estado-inseguro");
+        assert_eq!(store.load_task("t").unwrap_err().token(), "estado-inseguro");
+        std::fs::remove_file(path).unwrap();
+        std::fs::rename(parked, root.path().join(".umbral/continuity/tasks/t")).unwrap();
+    }
+
+    #[test]
+    fn raw_and_collision_reads_refuse_oversize_links_and_special_files() {
+        let root = tempfile::TempDir::new().unwrap();
+        let store = Store::new(root.path().to_owned());
+        let body = b"{}\n";
+        let (id, _) = store.write("t", body).unwrap();
+        let file = root
+            .path()
+            .join(format!(".umbral/continuity/tasks/t/{id}.json"));
+        // Exactly the boundary is allowed by the reader (the hash still differs).
+        std::fs::write(&file, vec![b'x'; super::super::ops::MAX_FILE]).unwrap();
+        assert_eq!(
+            store.raw("t", &id).unwrap_err().token(),
+            "registro-alterado"
+        );
+        std::fs::write(&file, vec![b'x'; super::super::ops::MAX_FILE + 1]).unwrap();
+        assert_eq!(
+            store.raw("t", &id).unwrap_err().token(),
+            "registro-invalido"
+        );
+        assert_eq!(
+            store.write("t", body).unwrap_err().token(),
+            "registro-invalido"
+        );
+        std::fs::remove_file(&file).unwrap();
+        std::os::unix::fs::symlink("/dev/zero", &file).unwrap();
+        assert_eq!(store.raw("t", &id).unwrap_err().token(), "estado-inseguro");
+        assert_eq!(
+            store.write("t", body).unwrap_err().token(),
+            "estado-inseguro"
+        );
+        std::fs::remove_file(&file).unwrap();
+        let dir = store.task_dir("t").unwrap().unwrap();
+        rustix::fs::mknodat(
+            &dir,
+            std::ffi::OsStr::new(&format!("{id}.json")),
+            rustix::fs::FileType::Fifo,
+            Mode::from_raw_mode(0o600),
+            0,
+        )
+        .unwrap();
+        assert_eq!(store.raw("t", &id).unwrap_err().token(), "estado-inseguro");
+        assert_eq!(
+            store.write("t", body).unwrap_err().token(),
+            "estado-inseguro"
+        );
+    }
 
     /// Contract §5.3 (A M-1, mutant M13): writing a revision that is already there with the
     /// same bytes is the same revision; other bytes under its name are an altered record.

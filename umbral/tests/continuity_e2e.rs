@@ -1636,3 +1636,21 @@ fn rehashed_records_reject_duplicate_keys_and_invalid_captured_metadata() {
     }
 }
 
+/// A non-regular entry (Unix socket) in one task's directory is reported as unsafe state
+/// for that task alone; opening other records never fails through it (ENXIO isolation).
+#[test]
+fn a_socket_revision_is_isolated_as_unsafe_while_other_tasks_remain_visible() {
+    let dir = repo();
+    let root = dir.path();
+    saved(root, &input("valid", Value::Null, &["a.txt"]));
+    let bad = task_dir(root, "bad");
+    std::fs::create_dir_all(&bad).unwrap();
+    let socket_path = bad.join(format!("{}.json", "a".repeat(32)));
+    let _socket = std::os::unix::net::UnixListener::bind(socket_path).unwrap();
+    let (code, listed) = run(&["list"], root);
+    assert_eq!(code, Some(0), "{listed}");
+    assert_eq!(listed["tasks"][0]["task"], "bad");
+    assert_eq!(listed["tasks"][0]["integrity"], "estado-inseguro");
+    assert_eq!(listed["tasks"][1]["task"], "valid");
+    assert_eq!(listed["tasks"][1]["integrity"], "ok");
+}
