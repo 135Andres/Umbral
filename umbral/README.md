@@ -152,6 +152,20 @@ Output is one JSON document on stdout (edition `umbral-continuity/1`), errors in
 codes as above, plus `4` a revision conflict or a forked task, and `5` an altered, invalid or
 unknown-format record, or a revision that does not exist.
 
+A minimal example in a Git repository (the source path is relative to its toplevel):
+
+```sh
+printf '%s\n' '{"task":"demo","expected_revision":null,"goal":"Continue this task","next_step":"Review README.md","blockers":[],"declarations":[],"sources":["README.md"]}' | umbral task save .
+umbral task resume . demo
+umbral task export . demo
+```
+
+The source must exist, be a regular file and not be ignored by Git. To save again, replace
+`null` with the `revision` returned by the previous save. Free text is declared by the emitter;
+source fingerprints are captured by the program. Export includes the original record bytes.
+Record reads refuse symlinks and special files and enforce the 512 KiB limit while reading,
+including when a file grows after its initial size check.
+
 A fork is closed by saving with `expected_revision` set to a list of current heads.
 For more than eight heads, close it in steps of up to eight: each partial save returns
 `bifurcacion` (exit 4) with the remaining heads, including the revision just written.
@@ -168,7 +182,9 @@ hashes, never file contents; but a hash of a small or guessable file can confirm
 
 ## Reading the output
 
-Every line starts with a **label** saying who stands behind it:
+This section describes the observer commands. For `task`, see [Task continuity](#task-continuity-pilot).
+
+Every observer output line starts with a **label** saying who stands behind it:
 
 | Label | Means | Example |
 |---|---|---|
@@ -178,7 +194,7 @@ Every line starts with a **label** saying who stands behind it:
 | `unknown` | it can't be determined from what was seen; the reason is named | a file that could not be read |
 
 After the label come **items** separated by two spaces: `key=value` pairs, and a few bare words
-that name what the line is (`modified`, `count`, `compared`). The first line of every output
+that name what the line is (`modified`, `count`, `compared`). The first line of every observer output
 names the format it follows (`contract=umbral-output/1`).
 
 What the words on a `changes` line mean, comparing an earlier observation (the *reference*) with a
@@ -334,7 +350,7 @@ The header line names the two runs: `compared  reference-run=â€¦  compared-run=â
 
 ### The output format: `umbral-output/1`
 
-Every output begins with a header naming the contract edition it follows, and every value is
+Every observer output begins with a header naming the contract edition it follows, and every value is
 written by one escaping rule, specified in [`CONTRACT.md`](CONTRACT.md) (`UD-022`, `UD-030`):
 
 ```
@@ -404,11 +420,14 @@ Project Reality.
 
 ### The persistence seam
 
-Persistence goes through a small trait (`umbral::log::ObservationLog`). The v0.1
+Observer persistence goes through a small trait (`umbral::log::ObservationLog`). The v0.1
 implementation is SQLite. The trait exists so that an open question stays open: whether
 SQLite alone is the right substrate, or whether an external append-only log is also needed
 (**Q25** in the repository's open questions). v0.1 does not answer it, and the SQLite choice
 here is not a statement about Umbral's persistence model.
+
+Continuity revisions use the separate [record store](src/continuity/store.rs) under `.umbral/`,
+as described in [Task continuity](#task-continuity-pilot).
 
 The log stores observations and the runs that produced them. It stores **no derived state**:
 there is no projection table, no cached current state, no stored reconciliation result.
