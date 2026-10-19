@@ -167,6 +167,21 @@ S12 Linux kernel documentation — Multigrain Timestamps
   (2026-10-02). The arguments behind them are not, and cannot be checked from this
   repository — the same situation as the `MC §n` citations.
 
+2026-10-04 CYCLE — EXTERNAL COMPETITIVE LANDSCAPE
+-------------------------------------------------------------------------------
+  research/COMPETITIVE-LANDSCAPE.md records what already exists in the external sector where
+  Umbral intends to stand, organised by the four separable claims in README.md and VISION.md
+  (files stay yours; a record stating the origin of every value; re-reading only what changed
+  with reuse declared; semantic capability as an optional overlay). 16 sources, CL-1..CL-16.
+  Method and limits are in the file: it is a search result, not a census, and every source is
+  a self-description that was not independently tested. Its positive finding is narrow and is
+  qualified in the file: no product was found that observes a folder without writing inside it
+  and states per line how each value was obtained, including declared reuse; the closest
+  neighbours are MEMM (CL-5) and Nolane Habitat (CL-8). It also records that the incremental
+  skip rule of claim (iii) is established practice in build systems (CL-14) and therefore is
+  not defensible by novelty. Produced by an AI agent from public web sources; the owner has
+  not verified it. No decision is recorded by it.
+
 -------------------------------------------------------------------------------
 GAPS IN THE CORPUS
 -------------------------------------------------------------------------------

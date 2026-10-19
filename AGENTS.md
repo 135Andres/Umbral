@@ -66,6 +66,28 @@ hypotheses > your own inference. **Never promote a lower level into a higher one
     Any new quotation, copy or republication of non-public material needs the owner's explicit
     authorization.
 
+## Working on code
+
+The engineering rules are in [`CONTRIBUTING.md`](CONTRIBUTING.md) §6a (tests), §6b (docs move
+with code), §6d (branches) and §7 (commit style). On top of them, an agent:
+
+- **Verifies before claiming.** From the repository root: `cargo test --locked -p umbral`,
+  `cargo clippy --locked -p umbral --all-targets -- -D warnings`, `cargo fmt --check`. Report
+  the test count and the result of each; never report a check you did not run.
+- **Writes the test first** for any change of behaviour and observes it fail before the fix.
+- **Stages explicit paths only** (`git add <path>`; never `-A`, `.` or `-u`). The working tree
+  may hold the owner's uncommitted work: never stage, revert or reformat a file you did not
+  change.
+- **Does not push, merge, delete branches or rewrite published history** without an explicit
+  owner instruction for that action.
+- **Adds no dependency** that a decision record or owner instruction does not name. Versions
+  are pinned and `Cargo.lock` is committed.
+- **Keeps the v0.2 observer frozen:** its commands' stdout and exit codes do not change.
+- **Checks the base** of any worktree it is given (`git log -1`, `git merge-base`); agent
+  worktrees live under `.claude/worktrees/`, which is excluded from git.
+- **Stops and asks** when a choice is not settled by an owner instruction, a decision record or
+  the contract it is implementing.
+
 ## Process
 
 The working process for this project — authority handling, research intake, experiment
